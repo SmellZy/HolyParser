@@ -1,0 +1,96 @@
+# Risk Register
+
+## 1. Scoring
+
+- Likelihood (`L`): 1 rare, 2 unlikely, 3 possible, 4 likely, 5 almost certain.
+- Impact (`I`): 1 minor, 2 moderate, 3 major, 4 severe, 5 catastrophic.
+- Inherent score: `L × I`, before controls.
+- Priority: critical 20–25, high 12–19, medium 6–11, low 1–5.
+
+Scores are planning estimates and must be reviewed at every phase gate and after
+incidents or material architecture changes.
+
+## 2. Register
+
+| ID | Risk | L | I | Score | Earliest phase | Primary controls / mitigation | Owner | Trigger or evidence |
+|---|---|---:|---:|---:|---|---|---|---|
+| R-001 | Wrong symbol/asset mapping creates false pair or exposure | 4 | 5 | 20 | 2A | Canonical IDs, chain/address identity, metadata versioning, conflict quarantine, four-eyes manual mapping, property tests | Market Data | Unknown alias, multiplier/asset conflict, venue metadata change |
+| R-002 | Stale or gapped book is presented/actioned as current | 4 | 5 | 20 | 2B | Sequence validation, immediate `STALE`, resnapshot, end-to-end quality metadata, circuit breaker | Market Data/Risk | Gap, lag threshold, checksum mismatch, reconnect |
+| R-003 | Binary floating-point or incorrect rounding causes financial error | 3 | 5 | 15 | 1/2 | Exact decimals, wire strings, named rounding boundaries, property/precision tests, lint/review rules | Architecture/Quant | Float type reaches financial model, tick/step violation |
+| R-004 | Funding intervals/semantics are normalized incorrectly | 4 | 4 | 16 | 2B/3A | Official per-instrument metadata, native and normalized values separated, no hardcoded interval, fixtures | Market Data/Quant | Interval change, missing next settlement, predicted/current confusion |
+| R-005 | Unknown fees, borrow, gas, or conversion treated as zero | 4 | 4 | 16 | 3B | Component provenance, required unknown makes net unavailable, conservative policy | Product/Quant | Missing tier/schedule or stale cost source |
+| R-006 | Exchange API/schema/deprecation drift silently corrupts adapter | 5 | 4 | 20 | 2B | Official source register, schema tests, daily canary, drift alert, version owner, adapter kill switch | Adapter owner | Unknown/missing field, canary divergence, deprecation notice |
+| R-007 | Rate limiting or bans impair data, reconciliation, or execution | 4 | 4 | 16 | 2B | Per-venue weighted limiter, priority queues, cooldown/jitter, budget telemetry, capacity test | Adapter/SRE | 429/418, quota exhaustion, reconnect storm |
+| R-008 | Premature microservices/infrastructure slows delivery and recovery | 4 | 3 | 12 | 1 | Modular boundaries, minimal deployables, adoption ADR with load/cost evidence | Architecture | New infra without measured requirement/owner/runbook |
+| R-009 | Authentication flaw enables account takeover | 3 | 5 | 15 | 1C | Argon2id, secure sessions, CSRF, throttling, secure recovery, session revocation, security tests | Security/Control | Suspicious login, enumeration, token reuse, scan finding |
+| R-010 | Cross-tenant authorization leaks data or authority | 3 | 5 | 15 | 1B | Deny default, server-derived tenant scope, integration/property tests, narrow admin permissions | Security/Control | IDOR test failure, unscoped query, support incident |
+| R-011 | Secrets leak into logs, traces, fixtures, CI, or frontend | 3 | 5 | 15 | 1 | No secrets in Phase 1, centralized redaction, secret scanning, negative tests, restricted telemetry | Security/SRE | Scanner alert, secret-shaped log, client bundle exposure |
+| R-012 | Verification/recovery abuse or email enumeration | 4 | 3 | 12 | 1C | Hashed single-use challenge, TTL/attempt/cooldown, uniform responses, layered throttling | Security/Control | Send spike, attempt spike, response discrepancy |
+| R-013 | Supply-chain compromise affects build or production | 3 | 5 | 15 | 1A | Pinned dependencies, lock files, SCA, SBOM/provenance target, reviewed updates, least-privilege CI | Security/DevOps | Malicious advisory, lock drift, scanner finding |
+| R-014 | Legal/regulatory or exchange terms prohibit intended feature/data use | 3 | 5 | 15 | 0/2 | Qualified legal review, jurisdiction/terms register, product gating, retention/redistribution controls | Product/Legal | Venue terms change, new jurisdiction, counsel finding |
+| R-015 | Performance targets are unmeasurable or unrealistic | 4 | 3 | 12 | 1/2C | Define workload/hardware/boundaries, benchmark, provisional SLOs, avoid end-to-end microsecond claims | Architecture/SRE | Target lacks measurement spec, failed budget |
+| R-016 | Live protocol overwhelms browser or gateway | 4 | 3 | 12 | 2C/3 | Server aggregation, batching, virtualization, bounded queues, backpressure, slow-client tests | Live Data/Frontend | Buffer growth, UI long task, disconnect storm |
+| R-017 | Historical data is incomplete, irreproducible, or misleading | 3 | 4 | 12 | 4A | Gap/provenance markers, metadata versions, retention/downsampling policy, immutable calculation versions | Data/Quant | Missing segment, unversioned transformation, restore failure |
+| R-018 | Backtest overstates returns due to fill/latency/selection bias | 4 | 5 | 20 | 6/8 | Order-book, latency, partial-fill, fee/funding/outage models; purged walk-forward and predeclared thresholds | Quant | Large paper divergence, unstable out-of-sample result |
+| R-019 | Strategy responds to structural spread as convergence | 3 | 5 | 15 | 6 | Structural-break/regime tests, half-life/quantiles, `NO_TRADE`, risk reserve, validation | Quant/Risk | Persistent divergence, regime change |
+| R-020 | AI hallucinates facts or upgrades a safe decision | 4 | 4 | 16 | 7 | Read-only fact IDs, strict schema, action monotonicity, numeric validator, stale-data rule, no trading tool | AI/Quant/Security | Invalid fact reference, `NO_TRADE` to `ENTER`, leakage test |
+| R-021 | Paper simulator is too optimistic and grants false readiness | 4 | 5 | 20 | Conservative calibrated models, fault scenarios, expected-vs-simulated telemetry, graduation thresholds fixed in advance | Execution/Quant/QA | Consistent live/testnet divergence, missing partial fills |
+| R-022 | Paper and live environments are confused | 2 | 5 | 10 | Separate credentials, storage namespaces, domains/config, explicit environment field, visual labels, tests | Execution/Security | Live endpoint reachable from paper, ambiguous UI/resource |
+| R-023 | API credential compromise enables unauthorized trading | 3 | 5 | 15 | KMS envelope encryption, no withdrawal, IP allowlist, least privilege, isolated decrypt worker, rotation/revocation | Security/Execution | Suspicious use, key access anomaly, permission drift |
+| R-024 | Order timeout/5xx leads to duplicate order from blind retry | 4 | 5 | 20 | `UNKNOWN` state, no retry transition, client IDs where verified, query/fills/positions reconciliation | Execution | Timeout, 5xx, disconnect after submit |
+| R-025 | One leg fills and the other fails, creating directional exposure | 4 | 5 | 20 | Safe slicing, simultaneous submit where supported, residual-delta limit, emergency hedge/close policy, kill switch | Execution/Risk | Partial/rejected second leg, lag, liquidity evaporation |
+| R-026 | Local order/position state diverges after restart or external action | 3 | 5 | 15 | Durable state machine, optimistic concurrency, restart reconciliation, unmatched external-state detection | Execution | Restart, manual venue order, missing private event |
+| R-027 | Risk Engine unavailable, bypassed, or uses stale policy | 3 | 5 | 15 | Isolated authoritative service, fail closed, signed/bound short-lived decision, policy version, health circuit | Risk/Security | Timeout, version mismatch, unauthorized execution intent |
+| R-028 | Kill switch fails, is delayed, or unsafe close worsens loss | 3 | 5 | 15 | Independent scopes/modes, direct tests/drills, no stale cache, state-aware close policy, manual escalation | Risk/Execution/SRE | Drill failure, control-plane outage, illiquid/unknown state |
+| R-029 | User/admin grants more trading authority than intended | 3 | 5 | 15 | Manual/semi/auto separation, reauth/MFA, parameter/time-bound delegation, immutable system ceilings, notifications | Product/Risk/Security | Policy ambiguity, authority mismatch, admin override |
+| R-030 | Venue behavior differs between testnet and production | 4 | 4 | 16 | Document parity gaps, read-only production canary, conservative beta caps, live telemetry, venue-specific gates | Adapter/Execution | Schema/latency/order semantic difference |
+| R-031 | DEX signing/custody or arbitrary transaction leads to asset loss | 3 | 5 | 15 | Analytics-only default, non-custodial preference, allowlisted construction, simulation, MPC/HSM, separate approval | Security/DEX | Arbitrary payload, signer compromise, approval abuse |
+| R-032 | MEV, reorg, gas, failed tx, or bridge risk invalidates DEX economics | 4 | 4 | 16 | Chain-specific model, confirmations/finality, gas cap, MEV protection, no bridges by default | DEX/Quant/Risk | Quote expiry, congestion, reorg, sandwich, bridge incident |
+| R-033 | Stablecoin depeg makes aggregated “neutral” position non-neutral | 3 | 5 | 15 | Separate USDT/USDC, explicit conversion/haircut, exposure limits, depeg scenarios/circuit breakers | Risk/Quant | Depeg threshold, conversion liquidity loss |
+| R-034 | Margin/leverage/liquidation model is wrong | 3 | 5 | 15 | Venue/product-specific verified model, conservative buffers, testnet/paper calibration, block unknown modes | Risk/Execution | Position-mode drift, formula mismatch, margin change |
+| R-035 | Operator lacks coverage or runbook during financial incident | 3 | 5 | 15 | Named on-call, drills, escalation, exchange contacts, manual intervention UI, launch-hour limits | SRE/Execution | Missed alert, delayed reconciliation, unresolved incident |
+| R-036 | Database loss/corruption prevents auth or state recovery | 2 | 5 | 10 | Encrypted backup, point-in-time recovery target, restore tests, migration safety, durable audit | SRE/Data | Restore test failure, corruption, migration incident |
+| R-037 | Billing/entitlement outage blocks safe handling of positions | 2 | 5 | 10 | Safety operations bypass entitlement downgrade, cached safe entitlements, explicit invariant/tests | Billing/Risk | Payment outage, subscription expiry with open position |
+| R-038 | Metrics leak personal data or overload telemetry via cardinality | 3 | 3 | 9 | Approved label taxonomy, hashing is not default anonymization, sampling/limits, telemetry review | SRE/Security | Cardinality spike, user/order ID label |
+| R-039 | Product language implies guaranteed profit or financial advice | 3 | 4 | 12 | Legal/product copy review, uncertainty/provenance, no guarantee language, AI constraints | Product/Legal | Marketing/UI claim, support complaint, regulator query |
+| R-040 | Team implements beyond approved phase | 4 | 4 | 16 | Phase-scoped prompts, explicit non-goals, PR template, ownership review, approval before next phase | Tech Lead | Future module/code appears in current-phase change |
+
+## 3. Immediate critical/high priorities
+
+Before Phase 1A:
+
+- R-008, R-013, R-040: keep the repository minimal, pin tooling, and enforce
+  phase/quality gates.
+
+Before Phase 2:
+
+- R-001, R-002, R-004, R-006, R-007, R-014: official API audit, canonical identity,
+  and failure-safe data pipeline.
+
+Before displaying expected net:
+
+- R-003, R-005, R-017: exact arithmetic, explicit unknown costs, provenance.
+
+Before paper graduation:
+
+- R-018, R-019, R-021, R-022: predeclared validation and environment isolation.
+
+Before any live credential/order:
+
+- R-023 through R-030 and R-034 through R-035 require tested controls, named
+  owners, residual-risk acceptance, and incident drills.
+
+## 4. Review and escalation
+
+At every phase exit:
+
+1. reassess likelihood/impact and control evidence;
+2. add newly discovered risks;
+3. link failed tests/incidents;
+4. name an owner and due phase for every mitigation;
+5. block release for uncontrolled critical risk;
+6. record any accepted residual high risk with approver, rationale, and expiry.
+
+Financial loss, secret exposure, unauthorized authority, undetected stale data,
+unknown orders, unmatched fills, or risk-engine bypass triggers immediate review
+regardless of phase.
