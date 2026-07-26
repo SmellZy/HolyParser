@@ -35,13 +35,13 @@ Not assumed:
 
 ## 3. Assets and classification
 
-| Class | Examples | Required handling |
-|---|---|---|
-| Restricted secrets | passwords, session tokens, API secrets, signing keys, seed material | Never log; encrypt in transit; hash where verification-only; otherwise envelope encrypt; minimal runtime access |
-| Restricted financial | orders, fills, positions, balances, risk limits, PnL | Tenant isolation, encryption, immutable audit, strict authorization |
-| Confidential personal | email, device/session data, notification destinations | Data minimization, retention/deletion policy, access logging |
-| Internal sensitive | adapter errors, venue limits, security configuration, incidents | Least privilege, redaction, bounded retention |
-| Public/market | public prices and funding | Integrity, provenance, freshness, availability controls |
+| Class                 | Examples                                                            | Required handling                                                                                               |
+| --------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Restricted secrets    | passwords, session tokens, API secrets, signing keys, seed material | Never log; encrypt in transit; hash where verification-only; otherwise envelope encrypt; minimal runtime access |
+| Restricted financial  | orders, fills, positions, balances, risk limits, PnL                | Tenant isolation, encryption, immutable audit, strict authorization                                             |
+| Confidential personal | email, device/session data, notification destinations               | Data minimization, retention/deletion policy, access logging                                                    |
+| Internal sensitive    | adapter errors, venue limits, security configuration, incidents     | Least privilege, redaction, bounded retention                                                                   |
+| Public/market         | public prices and funding                                           | Integrity, provenance, freshness, availability controls                                                         |
 
 Seed phrases are prohibited server-side data. If received accidentally, they must
 be rejected without persistence or logging and handled through the incident plan.
@@ -63,16 +63,18 @@ be rejected without persistence or logging and handled through the incident plan
 
 ### Zone A — Untrusted edge
 
-Browser, public Internet, exchange feeds, email, AI provider, billing provider,
-wallet, and blockchain networks.
+Browser, public Internet, exchange feeds, email, Telegram provider input,
+Telegram Mini App input, AI provider, billing provider, wallet, and blockchain
+networks.
 
 Controls: TLS, WAF/rate limits where deployed, validation, bounded payloads,
 authentication, anti-replay, timeouts, and safe error mapping.
 
 ### Zone B — Product application
 
-Web backend/control API and live gateway. It handles sessions and user data but
-never private signing material.
+Web backend/control API, notification application boundary, and Telegram
+Gateway. They handle sessions and user data but never private signing material
+or direct exchange-secret access.
 
 Controls: least-privilege service identity, RBAC/ABAC, tenant scoping, CSRF/CSP,
 secure headers, SSRF restrictions, structured redaction, and network egress rules.
@@ -155,7 +157,7 @@ AI is never placed in Zones D or E.
 - System risk policy can restrict but no user/admin path can silently loosen it
   beyond an approved maximum.
 
-## 8. Exchange credential security (deferred to Phase 9)
+## 8. Exchange credential security (deferred to Phase 6)
 
 - Separate read-only and trading credentials.
 - Reject or block credentials with withdrawal permission where permission
@@ -278,15 +280,15 @@ switches, and log-redaction failures.
 
 ## 15. Security verification by stage
 
-| Stage | Minimum evidence |
-|---|---|
-| Phase 1 | Auth abuse tests, tenant isolation, CSRF/CSP/headers, secret scan, dependency scan, redaction tests, restore exercise |
-| Read-only MVP | Parser fuzz/schema tests, stale/gap faults, rate-limit/load tests, adapter isolation |
-| Production analytics | External surface review, DAST, SLO/chaos evidence, incident runbooks |
-| AI | Prompt injection, tool authorization, data leakage, schema/state validation |
-| Paper | State-machine, replay, fault, restart, kill-switch, and environment isolation tests |
-| Manual live readiness | Threat model refresh, KMS/vault tests, pentest, access review, reconciliation drills |
-| Semi/auto | Delegation boundary tests, soak/chaos, disaster recovery, independent security and financial controls review |
+| Stage                 | Minimum evidence                                                                                                      |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Phase 1               | Auth abuse tests, tenant isolation, CSRF/CSP/headers, secret scan, dependency scan, redaction tests, restore exercise |
+| Read-only MVP         | Parser fuzz/schema tests, stale/gap faults, rate-limit/load tests, adapter isolation                                  |
+| Production analytics  | External surface review, DAST, SLO/chaos evidence, incident runbooks                                                  |
+| AI                    | Prompt injection, tool authorization, data leakage, schema/state validation                                           |
+| Paper                 | State-machine, replay, fault, restart, kill-switch, and environment isolation tests                                   |
+| Manual live readiness | Threat model refresh, KMS/vault tests, pentest, access review, reconciliation drills                                  |
+| Semi/auto             | Delegation boundary tests, soak/chaos, disaster recovery, independent security and financial controls review          |
 
 No critical finding may be waived for a trading release. High findings require an
 explicit documented risk decision by authorized owners and a time-bound fix.
@@ -316,3 +318,142 @@ outage, database loss, AI leakage, and on-chain signer compromise.
 - production RPO/RTO and incident staffing;
 - AI provider data-use/retention terms;
 - external security assessment criteria and release authority.
+
+## 18. Telegram identity and authentication boundary
+
+Telegram identity is external evidence, not a platform account. A user must have
+an existing active platform account before linking.
+
+Linking controls:
+
+- the authenticated website creates a random, purpose-bound, short-lived,
+  single-use challenge;
+- only a one-way token digest is retained;
+- the backend binds verified Telegram stable user ID, never username, to the
+  internal user;
+- token purpose, TTL, use state, platform-user state, environment, attempts, and
+  link conflicts are verified atomically;
+- malformed, replayed, consumed, expired, revoked, or cross-environment tokens
+  fail closed;
+- link, unlink, conflict, replay, and recovery outcomes are audited;
+- the platform sends an in-app/email security notification after link/unlink;
+- unlink or linked-account change revokes Telegram sessions/actions and disables
+  Telegram trading controls.
+
+Mini App controls:
+
+- verify the original Telegram initialization data server-side using current
+  official Telegram guidance at implementation time;
+- reject unsigned, expired, replayed, oversized, malformed, unlinked, disabled,
+  or cross-environment data;
+- never trust a frontend Telegram ID, username, role, platform user ID, or
+  authorization claim;
+- issue a short-lived, audience- and environment-bound application session;
+- maintain replay protection and revoke sessions when link/account state
+  changes;
+- separate production/non-production bots, applications, origins, secrets,
+  sessions, callback namespaces, and link tokens;
+- enforce TLS, origin policy, CSP/frame policy, CSRF/session policy, and safe
+  redirects for the selected Mini App deployment.
+
+Exact provider signature algorithms and fields are intentionally not reproduced
+here; they must be implemented from re-retrieved official documentation.
+
+## 19. Telegram command security
+
+The only permitted future financial command path is:
+
+```text
+Bot or Mini App
+  -> Telegram Gateway
+  -> authenticated internal command
+  -> authorization
+  -> current-state validation
+  -> fresh market-data validation
+  -> Risk Engine when applicable
+  -> expiring execution preview
+  -> explicit confirmation
+  -> Execution Engine
+  -> exchange adapters
+  -> reconciliation
+  -> notification
+```
+
+The Gateway cannot calculate strategies, own financial state, access exchange
+secrets, call private adapters, issue risk authorization, or bypass
+reconciliation.
+
+Every action has an idempotency key. Critical callback/action handles are opaque,
+single-use, short-lived, replay-protected, and bound to internal user, linked
+Telegram ID, application session, environment, command, resource, expected
+state version, and preview. Old or superseded messages cannot act.
+
+Preview expiry and final revalidation cover:
+
+- price and liquidity;
+- market-data freshness and revision;
+- position and reconciliation state;
+- permissions and linked-account state;
+- user/system/Telegram-specific limits;
+- risk policy and decision.
+
+High-notional actions require the approved passkey/2FA/web reauthentication
+policy. Telegram limits may only reduce system authority. Risk-limit changes are
+prohibited through Telegram unless a later policy requires web
+reauthentication; an ordinary callback can never raise them.
+
+## 20. Telegram and notification data protection
+
+Public-channel templates use an allowlist for non-personal analytics. They never
+contain user identity, private positions, balances, account PnL, credentials,
+private alerts, or executable actions.
+
+Private notifications are tenant-scoped and classified before rendering.
+Credentials, signatures, provider secrets, raw authentication payloads, callback
+secrets, and private keys have no notification template.
+
+Future Telegram provider secrets:
+
+- reside only in an approved secret manager/KMS;
+- are separate by environment and provider application;
+- are available only to the narrow provider/gateway workload;
+- never enter source, frontend/Mini App bundles, callback data, database
+  plaintext, logs, traces, metrics, fixtures, or messages;
+- have rotation, revocation, access review, and incident procedures.
+
+Delivery uses idempotency, bounded retry, exponential backoff, rate-limit
+handling, dead-letter state, and audit. Provider failure changes delivery state
+only. Telegram outage must never block emergency risk handling, reconciliation,
+authoritative execution state, or web controls. Recovery does not make expired
+messages actionable or blindly replay financial commands.
+
+## 21. Telegram audit and verification gates
+
+Security audit covers link challenges and link changes, Mini App verification and
+session outcomes, command authentication/authorization, callback replay,
+previews, confirmations, revalidation, execution handoff, reconciliation, alert
+changes, provider delivery, and authority/limit changes. Raw provider payloads
+and secrets are excluded.
+
+Before Phase 3 activation:
+
+- linking and Mini App flows pass expiry, replay, race, conflict,
+  environment-separation, cross-user, revoke, and abuse tests;
+- Telegram Gateway has no route to exchange credentials/adapters;
+- public/private template leakage tests fail closed;
+- provider secret rotation and outage runbooks are rehearsed.
+
+Before Phase 5:
+
+- paper callbacks are single-use, expiring, idempotent, and state-bound;
+- old-message, duplicate, provider-timeout, and link-change tests pass;
+- no real exchange endpoint or credential is reachable.
+
+Before any Phase 7 Telegram live control:
+
+- Phase 5 paper graduation and Phase 6 reconciliation are accepted;
+- Risk Engine and Execution Engine reviews are complete;
+- strong reauthentication, Telegram limits, preview expiry, final
+  revalidation, unknown outcome, partial hedge, kill switch, and outage drills
+  pass;
+- live remains disabled by default.

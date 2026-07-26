@@ -1840,3 +1840,147 @@ Live trading feature за замовчуванням повинен бути в�
 Кінцевий продукт має працювати за принципом:
 
 Краще пропустити потенційну угоду, ніж відкрити незбалансовану або неконтрольовану позицію.
+
+30. Approved future product-capability amendment — 2026-07-26
+
+This section is authoritative where it refines the earlier phase order and
+position/notification/Telegram scope. It does not reopen frozen Phase 1 or Phase
+2A.1 and does not authorize implementation. The detailed contracts are in:
+
+- `POSITION_MANAGEMENT.md`;
+- `NOTIFICATION_ARCHITECTURE.md`;
+- `TELEGRAM_INTEGRATION.md`;
+- ADR 0005.
+
+30.1 Spread-position management
+
+The future product supports:
+
+- manually entered and watch-only positions;
+- paper positions;
+- authenticated exchange-synchronized read-only positions;
+- system-executed positions;
+- two-leg positions with an extensible multi-leg model.
+
+Every leg uses canonical venue, product group, official instrument, market type,
+and settlement identity. Display symbol is not identity. Position facts and
+valuations preserve long/short direction, exact entry/current executable prices
+and quantities, entry/current spread, spread PnL, funding PnL, fees,
+estimated/realized slippage, net PnL, residual delta, supported liquidation
+buffer, targets, state history, quality, reconciliation, notes, and alert
+subscriptions.
+
+The approved lifecycle vocabulary is:
+
+DRAFT, WATCHING, ENTRY_PROPOSED, ENTERING, PARTIALLY_HEDGED, HEDGED,
+HOLDING, EXIT_PROPOSED, EXITING, CLOSED, DEGRADED, EMERGENCY_HEDGE,
+RECONCILIATION_REQUIRED, FAILED.
+
+Tracking, paper, synchronized read-only, and live modes expose only their
+applicable states. Read-only synchronization never grants order authority.
+Unknown financial components remain unknown, and stale/gapped inputs suppress
+executable valuation.
+
+30.2 Spread alerts and notifications
+
+The future alert domain covers anomalous spreads, entry opportunities,
+convergence/exit, executable thresholds by size, funding differential/change/
+settlement, expected net, position PnL, residual delta, liquidation buffer,
+stale/degraded venues, partial fills, reconciliation, and emergency risk.
+
+Rules may be user- or system-defined and support canonical token/instrument,
+venue-pair, and strategy filters; threshold direction; minimum duration;
+cooldown; hysteresis; deduplication; grouping; quiet hours; severity; expiry;
+mute/pause; and channel preferences.
+
+The notification model separates Notification, NotificationRecipient,
+NotificationPreference, NotificationTemplate, NotificationDelivery,
+NotificationAction, DeliveryOutbox, DeliveryAttempt, AlertRule,
+AlertEvaluation, AlertOccurrence, and AlertSuppressionState. Future delivery
+channels are IN_APP, TELEGRAM_PRIVATE, TELEGRAM_CHANNEL, EMAIL, and WEB_PUSH.
+
+Delivery uses a transactional outbox, stable idempotency, bounded exponential
+retry, dead-letter state, provider rate-limit handling, deduplication, optional
+message editing, and delivery audit. Provider failure never changes the source
+position, alert, risk, reconciliation, or execution state.
+
+30.3 Telegram surfaces
+
+The public Telegram channel is limited to non-personal analytics, data
+degradation, general notices, and educational updates. It never publishes user
+identity, private positions, balances, account PnL, credentials, private alerts,
+or executable account actions.
+
+The private bot supports future personal notifications, summaries, alerts,
+system status, read-only tracking, Phase 5 paper controls, and only later
+strictly controlled live previews/confirmations. Planned commands are `/start`,
+`/status`, `/positions`, `/position`, `/alerts`, `/mute`, `/unmute`, and
+`/help`.
+
+The Telegram Mini App is a client of the same backend. It may render
+opportunities, positions, charts, executable spread by size, venue books,
+funding, legs, calculator, PnL, history, alert configuration, paper previews,
+and later live preview/confirmation/history. It reuses shared contracts, design
+tokens, validation, and components where practical. It owns no financial
+business logic.
+
+30.4 Account linking and Mini App authentication
+
+The user must first have a platform account. The authenticated website creates a
+single-use, short-lived, purpose-bound linking token. The backend validates its
+digest, TTL, use state, environment, user state, and conflicts before binding a
+verified Telegram stable user ID to internal user ID. Telegram username is
+display-only. Link/unlink is audited and notified in-app/email. Changing the
+linked Telegram identity disables Telegram trading controls.
+
+Mini App initialization data is verified server-side using then-current official
+Telegram rules. Unsigned, expired, replayed, unlinked, or cross-environment data
+is rejected. The backend issues a short-lived platform session and never trusts
+frontend-provided Telegram identity claims.
+
+30.5 Command-security boundary
+
+The mandatory future path is:
+
+Telegram Bot or Mini App
+→ Telegram Gateway
+→ authenticated internal command
+→ authorization
+→ current-state validation
+→ fresh market-data validation
+→ Risk Engine when applicable
+→ execution preview
+→ explicit user confirmation
+→ Execution Engine
+→ exchange adapters
+→ reconciliation
+→ user notification.
+
+Telegram is presentation/command ingress only. The Gateway does not calculate
+strategies, own financial state, access exchange secrets, call exchange adapters
+directly, or bypass risk. Every action is idempotent. Critical callbacks are
+single-use, short-lived, state-bound, and invalid from old/superseded messages.
+Material market changes expire previews; final execution revalidates price,
+liquidity, position, reconciliation, authority, and risk. High-notional actions
+support passkey/2FA/web reauthentication. Telegram-specific limits cannot exceed
+system limits, and Telegram cannot raise risk limits. Telegram availability
+never blocks emergency risk handling or reconciliation.
+
+30.6 Superseding roadmap order
+
+The implementation sequence after frozen Phase 2A.1 is:
+
+1. Phase 2A.2 — OKX Exchange V5 Swap/Futures public adapter;
+2. Phase 2A.3 — Binance USDⓈ-M Futures public adapter;
+3. Phase 2A.4 — Bybit V5 `linear` public adapter;
+4. Phase 2B — Spread Analytics Core;
+5. Phase 2C — Alerts and Notification Foundation;
+6. Phase 3 — Identity, Accounts and Telegram Linking;
+7. Phase 4 — Position Workspace;
+8. Phase 5 — Paper Trading with Telegram Controls;
+9. Phase 6 — Authenticated Read-only Exchange Synchronization;
+10. Phase 7 — Manual and Semi-automatic Live Execution;
+11. Phase 8 — Controlled Automatic Farming.
+
+`ROADMAP.md` contains the phase deliverables, non-goals, dependencies, and
+acceptance criteria. Passing one phase never authorizes the next.

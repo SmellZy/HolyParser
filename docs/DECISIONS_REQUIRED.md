@@ -160,7 +160,7 @@ be guessed prematurely.
 
 ### D-017 — Funding semantics
 
-- **When:** before Phase 3A
+- **When:** before Phase 2B
 - **Question:** What displayed normalization horizon(s) are approved, and how are
   current, predicted, and settled funding distinguished?
 - **Recommendation:** show native interval and exact next settlement; offer an
@@ -172,7 +172,7 @@ be guessed prematurely.
 
 ### D-018 — Fee and cost source
 
-- **When:** before displaying expected net in Phase 3B
+- **When:** before displaying expected net in Phase 2B
 - **Question:** Use user tier, venue default tier, conservative configured tier, or
   unknown for fees/borrow/gas?
 - **Recommendation:** show component provenance; if a required cost is unknown,
@@ -190,7 +190,7 @@ be guessed prematurely.
 
 ### D-020 — Performance objective definitions
 
-- **When:** before Phase 2C load tests
+- **When:** before Phase 2A adapter load tests and Phase 2B analytics SLOs
 - **Question:** Workload, hardware/region, event origin/end point, percentile
   window, and allowed degradation for each latency target?
 - **Impact:** the master spec's numbers are not testable without measurement
@@ -198,20 +198,20 @@ be guessed prematurely.
 
 ### D-021 — Historical retention and reproducibility
 
-- **When:** before Phase 4A
+- **When:** before Phase 2B spread-history persistence
 - **Question:** Raw snapshots/deltas versus aggregates, retention periods,
   downsampling, legal deletion, and backtest reproducibility requirements?
 
 ### D-022 — Strategy validation thresholds
 
-- **When:** before Phase 6
+- **When:** before Phase 8 automatic strategy approval
 - **Question:** Required out-of-sample metrics, baselines, error bands, calibration,
   maximum drawdown, and approval authority?
 - **Recommendation:** predeclare thresholds before running the final evaluation.
 
 ### D-023 — AI provider and policy
 
-- **When:** before Phase 7
+- **When:** before any Phase 8 or later AI explanation implementation
 - **Question:** Provider/model, region, retention/training terms, cost/latency
   budget, supported languages, and human-facing disclaimer?
 - **Recommendation:** provider-independent fact/output contract; no AI dependency
@@ -221,14 +221,14 @@ be guessed prematurely.
 
 ### D-024 — Paper graduation gate
 
-- **When:** before Phase 8 build
+- **When:** define before Phase 5 evidence; approve before Phase 7 live work
 - **Question:** Minimum duration/trade scenarios, fill imbalance, reconciliation
   error, slippage calibration, intervention, and loss thresholds?
 - **Recommendation:** thresholds are fixed before evidence is collected.
 
 ### D-025 — Meaning of manual, semi-auto, and auto
 
-- **When:** before Phase 9
+- **When:** before Phase 7
 - **Question:** Which exact actions require user confirmation, how long delegated
   authority lasts, and what changes invalidate it?
 - **Recommendation:** manual confirms every material action; semi-auto uses a
@@ -239,11 +239,12 @@ be guessed prematurely.
 - **When:** before storing trading credentials
 - **Question:** In which jurisdictions may the product facilitate execution, for
   which users/entities and venues, under what licensing/advice/disclosure rules?
-- **Status:** blocks Phase 9 production credential handling and all live phases.
+- **Status:** blocks Phase 6 production credential handling and all Phase 7+
+  live capabilities.
 
 ### D-027 — Initial live venues and products
 
-- **When:** before Phase 9 private API audit
+- **When:** before Phase 6 private API audit and Phase 7 live scope
 - **Question:** Which one or two venue/product/environment combinations are in
   scope?
 - **Recommendation:** linear perpetuals only if product/legal/risk reviews approve;
@@ -251,13 +252,13 @@ be guessed prematurely.
 
 ### D-028 — Credential custody and KMS
 
-- **When:** before Phase 9
+- **When:** before Phase 6
 - **Question:** Cloud KMS/HSM, DEK granularity, rotation/deletion, backup, operator
   access, and regional constraints?
 
 ### D-029 — Live risk envelope
 
-- **When:** before Phase 10
+- **When:** before Phase 7
 - **Question:** System maxima for capital, venue/token exposure, leverage,
   residual delta, slippage, daily loss, drawdown, holding time, unknown orders,
   and beta users?
@@ -265,14 +266,14 @@ be guessed prematurely.
 
 ### D-030 — Emergency-close semantics
 
-- **When:** before Phase 10
+- **When:** before Phase 7
 - **Question:** For every trigger, block new entries only or also attempt safe
   close; who may activate/reset; how is illiquidity handled?
 - **Impact:** “kill switch” is ambiguous without per-scope behavior.
 
 ### D-031 — Operational ownership
 
-- **When:** before Phase 10
+- **When:** before Phase 7
 - **Question:** 24/7 or market-hours coverage, on-call roles, incident authority,
   user communication, exchange escalation, RTO/RPO, and manual intervention?
 
@@ -288,14 +289,14 @@ be guessed prematurely.
 
 ### D-033 — Plans and entitlements
 
-- **When:** before Phase 13
+- **When:** before any separately approved commercialization phase
 - **Question:** Final plan features, data delays, quotas, trial/refund rules, and
   behavior for existing positions after downgrade?
 - **Invariant:** billing cannot block risk, reconciliation, or safe position exit.
 
 ### D-034 — Billing provider and crypto payment policy
 
-- **When:** before Phase 13
+- **When:** before any separately approved billing phase
 - **Question:** Provider, accepted assets/chains, confirmation counts, FX/expiry,
   under/overpayment, refunds, sanctions/fraud, tax/invoice requirements?
 
@@ -513,3 +514,187 @@ and known differences.
 Binance, OKX, KuCoin, MEXC, Bitunix, BloFin and Bybit expose materially
 different product groups under one brand. A company-level capability flag can
 silently claim unsupported functionality and is prohibited.
+
+## 8. Position, alert, notification, and Telegram decisions — 2026-07-26
+
+The product owner approved the future capability families and roadmap placement
+documented in `POSITION_MANAGEMENT.md`, `NOTIFICATION_ARCHITECTURE.md`,
+`TELEGRAM_INTEGRATION.md`, and ADR 0005. The principles below are accepted; the
+parameter and policy questions remain open and do not authorize implementation.
+
+### D-041 — Position accounting definitions
+
+- **When:** before Phase 4 contract freeze
+- **Status:** `OWNER DECISION REQUIRED`
+- **Question:** What exact formulas, currencies, timing, and sign conventions
+  define entry/current spread, spread PnL, funding PnL, fees,
+  estimated/realized slippage, net PnL, residual delta, and liquidation buffer?
+- **Recommendation:** version each component; retain native settlement currency;
+  make aggregate output unknown when a required component/conversion is unknown.
+
+### D-042 — Multi-leg eligibility and limits
+
+- **When:** before Phase 4
+- **Status:** `OWNER DECISION REQUIRED`
+- **Question:** Which strategy shapes and maximum leg count are supported first,
+  and how are valuation, hedge tolerance, and partial state defined for more than
+  two legs?
+- **Recommendation:** ship two legs first; keep the aggregate extensible; require
+  a separately tested policy before enabling each multi-leg shape.
+
+### D-043 — Manual-to-synchronized position adoption
+
+- **When:** before Phase 6
+- **Status:** `OWNER DECISION REQUIRED`
+- **Question:** When authenticated exchange state resembles a manual position,
+  may it be linked, merged, or only displayed as a conflict?
+- **Recommendation:** never auto-merge; require explicit reviewed adoption with
+  provenance and retain both histories.
+
+### D-044 — Position retention and correction policy
+
+- **When:** before Phase 4 persistence
+- **Status:** `OWNER/LEGAL DECISION REQUIRED`
+- **Question:** Retention, deletion, export, note moderation, correction,
+  backdating, and audit requirements for manual, paper, synchronized, and live
+  positions?
+- **Recommendation:** append-only corrections for financial facts; separate
+  user-editable notes; legal review before production retention.
+
+### D-045 — Alert default policies
+
+- **When:** before Phase 2C
+- **Status:** `OWNER DECISION REQUIRED`
+- **Question:** Default thresholds, minimum duration, cooldown, hysteresis,
+  grouping, severity, expiry, quiet hours, timezone, and emergency override?
+- **Recommendation:** configuration per alert family; emergency system rules
+  cannot be suppressed by ordinary user quiet hours.
+
+### D-046 — Notification durability and delivery SLO
+
+- **When:** before Phase 2C persistence/operations
+- **Status:** `OWNER/SRE DECISION REQUIRED`
+- **Question:** Retry count, backoff ceiling, provider unknown-outcome policy,
+  dead-letter retention, backlog collapse, delivery SLO, and operator workflow?
+- **Recommendation:** bounded exponential retry with jitter, deterministic
+  idempotency, channel isolation, finite backlog, and explicit dead-letter owner.
+
+### D-047 — Public Telegram editorial and data policy
+
+- **When:** before any public channel activation
+- **Status:** `OWNER/LEGAL DECISION REQUIRED`
+- **Question:** Channel owner, regions, languages, moderation, redistribution
+  rights, delay, disclaimers, severity, publishing cadence, and incident notices?
+- **Recommendation:** allowlisted `PUBLIC_ANALYTICS` templates only; no personal,
+  account, secret, private-alert, or action data.
+
+### D-048 — Telegram provider and operating model
+
+- **When:** before Phase 3 provider activation
+- **Status:** `OWNER/SECURITY/LEGAL DECISION REQUIRED`
+- **Question:** Bot/channel ownership, provider terms, operating entity, domains,
+  environment applications, secret custody, webhook/polling operating model,
+  retention, and support ownership?
+- **Recommendation:** separate production/non-production applications and
+  secrets; narrow gateway workload; provider activation is separate from the
+  Phase 2C mock.
+
+### D-049 — Telegram identity and TTL policy
+
+- **When:** before Phase 3 contract freeze
+- **Status:** `OWNER/SECURITY DECISION REQUIRED`
+- **Question:** Linking-token, Mini App initialization-age, application-session,
+  callback, preview, and confirmation TTLs; relinking; multiple-account; recovery;
+  attempt and rate limits?
+- **Recommendation:** short, purpose/audience/environment-bound values; single-use
+  critical actions; link change revokes sessions/actions and disables trading
+  controls.
+
+### D-050 — Mini App origin and browser-security policy
+
+- **When:** before Phase 3 Mini App implementation
+- **Status:** `SECURITY/PRODUCT DECISION REQUIRED`
+- **Question:** Production origins, CSP/frame policy, cookie/session model, CSRF,
+  redirect allowlist, locales, accessibility target, and supported clients?
+- **Recommendation:** same backend/session authority with strict environment
+  separation; never trust frontend Telegram identity fields.
+
+### D-051 — Telegram outage and fallback policy
+
+- **When:** before real provider activation
+- **Status:** `OWNER/SRE DECISION REQUIRED`
+- **Question:** Availability objective, notification backlog limit, fallback
+  channels, status communication, recovery order, and emergency escalation?
+- **Recommendation:** web/in-app remains authoritative; Telegram never gates
+  risk/reconciliation; expired actions stay expired after recovery.
+
+### D-052 — Telegram paper-action UX
+
+- **When:** before Phase 5
+- **Status:** `OWNER/SECURITY DECISION REQUIRED`
+- **Question:** Which paper actions are allowed in bot versus Mini App, required
+  preview detail, confirmation text, expiry, cancellation, and action history?
+- **Recommendation:** bot prepares; Mini App or bot confirms an immutable,
+  short-lived paper preview; no real endpoint is reachable.
+
+### D-053 — Telegram live-action scope and limits
+
+- **When:** before any Phase 7 Telegram live-control design
+- **Status:** `LIVE-BLOCKING OWNER/RISK/SECURITY DECISION`
+- **Question:** Which live actions, venues, products, users, notionals, daily
+  limits, authentication strength, web reauthentication, and confirmation paths
+  are permitted?
+- **Recommendation:** no live action by default; Telegram limits only reduce
+  authority; high notional requires passkey/2FA/web reauthentication; risk-limit
+  changes are prohibited or require web reauthentication.
+
+### D-054 — Notification privacy, consent, and retention
+
+- **When:** before Phase 3 personal delivery
+- **Status:** `OWNER/LEGAL/SECURITY DECISION REQUIRED`
+- **Question:** Consent, channel opt-in, quiet-hours jurisdiction, content
+  minimization, template languages, retention/deletion, device previews, and
+  security-message override?
+- **Recommendation:** data-classification allowlists, minimal private content,
+  no secrets, versioned consent, and immutable security audit.
+
+### C-023 — Alert foundation precedes user identity
+
+The approved roadmap places Phase 2C before Phase 3 identity. Therefore Phase 2C
+can implement only system-owned/user-neutral rule contracts, test recipients,
+in-app foundation, and a mock Telegram provider. Per-user rule activation,
+preferences, and private delivery begin in Phase 3.
+
+### C-024 — Position lifecycle does not imply authority
+
+The same lifecycle vocabulary spans tracking, paper, synchronized, and live
+positions, but not every state is valid in every mode. Mode gates are mandatory.
+An observed synchronized `ENTERING` or `EXITING` state grants no platform order
+permission.
+
+### C-025 — Telegram callback is not a financial command
+
+Provider callback data is replayable and old messages persist. The callback may
+only resolve an opaque, single-use, short-lived internal action. It cannot
+contain or directly execute an exchange command.
+
+### C-026 — Notification success is not financial truth
+
+Delivery, editing, retry, and dead-letter outcomes are communication state.
+Coupling them to positions, alerts, risk, execution, or reconciliation would
+make provider outages financially unsafe and is prohibited.
+
+### C-027 — “Current PnL” is ambiguous
+
+Midpoint, executable close value, mark-based margin view, realized PnL, and
+reporting-currency conversion are different. Phase 4 cannot label a value
+“current PnL” until D-041 defines the component, size, source, quality, time, and
+conversion semantics.
+
+### C-028 — Consolidated acceptance register uses legacy phase labels
+
+`ACCEPTANCE_CRITERIA.md` still names the superseded Phase 2B–13 sequence and was
+not in the approved update list for this amendment. `ROADMAP.md` is authoritative
+for future phase names and gates. Each newly approved implementation phase must
+reconcile its detailed criteria into the consolidated register before freeze;
+legacy labels do not authorize work.

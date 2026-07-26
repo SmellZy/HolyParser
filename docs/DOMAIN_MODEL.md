@@ -15,23 +15,23 @@
 
 ## 2. Shared value objects
 
-| Value object | Required fields/invariants |
-|---|---|
-| `Money` | decimal amount, asset/currency; no implicit currency conversion |
-| `Price` | decimal amount, base/quote or contract price unit |
-| `Quantity` | decimal amount, asset/contract unit |
-| `Rate` | decimal value, basis (`fraction`, `percent`, `bps`), horizon |
-| `FundingRate` | rate, interval seconds, next settlement time when verified, source time |
-| `Percentage` | exact decimal and documented denominator |
-| `AssetId` | canonical asset identity; ticker is display metadata |
-| `TokenIdentity` | chain ID plus normalized contract address |
-| `VenueId` | canonical venue and product family identity |
-| `InstrumentId` | stable canonical instrument identity |
-| `ExternalId` | value plus issuing venue/system |
-| `Timestamped<T>` | value, source time, receive time, processing time |
-| `DataQuality` | state, reason codes, last-good time, policy version |
-| `CorrelationId` | request/operation correlation without secret material |
-| `DecimalConstraint` | min/max, tick or step, rounding rule |
+| Value object        | Required fields/invariants                                              |
+| ------------------- | ----------------------------------------------------------------------- |
+| `Money`             | decimal amount, asset/currency; no implicit currency conversion         |
+| `Price`             | decimal amount, base/quote or contract price unit                       |
+| `Quantity`          | decimal amount, asset/contract unit                                     |
+| `Rate`              | decimal value, basis (`fraction`, `percent`, `bps`), horizon            |
+| `FundingRate`       | rate, interval seconds, next settlement time when verified, source time |
+| `Percentage`        | exact decimal and documented denominator                                |
+| `AssetId`           | canonical asset identity; ticker is display metadata                    |
+| `TokenIdentity`     | chain ID plus normalized contract address                               |
+| `VenueId`           | canonical venue and product family identity                             |
+| `InstrumentId`      | stable canonical instrument identity                                    |
+| `ExternalId`        | value plus issuing venue/system                                         |
+| `Timestamped<T>`    | value, source time, receive time, processing time                       |
+| `DataQuality`       | state, reason codes, last-good time, policy version                     |
+| `CorrelationId`     | request/operation correlation without secret material                   |
+| `DecimalConstraint` | min/max, tick or step, rounding rule                                    |
 
 JSON represents financial decimal values as strings.
 
@@ -93,6 +93,35 @@ and later second-factor enrollment.
 - `TradingAuthority`: later explicit, revocable financial authority.
 
 These concepts must not be conflated.
+
+### 3.5 Telegram link and application session
+
+`TelegramAccountLink`
+
+- internal user ID;
+- verified Telegram stable user ID;
+- display-only Telegram username;
+- linked, changed, disabled, and unlinked timestamps;
+- state: `ACTIVE`, `TRADING_CONTROLS_DISABLED`, `UNLINKED`, `CONFLICT`;
+- security audit references.
+
+`TelegramLinkChallenge`
+
+- internal user, purpose, environment, and one-way token digest;
+- issue, expiry, consume, and revoke timestamps;
+- state: `ACTIVE`, `CONSUMED`, `EXPIRED`, `REVOKED`;
+- attempt and conflict evidence.
+
+`TelegramApplicationSession`
+
+- linked user and verified Telegram identity;
+- audience/environment and authentication strength;
+- issue, idle, and absolute expiry;
+- replay/session version and revoke state.
+
+The platform account exists before the link. Username is never identity. Link
+changes revoke Telegram sessions/actions and disable future Telegram trading
+controls. Exact persistence and provider implementation begin only in Phase 3.
 
 ## 4. Venue and capability context
 
@@ -378,25 +407,44 @@ An expired or mismatched risk authorization invalidates the intent.
 
 ### 10.3 Logical position
 
-`LogicalPosition`
+The future aggregate is named `SpreadPosition`; `LogicalPosition` is retained
+only as a historical name and must not form a second aggregate.
 
-- ID, user, strategy, two or more legs
+`SpreadPosition`
+
+- ID, owner, strategy, origin, authority mode, and two or more legs;
+- origin: `MANUAL_ENTRY`, `WATCH_ONLY`, `PAPER_SIMULATION`,
+  `EXCHANGE_SYNCHRONIZATION`, `SYSTEM_EXECUTION`;
+- authority: `TRACKING_ONLY`, `PAPER_ONLY`, `SYNCHRONIZED_READ_ONLY`,
+  `MANUAL_LIVE`, `SEMI_AUTOMATIC`, `AUTOMATIC`;
 - state:
-  `PLANNED`, `PRECHECK`, `ENTERING`, `PARTIALLY_HEDGED`, `HEDGED`,
-  `HOLDING`, `EXIT_REQUESTED`, `EXITING`, `CLOSED`, `DEGRADED`,
-  `EMERGENCY_HEDGE`, `RECONCILIATION_REQUIRED`, `FAILED`
-- entry/exit calculations, actual fees/funding/PnL
-- residual delta and risk state
-- version for concurrency control
+  `DRAFT`, `WATCHING`, `ENTRY_PROPOSED`, `ENTERING`,
+  `PARTIALLY_HEDGED`, `HEDGED`, `HOLDING`, `EXIT_PROPOSED`, `EXITING`,
+  `CLOSED`, `DEGRADED`, `EMERGENCY_HEDGE`, `RECONCILIATION_REQUIRED`,
+  `FAILED`;
+- entry and exit targets;
+- versioned entry/current executable valuation;
+- spread PnL, funding PnL, fees, estimated/realized slippage, net PnL,
+  residual delta, and supported liquidation buffer;
+- data quality, reconciliation state, notes, and alert subscriptions;
+- optimistic concurrency version.
 
-Every transition has a validated predecessor, cause, actor, timestamp, and audit
-event.
+Every transition has a mode-valid predecessor, cause, actor, timestamp,
+quality/state evidence, and audit event. Tracking and synchronized read-only
+modes cannot enter action-only states by platform command. State meanings,
+transition graph, and mode matrix are authoritative in
+`POSITION_MANAGEMENT.md`.
 
 ### 10.4 Leg, order, and fill
 
 `PositionLeg`
 
-- logical position, venue/instrument, side, target and filled quantity, exposure
+- spread position and stable leg ID;
+- canonical instrument identity, venue, product group, and settlement asset;
+- long/short direction;
+- exact entry/current price and quantity;
+- target/filled quantity and exposure;
+- fee, funding, slippage, quality, and reconciliation components.
 
 `OrderAttempt`
 
@@ -456,11 +504,82 @@ or a user’s ability to secure or close an existing live position.
 
 ## 13. Security and financial criticality
 
-| Classification | Components |
-|---|---|
-| Security-sensitive | identity, sessions, challenges, RBAC, audit, configuration, notifications, credential vault, signing, admin controls, AI redaction |
+| Classification       | Components                                                                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Security-sensitive   | identity, sessions, challenges, RBAC, audit, configuration, notifications, credential vault, signing, admin controls, AI redaction                  |
 | Financially critical | instrument metadata, exact decimals, order books, funding/fees, calculators, strategy, risk, order state, fills, reconciliation, PnL, kill switches |
-| Both | exchange credentials, Risk Engine, execution, position recovery, DEX signing, manual/semi/auto authority |
+| Both                 | exchange credentials, Risk Engine, execution, position recovery, DEX signing, manual/semi/auto authority                                            |
 
 Changes to either category require threat review, negative tests, metrics,
 documentation, and explicit ownership.
+
+## 14. Alert context
+
+`AlertRule`
+
+- user or system owner;
+- canonical token/instrument, venue-pair, and strategy filters;
+- metric, exact threshold, direction, size, and required data quality;
+- minimum duration, cooldown, hysteresis, deduplication, and grouping;
+- quiet hours, severity, expiration, mute/pause, and channel preferences;
+- version and state: `DRAFT`, `ACTIVE`, `PAUSED`, `EXPIRED`, `DISABLED`.
+
+`AlertEvaluation`
+
+- rule/formula version and immutable inputs;
+- event/receive/processing time and data revisions;
+- exact result, quality, decision, and reason.
+
+`AlertOccurrence`
+
+- rule and deterministic occurrence/deduplication identity;
+- state: `CANDIDATE`, `QUALIFYING`, `TRIGGERED`, `SUPPRESSED`,
+  `ACKNOWLEDGED`, `RESOLVED`, `EXPIRED`;
+- threshold crossing, duration, suppression, acknowledgment, and resolution
+  evidence.
+
+`AlertSuppressionState` records cooldown, hysteresis, mute, quiet-hours,
+deduplication, and grouping state independently. Suppression prevents a delivery;
+it does not erase the occurrence.
+
+## 15. Notification context
+
+`Notification`, `NotificationRecipient`, `NotificationPreference`,
+`NotificationTemplate`, `NotificationDelivery`, `NotificationAction`,
+`DeliveryOutbox`, and `DeliveryAttempt` form the future notification domain.
+
+Channels are `IN_APP`, `TELEGRAM_PRIVATE`, `TELEGRAM_CHANNEL`, `EMAIL`, and
+`WEB_PUSH`. A notification is channel-neutral; a delivery is recipient/channel
+specific.
+
+Delivery states are `PENDING`, `IN_FLIGHT`, `DELIVERED`, `RETRY_SCHEDULED`,
+`DEAD_LETTER`, `CANCELED`, and `EXPIRED`. Action states are `ISSUED`,
+`CONSUMED`, `EXPIRED`, and `REVOKED`.
+
+The future dispatcher uses a transactional outbox, stable idempotency,
+bounded exponential retry, dead-letter handling, provider-rate-limit handling,
+and delivery audit. A delivery outcome never changes a position, alert,
+reconciliation, risk, or execution result.
+
+## 16. Telegram gateway context
+
+`TelegramGateway` is an application boundary, not a domain aggregate. It maps
+verified provider input to authenticated internal queries/commands and approved
+templates. It owns no strategy, financial value, position, alert truth,
+exchange secret, Risk Engine decision, or execution state.
+
+`TelegramCommand`
+
+- internal actor and linked Telegram identity;
+- command kind, target, environment, and idempotency key;
+- expected resource/state version;
+- issue/expiry time and authorization result;
+- optional preview/action reference.
+
+`NotificationAction` used by Telegram is opaque, single-use, short-lived,
+identity/environment/resource/version-bound, and replay-protected. It never
+serializes an order or credential into callback data.
+
+The public channel accepts only `PUBLIC_ANALYTICS`. Private bot/Mini App data is
+tenant-scoped. The Mini App is a client of platform contracts and cannot
+calculate or persist independent business truth.

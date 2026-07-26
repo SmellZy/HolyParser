@@ -2,452 +2,464 @@
 
 ## 1. Roadmap rules
 
-- A phase starts only after explicit approval.
-- Each phase has an independently demonstrable outcome and release gate.
-- Failed gate criteria keep the phase open; work does not silently spill into the
-  next phase.
-- Exchange-dependent work starts only after the relevant official-documentation
-  audit is complete.
-- Live trading remains feature-flagged off by default and is not present before
-  the manual-live phase.
-- Scope may be reduced after discovery, but safety gates may not be waived.
+- Only one explicitly approved implementation phase may be active.
+- Phase 1 and Phase 2A.1 are frozen; this roadmap does not reopen them.
+- Every phase has independently testable deliverables, non-goals, acceptance
+  evidence, rollback notes, and a formal review.
+- No exchange capability exists because it appears on a roadmap. Current
+  official evidence and capability gates remain mandatory.
+- Public analytics precedes accounts, positions, paper trading, authenticated
+  synchronization, and live execution.
+- Paper trading precedes every live-execution capability.
+- Live execution remains disabled by default and needs separate product, legal,
+  security, risk, and operational approval.
+- Telegram is a presentation/command channel, never a financial authority.
+- Infrastructure is added only when the owning phase has measured need.
 
-## 2. Stage map
+The old Phase 2B–13 labels in `ACCEPTANCE_CRITERIA.md` describe the superseded
+roadmap and are retained as historical criteria because that file is outside
+this amendment's approved update list. For future work, the phase names and
+acceptance gates in this document are authoritative; the owning implementation
+phase must update the consolidated acceptance register before it can be frozen.
 
-| Stage | Phases | Exit outcome |
-|---|---|---|
-| Planning and discovery | 0 | Verified inputs for architecture and adapter work |
-| Foundation | 1A–1E | Secure, observable, deployable product shell |
-| Read-only MVP | 2A–4B | Useful multi-venue analytics without credentials |
-| Production analytics | 5–7 | Reliable decisions and bounded AI explanations |
-| Paper trading | 8 | Realistic execution simulation with evidence |
-| Manual live trading | 9–10 | Tightly scoped, user-confirmed paired execution |
-| Semi-automatic trading | 11 | Revocable, limited delegated execution |
-| Fully automatic trading | 12 | Hardened autonomous operation inside risk limits |
-| Commercial scale | 13 | Entitlements and evidence-driven scaling |
+## 2. Approved sequence
 
-## 3. Phases
+| Order | Phase      | Outcome                                                 |
+| ----: | ---------- | ------------------------------------------------------- |
+|     0 | Phase 0    | Official API discovery and product decisions            |
+|     1 | Phase 1    | Frozen application foundation                           |
+|     2 | Phase 2A.1 | Frozen canonical market-data contracts and mock harness |
+|     3 | Phase 2A.2 | OKX Exchange V5 Swap/Futures public adapter             |
+|     4 | Phase 2A.3 | Binance USDⓈ-M Futures public adapter                   |
+|     5 | Phase 2A.4 | Bybit V5 `linear` public adapter                        |
+|     6 | Phase 2B   | Spread Analytics Core                                   |
+|     7 | Phase 2C   | Alerts and Notification Foundation                      |
+|     8 | Phase 3    | Identity, Accounts and Telegram Linking                 |
+|     9 | Phase 4    | Position Workspace                                      |
+|    10 | Phase 5    | Paper Trading with Telegram Controls                    |
+|    11 | Phase 6    | Authenticated Read-only Exchange Synchronization        |
+|    12 | Phase 7    | Manual and Semi-automatic Live Execution                |
+|    13 | Phase 8    | Controlled Automatic Farming                            |
+
+Billing, DEX/RFQ/on-chain execution, additional venues, AI expansion,
+multi-region deployment, and other scale programs remain unnumbered,
+separately approved work after the required foundations. They must not be pulled
+into the phases below by implication.
+
+## 3. Completed discovery and foundations
 
 ### Phase 0 — Official API discovery and product decisions
 
-Deliverables:
-
-- official-document source register with access date and API version;
-- verified exchange capability matrix;
-- per-exchange market-data semantics, symbol model, funding model, timestamps,
-  limits, testnet status, and deprecation notices;
-- separate later audit for private/order APIs before trading work;
-- initial ADR set and threat model;
-- resolved Phase 1 blocking decisions.
-
-Acceptance gate:
-
-- every capability is `VERIFIED`, `UNSUPPORTED`, or `UNKNOWN`;
-- no `UNKNOWN` capability is assumed by an approved implementation phase;
-- volatile facts have a revalidation owner and cadence.
-
-### Phase 1A — Repository and quality foundation
+Status: completed decision baseline; evidence must still be revalidated per
+adapter phase.
 
 Deliverables:
 
-- minimal monorepo layout for web, control API, shared contracts, fixtures, docs,
-  and infrastructure used now;
-- pinned toolchains and dependency lock files;
-- formatting, linting, type checking, unit-test, migration-validation, dependency,
-  secret-scan, and build jobs;
-- contribution, ADR, code ownership, and local-development conventions;
-- no business feature beyond health/build proof.
+- official source and capability registers;
+- product-group-specific capability classification;
+- approved pilot order: OKX V5 Swap/Futures, Binance USDⓈ-M Futures, Bybit V5
+  `linear`;
+- Bitget UTA V3 reserve-only;
+- public unauthenticated Phase 2A boundary;
+- canonical identity, funding, order-book integrity, and DEX deferral decisions.
 
-Acceptance gate:
+Acceptance:
 
-- clean checkout follows one documented local workflow;
-- CI reproduces all checks and rejects a seeded failure;
-- no trading, exchange, or financial module is implemented.
+- P0-001 through P0-008 approved;
+- unsupported, unverified, and research-required claims fail closed;
+- legal/rights restrictions remain explicit blockers for production use.
 
-### Phase 1B — Control API and persistence skeleton
+### Phase 1 — Frozen application foundation
 
-Deliverables:
+Status: frozen and approved for its bounded implementation.
 
-- modular control API;
-- PostgreSQL migrations for users, credential-free security metadata, sessions,
-  and audit events;
-- health/readiness endpoints and redacted telemetry;
-- typed error envelope and API versioning skeleton;
-- test database and migration rollback/forward strategy.
+Delivered:
 
-Acceptance gate:
+- monorepo and quality foundation;
+- frontend shell, design tokens, and authentication page layouts;
+- control API skeleton and health endpoints;
+- local PostgreSQL, Redis, and Docker Compose;
+- shared health contracts, tests, builds, and documentation.
 
-- migrations apply from empty and upgrade from the previous schema;
-- authorization defaults deny;
-- logs and traces pass secret/redaction tests.
+Not delivered:
 
-### Phase 1C — Identity and session lifecycle
+- real account identity or sessions;
+- exchange connectivity or credentials;
+- analytics, positions, notifications, paper/live execution.
 
-Deliverables:
+The original Phase 1A–1E planning terminology is historical. The accepted
+bounded Phase 1 baseline in `PHASE_1_ACCEPTANCE.md` is authoritative.
 
-- registration, hashed email verification tokens, login, logout, session listing
-  and revocation, password recovery, and password-change session invalidation;
-- Argon2id policy, secure cookies, CSRF defense, throttling, and enumeration-safe
-  responses;
-- notification provider interface with local/test implementation;
-- security audit events and abuse tests.
+### Phase 2A.1 — Frozen canonical market-data foundation
 
-Acceptance gate:
+Status: frozen and approved.
 
-- all positive and abuse-path integration tests pass;
-- no verification/recovery token is stored or logged in plaintext;
-- production activation waits for a real email provider and operational policy.
+Delivered:
 
-### Phase 1D — Web shell and account security UI
+- exact-decimal and canonical CEX identity contracts;
+- funding, price, metadata, capability, quality, and freshness semantics;
+- deterministic order-book integrity state machines;
+- mock public adapter harness and provenance-bearing fixtures;
+- observability contracts without production infrastructure.
 
-Deliverables:
+Not delivered:
 
-- responsive application shell and design tokens;
-- authentication, verification, recovery, profile, sessions, and security pages;
-- loading/error/empty states, keyboard navigation, reduced motion, and baseline
-  accessibility;
-- generated typed client from the approved contract.
+- network clients or live adapters;
+- persistence or event bus;
+- analytics UI;
+- authenticated data or trading.
 
-Acceptance gate:
+## 4. Public adapter increments
 
-- critical auth journeys pass browser tests at desktop and mobile breakpoints;
-- accessibility and performance budgets pass;
-- UI presents no trading controls.
+### Phase 2A.2 — OKX Exchange V5 Swap/Futures public adapter
 
-### Phase 1E — Foundation hardening and release evidence
+Scope:
 
-Deliverables:
+- current officially verified public, unauthenticated OKX V5 Swap/Futures
+  metadata, prices, funding, and order-book capabilities;
+- runtime schema validation, bounded reconnect/resubscribe, rate-limit handling,
+  freshness, sequence-gap suppression, replacement recovery, fixtures, metrics,
+  and credential-free canary tests.
 
-- environment/configuration model;
-- baseline dashboards, alerts, backup/restore rehearsal, dependency and security
-  scans;
-- deployment and rollback runbook for a non-production environment;
-- Phase 1 evidence report.
+Non-goals:
 
-Acceptance gate:
+- Binance, Bybit, private APIs, credentials, persistence, scanner UI, Telegram,
+  paper/live trading, Risk Engine, and Execution Engine.
 
-- the complete Phase 1 acceptance set in `ACCEPTANCE_CRITERIA.md` passes;
-- architecture/security review has no unresolved critical finding;
-- product owner approves Phase 2 discovery-selected venues.
+Acceptance:
 
-### Phase 2A.1 — Canonical market-data foundation
+- every endpoint/channel/field/recovery claim cites a re-retrieved official
+  source;
+- canonical identity and exact decimals preserve Phase 2A.1 invariants;
+- any `seqId`/`prevSeqId` gap suppresses executable output until documented
+  recovery;
+- malformed, stale, reconnect, resubscribe, limit, and drift cases pass;
+- all repository quality, build, audit, Docker, and runtime checks remain green.
 
-Deliverables:
+### Phase 2A.3 — Binance USDⓈ-M Futures public adapter
 
-- versioned canonical public market-data contracts;
-- exact-decimal domain primitives and opaque instrument identity;
-- explicit capability, provenance, quality, and freshness contracts;
-- deterministic replacement, snapshot-plus-delta, sequence-chain, and
-  no-trusted-book state machines;
-- mock-only adapter harness and official-semantics fixtures;
-- observability contracts without monitoring infrastructure.
+Scope:
 
-Acceptance gate:
+- one isolated public, unauthenticated Binance USDⓈ-M product-group adapter;
+- officially verified instrument, ticker/price, funding, and book capabilities;
+- documented REST snapshot and `U/u/pu` stream bridge/continuity;
+- bounded rate weights, time synchronization, reconnect, fixtures, metrics, and
+  canary tests.
 
-- malformed or excessive financial decimals fail without rounding;
-- USDT and USDC instruments cannot compare equal;
-- gaps suppress executable output until explicit snapshot recovery;
-- deterministic replay, precision, duplicate, restart, crossed-book, stale, and
-  VWAP properties pass;
-- no network client or real exchange adapter exists.
+Non-goals:
 
-### Phase 2A.2 — OKX Exchange V5 public adapter
+- Binance Spot or Alpha, private/user data, Bybit, persistence, positions, or
+  trading.
 
-Scope: OKX Exchange V5 Swap/Futures public, unauthenticated data only. This is a
-separate approval and implementation task.
+Acceptance:
 
-Deliverables:
+- official sources are re-retrieved and product family cannot leak into Spot or
+  Alpha;
+- first-event snapshot bridging and subsequent `pu` continuity pass long replay
+  and fault tests;
+- any gap, ambiguous restart, or schema drift makes output stale;
+- USDT and USDC remain distinct;
+- Phase 2A.1 and 2A.2 tests remain green.
 
-- a network boundary isolated behind the Phase 2A.1 public adapter ports;
-- documented instrument, funding, ticker/mark/index, snapshot, and WebSocket
-  book mappings only where current official OKX evidence supports them;
-- rate-limit, server-time, reconnect, resubscribe, sequence-chain, and explicit
-  replacement recovery behavior;
-- recorded integration fixtures, contract tests, fault injection, and a
-  credential-free canary mode;
-- capability declarations linked to current official source IDs.
+### Phase 2A.4 — Bybit V5 `linear` public adapter
 
-Acceptance gate:
+Scope:
 
-- no credentials, private calls, order methods, or non-OKX product groups;
-- JSON `seqId`/`prevSeqId` gaps immediately make output stale;
-- checksum is not invented after the documented JSON checksum removal;
-- unsupported, unverified, and research-required fields remain explicit;
-- sustained replay and bounded public test runs show deterministic recovery and
-  no undetected crossed healthy book.
+- one isolated public, unauthenticated Bybit V5 `linear` adapter;
+- officially verified metadata, ticker/price, funding, and order-book
+  capabilities;
+- documented snapshot/delta and `u=1` restart/replacement behavior;
+- bounded transport, limits, freshness, fixtures, metrics, and canary tests.
 
-### Phase 2B — Remaining pilot public market-data adapters
+Non-goals:
 
-Scope: Binance USDⓈ-M Futures and Bybit V5 `linear`, each as a separate small
-approved increment. Bitget UTA V3 remains reserve-only.
+- inverse, spot, option, private, order, credential, persistence, or trading
+  scope.
 
-Deliverables:
+Acceptance:
 
-- instruments, funding where verified, prices, mark/index where verified, and
-  local order books;
-- snapshot/delta sequencing, reconnect, rate-limit manager, time sync, and health;
-- recorded fixtures from public endpoints only;
-- canary contract monitor with no production money or credentials.
+- current official product/category evidence supports every mapping;
+- `u=1` invalidates prior book state and only an accepted replacement restores
+  executable output;
+- category, settlement, funding semantic, and exact-decimal boundaries pass;
+- full three-adapter deterministic and runtime regression suite passes.
 
-Acceptance gate:
+## 5. Analytics and notification foundations
 
-- sustained replay and soak tests show no undetected book divergence;
-- gaps immediately suppress dependent output;
-- adapter capability claims link to official sources.
+### Phase 2B — Spread Analytics Core
 
-### Phase 2C — Normalized live data gateway
+Scope:
 
-Deliverables:
+- canonical instrument matching with reviewed mapping provenance;
+- exact midpoint and executable spread calculations;
+- executable spread by configured size;
+- venue-native funding differential and separately named derived comparisons;
+- opportunity lifecycle;
+- anomaly detection;
+- spread history and ranking.
 
-- normalized event schemas;
-- bounded snapshot/delta live protocol;
-- subscription authorization, backpressure, batching, compression evaluation, and
-  data-freshness propagation;
-- server-side metrics and client reconnect behavior.
-
-Acceptance gate:
-
-- slow clients cannot exhaust service resources;
-- stale/degraded state survives end-to-end to the UI contract;
-- p95/p99 measurements use an approved workload definition.
-
-### Phase 3A — Funding Matrix MVP
-
-Deliverables:
-
-- two-venue selector, shared-instrument table, funding and interval presentation,
-  countdown, quote marker, prices, normalized differential, direction, favorites,
-  sorting, virtualization, and freshness;
-- mobile card layout and accessible non-color status indicators.
-
-Acceptance gate:
-
-- funding normalization uses instrument metadata, not hardcoded eight-hour
-  assumptions;
-- sorting and live updates remain correct under replay load;
-- incomplete data is excluded or visibly non-actionable.
-
-### Phase 3B — Arbitrage Scanner MVP
-
-Deliverables:
-
-- approved subset of filters and columns;
-- mid and executable spread at a requested size;
-- depth/VWAP, verified fees, estimated cost breakdown, and explicit unknown values;
-- favorites and calculator handoff contract.
-
-Acceptance gate:
-
-- financial/property tests pass;
-- “expected net” is never shown when a required cost is unknown;
-- no result is described as guaranteed profit or executable without current depth.
-
-### Phase 4A — Historical data and opportunity detail
-
-Deliverables:
-
-- retention/downsampling policy and time-series storage;
-- spread, deviations, funding markers, depth/slippage, source quality, and
-  opportunity detail;
-- historical query limits, export policy, and chart performance.
-
-Acceptance gate:
-
-- chart provenance and gaps are visible;
-- retention, restore, and query-load tests pass;
-- historical and live instrument metadata versions are reconcilable.
-
-### Phase 4B — Exact spread calculator
-
-Deliverables:
-
-- two-leg entry/exit calculations, fees, funding events, slippage, hedge ratio,
-  residual delta, break-even, ROE, and liquidation-buffer inputs;
-- quick-add with immutable input timestamp/provenance;
-- export with calculation version.
-
-Acceptance gate:
-
-- exact-decimal and property-based tests cover multiplier, inverse, rounding,
-  USDT/USDC separation, zero division, and increasing-size slippage;
-- unsupported borrow, fee, or liquidation inputs are visibly unknown.
-
-### Phase 5 — Production analytics hardening
-
-Deliverables:
-
-- fourth venue and further venues one at a time;
-- contract-drift monitoring, on-call runbooks, SLOs, load/soak/chaos tests;
-- data-quality score, venue maintenance states, reconciliation of REST and stream;
-- measured decision on Redis, event bus, and ClickHouse.
-
-Acceptance gate:
-
-- defined SLO observation window passes;
-- schema drift and degraded sources fail safely;
-- capacity evidence supports the next-stage workload.
-
-### Phase 6 — Deterministic Strategy Engine
-
-Deliverables:
-
-- funding and convergence strategies with `NO_TRADE`;
-- traceable score components, cost/risk reserves, expiry, safe-size estimate, and
-  versioned decision records;
-- walk-forward/purged validation and order-book/latency/partial-fill simulations;
-- read-only strategy APIs.
-
-Acceptance gate:
-
-- out-of-sample validation meets predeclared thresholds;
-- decisions reproduce from versioned inputs/configuration;
-- strategy cannot call execution and refuses stale or incomplete inputs.
-
-### Phase 7 — Read-only AI assistant
-
-Deliverables:
-
-- redacted fact tools, schema-validated response, provenance, and page context;
-- enforced state constraints including `DATA_UNRELIABLE`;
-- prompt-injection, hallucination, data-leakage, availability, and cost tests.
-
-Acceptance gate:
-
-- AI cannot access secrets, orders, or mutable risk settings;
-- attempts to upgrade `NO_TRADE` are rejected;
-- product works normally when the AI provider is unavailable.
-
-### Phase 8 — Paper trading
-
-Deliverables:
-
-- deterministic simulator for book fills, latency, partial fills, fees, funding,
-  liquidation, rejects, outages, and uncertain order status;
-- paper position/order state machines, history, reconciliation, risk limits, kill
-  switches, and expected-versus-actual reports;
-- scenario library and long-running simulation.
-
-Acceptance gate:
-
-- no network route or credential can place a real order;
-- required fault scenarios and restart recovery pass;
-- a predeclared volume and duration of paper evidence meets error, imbalance, and
-  intervention thresholds.
-
-### Phase 9 — Execution security and testnet readiness
-
-Deliverables:
-
-- KMS/HSM design, envelope-encrypted credential vault, permission validation,
-  reauthentication, 2FA/passkey gates, network isolation, and audit;
-- deterministic Risk Engine authorization;
-- private-adapter contract research for one venue at a time;
-- testnet-only order coordinator and reconciliation where an official testnet
-  exists.
-
-Acceptance gate:
-
-- security review and credential lifecycle tests pass;
-- timeout/5xx/unknown-state paths reconcile before any retry;
-- live-trading feature flag is absent or forced off in all deployed environments.
-
-### Phase 10 — Manual live paired execution
-
-Prerequisites: explicit legal/product approval, external security assessment,
-Phase 8 evidence, Phase 9 gate, incident staffing, and approved venues.
-
-Deliverables:
-
-- minimal 1–2 venue scope;
-- preview plus explicit reauthentication and confirmation for every entry, exit,
-  cancel, emergency action, and material amendment;
-- paired slices, aggressive limit/IOC only where verified, reconciliation,
-  emergency hedge, kill switches, and operator runbooks;
-- tightly capped beta and immutable audit.
-
-Acceptance gate:
-
-- live remains off by default and can be globally disabled;
-- no blind retry is possible by construction;
-- controlled beta meets predeclared safety and reconciliation thresholds.
-
-### Phase 11 — Semi-automatic trading
-
-Deliverables:
-
-- precise delegated-action policy, expiry, capital/venue/token/strategy/time
-  bounds, and revocation;
-- automatic actions only inside a short-lived approved session;
-- notification and operator intervention paths;
-- continuous risk evaluation and safe degradation.
-
-Acceptance gate:
-
-- authority cannot exceed the signed policy;
-- revocation and every kill-switch scope take effect within an approved bound;
-- soak, chaos, incident-drill, and financial-control reviews pass.
-
-### Phase 12 — Fully automatic trading
-
-Deliverables:
-
-- persistent but revocable deterministic strategy authority;
-- hardened high-availability risk/reconciliation/execution;
-- maintenance scheduling, disaster recovery, anomaly detection, and controlled
-  rollout;
-- independent security, risk-model, and operational approvals.
-
-Acceptance gate:
-
-- long-duration paper and limited-live evidence meets predeclared thresholds;
-- penetration test and incident exercises close all critical/high findings;
-- product owner issues explicit separate approval to enable any account.
-
-### Phase 13 — Billing and evidence-driven scale
-
-Deliverables:
-
-- provider abstraction, idempotent webhooks, payment states, entitlements, and
-  support/admin workflows;
-- usage limits that never interfere with risk, exits, or reconciliation;
-- scale changes such as ClickHouse, event streaming, Kubernetes, or multi-region
-  reads only when supported by measurements.
-
-Acceptance gate:
-
-- payment and entitlement consistency tests pass;
-- loss of billing services cannot block safety-critical position handling;
-- cost, capacity, backup, and rollback objectives are met.
-
-## 4. Initially mocked modules
-
-| Module | Mock until | Reason |
-|---|---|---|
-| Email delivery | Phase 1 production hardening | Deterministic auth tests and no provider commitment |
-| Exchange public APIs | Each adapter passes Phase 0/2 contract audit | Avoid invented or drifting contracts |
-| Live gateway feed | Phase 2C | UI can develop against versioned fixtures |
-| Time-series store | Phase 4A | Avoid infrastructure before historical requirements |
-| Fee/borrow schedules | Officially verified per venue/product | Unknown costs must remain unknown |
-| Strategy output | Phase 6 | UI needs stable fixtures before real scoring |
-| AI provider | Phase 7 | Deterministic product must not depend on AI |
-| Paper execution port | Phase 8 implementation | Earlier UI uses non-executable fixtures |
-| Credential vault/KMS | Phase 9 | No exchange secrets before trading readiness |
-| Private exchange adapters | Phase 9 per venue | Requires separate official private-API audit |
-| Billing provider | Phase 13 | Entitlements are not MVP-critical |
-| DEX signer/wallet | Dedicated later approval | Custody and transaction policy unresolved |
-
-Mocks must use production-shaped contracts, deterministic clocks/IDs, fault
-injection, and clearly synthetic data. They must never silently activate in a
-production trading environment.
-
-## 5. Critical dependencies
+Recommended opportunity lifecycle:
 
 ```text
-Official API audit -> Public adapter -> Read-only analytics
-Read-only analytics -> Strategy validation -> AI explanations
-Strategy + risk design -> Paper simulator -> Execution readiness
-Paper evidence + security audit -> Manual live
-Manual evidence -> Semi-auto -> Full auto
+DISCOVERED -> QUALIFYING -> ACTIVE -> CONVERGING -> RESOLVED
+                       \-> SUPPRESSED | EXPIRED | DEGRADED
 ```
 
-No commercial or schedule pressure may invert these dependencies.
+Deliverables:
+
+- versioned analytics contracts and formulas;
+- input revision, quality, provenance, and expiry on every result;
+- deterministic fixture/replay and property tests;
+- unknown-cost and insufficient-liquidity behavior;
+- bounded internal read models needed by later UI/alerts.
+
+Non-goals:
+
+- accounts, personal positions, Telegram, authenticated exchange data, paper or
+  live execution.
+
+Acceptance:
+
+- no stale/gapped or insufficient-depth input produces actionable output;
+- expected net is unavailable when a required cost is unknown;
+- USDT/USDC and product groups never merge implicitly;
+- executable spread, funding differential, ranking, lifecycle, anomaly, and
+  history reproduce from immutable inputs and formula versions;
+- storage, if separately authorized within the phase, uses migrations and an
+  approved retention/data-rights policy.
+
+### Phase 2C — Alerts and Notification Foundation
+
+Scope:
+
+- alert domain and system-defined rules;
+- deterministic rule evaluation;
+- minimum duration, cooldown, hysteresis, deduplication, grouping, suppression,
+  severity, expiry, and mute contracts;
+- notification, delivery, action, transactional outbox, attempts, and
+  dead-letter state;
+- in-app delivery;
+- deterministic mock Telegram provider.
+
+Because real accounts arrive in Phase 3, Phase 2C implements user-neutral
+contracts and system-owned/test recipients only. Per-user activation and private
+delivery are deferred.
+
+Non-goals:
+
+- real Telegram provider/API, link tokens, user sessions, private notifications,
+  exchange credentials, paper/live action, Risk Engine, or Execution Engine.
+
+Acceptance:
+
+- alert and delivery state machines pass unit, property, replay, concurrency,
+  idempotency, retry, rate-limit, and failure-isolation tests;
+- Telegram mock failure changes delivery state only;
+- public/private data classification fails closed;
+- no provider credentials or real external delivery exist;
+- notification telemetry uses bounded labels.
+
+## 6. Accounts, positions, and paper trading
+
+### Phase 3 — Identity, Accounts and Telegram Linking
+
+Scope:
+
+- registration, email verification, secure sessions, recovery, and audit;
+- per-user notification preferences;
+- website-issued single-use Telegram linking challenges;
+- stable Telegram-ID-to-internal-user linking and unlinking;
+- server-side Mini App init-data verification and short-lived sessions;
+- Telegram Gateway;
+- read-only private notifications and status.
+
+Non-goals:
+
+- position execution, exchange credentials, private exchange APIs, paper/live
+  orders, Risk Engine, or Execution Engine.
+
+Acceptance:
+
+- identity/session and link flows pass expiry, replay, race, account-conflict,
+  unlink, environment-separation, enumeration, and cross-user tests;
+- Telegram username is never canonical identity;
+- unsigned, expired, replayed, unlinked, and frontend-asserted identities fail;
+- link/unlink audit and in-app/email security notifications work;
+- changing a linked Telegram account disables future Telegram trading controls;
+- Gateway cannot reach exchange adapters or financial secrets.
+
+### Phase 4 — Position Workspace
+
+Scope:
+
+- manually entered positions;
+- watch-only positions;
+- two-leg canonical identity with extensible multi-leg contracts;
+- public live executable valuation;
+- entry/current spread, spread PnL, funding PnL, fees, estimated/realized
+  slippage, net PnL, residual delta, and supported liquidation buffer;
+- targets, state history, data quality, notes, and personal alerts;
+- read-only private bot and Mini App position views.
+
+Non-goals:
+
+- exchange credentials or synchronized private state;
+- paper or live orders;
+- Risk Engine or Execution Engine.
+
+Acceptance:
+
+- manual/watch lifecycle mode gates and transition history pass;
+- unknown components never become zero;
+- stale/gapped public data suppresses executable valuation;
+- USDT/USDC remain separate and conversions are explicit views;
+- web, bot, and Mini App render the same tenant-scoped backend truth;
+- Telegram outage does not alter position or alert state.
+
+### Phase 5 — Paper Trading with Telegram Controls
+
+Scope:
+
+- simulated entry and exit;
+- simulated partial fills, rejects, latency, fees, funding, slippage, and
+  residual delta;
+- deterministic paper position/reconciliation state machines;
+- bot buttons and Mini App execution previews;
+- single-use confirmation and audit flow.
+
+Non-goals:
+
+- real credentials, production exchange orders, or live authority.
+
+Acceptance:
+
+- no real endpoint or credential is reachable;
+- paper/live environment separation is mechanical and visible;
+- partial hedge, restart, unknown outcome, reconciliation, emergency simulation,
+  replay, and concurrency tests pass;
+- every action is idempotent, expiring, current-state validated, and audited;
+- old Telegram messages cannot mutate paper state;
+- provider failure does not change paper position state.
+
+## 7. Private synchronization and live control
+
+### Phase 6 — Authenticated Read-only Exchange Synchronization
+
+Scope:
+
+- separately approved credential vault;
+- read-only balances, orders, fills, and real positions;
+- private-stream and REST reconciliation;
+- authenticated exchange-synchronized positions;
+- Telegram read-only monitoring.
+
+Non-goals:
+
+- order submission, amend/cancel, live previews, Risk Engine, or Execution
+  Engine.
+
+Acceptance:
+
+- legal/security/private-capability research is approved per product group;
+- least-privilege credentials cannot trade or withdraw;
+- secrets are KMS/vault protected, redacted, revocable, and isolated;
+- restart, stream gap, external action, mismatch, stale, and unknown state fail
+  closed;
+- synchronization grants no execution authority;
+- Telegram Gateway cannot access credentials or private adapters directly.
+
+### Phase 7 — Manual and Semi-automatic Live Execution
+
+Scope:
+
+- Risk Engine;
+- Execution Engine;
+- manual and separately bounded semi-automatic authority;
+- paired execution and slicing;
+- partial-fill and unknown-order handling;
+- kill switches and emergency workflows;
+- Telegram/Mini App previews and explicit confirmation.
+
+Non-goals:
+
+- default-on live trading or persistent automatic farming.
+
+Acceptance:
+
+- paper graduation, legal, product, security, venue, risk, and operations gates
+  are approved before live activation;
+- live is off by default per account/environment;
+- no blind order retry exists;
+- every command follows authorization, state/freshness, risk, preview,
+  confirmation, execution, and reconciliation;
+- critical callbacks are single-use, short-lived, idempotent, and state-bound;
+- high-notional actions meet strong reauthentication policy;
+- Telegram limits cannot exceed immutable system limits and Telegram cannot
+  change risk limits without approved web reauthentication;
+- paired, partial, outage, restart, unknown-order, kill-switch, and rollback
+  drills meet predeclared thresholds.
+
+### Phase 8 — Controlled Automatic Farming
+
+Scope:
+
+- separately approved automatic entry and exit;
+- capital allocation and strategy limits;
+- pause/resume and emergency controls;
+- continuous risk and reconciliation;
+- AI explanation layer only after deterministic validation.
+
+Non-goals:
+
+- unconstrained authority, AI execution authority, or Telegram-owned automation.
+
+Acceptance:
+
+- persistent authority is exact, bounded, revocable, opt-in, and below immutable
+  system ceilings;
+- long-duration paper and limited-live evidence meet thresholds declared before
+  evaluation;
+- risk, execution, reconciliation, disaster recovery, maintenance, anomaly,
+  allocation, and kill-switch paths pass independent review;
+- Telegram is monitoring and command presentation only;
+- AI cannot originate or strengthen financial authority and the system remains
+  safe without AI;
+- staged rollout and global disable are tested.
+
+## 8. Initially mocked components
+
+| Component                         | Mock until                                             |
+| --------------------------------- | ------------------------------------------------------ |
+| Exchange public adapters          | Their individual 2A.x phase                            |
+| Alert Telegram provider           | Real provider is separately approved in/after Phase 3  |
+| Email/web-push providers          | Provider/security decision in Phase 3+                 |
+| Position exchange synchronization | Phase 6                                                |
+| Exchange credential vault         | Phase 6                                                |
+| Paper fill/funding model          | Implemented only in Phase 5; deterministic before then |
+| Risk Engine                       | Phase 7                                                |
+| Execution Engine                  | Phase 7                                                |
+| Automatic policy engine           | Phase 8                                                |
+| AI explanation                    | Phase 8 or separately approved later work              |
+
+Mocks fail closed and cannot resemble successful unsupported capabilities.
+
+## 9. Critical dependencies
+
+- Phase 2A.2 requires current official OKX evidence.
+- Phase 2A.3 requires accepted 2A.2 boundaries and current Binance evidence.
+- Phase 2A.4 requires accepted earlier adapter boundaries and current Bybit
+  evidence.
+- Phase 2B requires all three pilot public adapters accepted.
+- Phase 2C requires versioned analytics events; personal activation waits for
+  Phase 3.
+- Phase 3 requires identity/legal/provider/security decisions.
+- Phase 4 requires Phase 2B analytics and Phase 3 tenant identity.
+- Phase 5 requires Phase 4 positions and Phase 2C/3 command-notification
+  foundations.
+- Phase 6 requires legal approval and private capability/credential threat
+  models.
+- Phase 7 requires paper graduation, read-only reconciliation, Risk/Execution
+  reviews, and operations readiness.
+- Phase 8 requires controlled live evidence and a new explicit approval.
+
+Passing a phase does not authorize the next one.

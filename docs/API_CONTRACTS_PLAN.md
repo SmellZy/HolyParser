@@ -174,7 +174,7 @@ Each call declares:
 Raw payloads may be stored only in controlled fixtures/archives under the data
 classification policy. They do not become product contracts.
 
-Private adapter commands are not added until Phase 9 and require an approved
+Private adapter commands are not added until Phase 6 and require an approved
 official API audit. Unsupported capabilities fail before I/O.
 
 ## 8. Normalized market events
@@ -280,16 +280,159 @@ fixtures, replay, schema drift, rate-limit, reconnect, ordering, and fault tests
 
 ## 13. Ownership and change control
 
-| Contract | Owner | Required reviewers |
-|---|---|---|
-| Auth/control REST | Control team | Security, frontend |
-| Instrument/event schemas | Market data | Quant, frontend, architecture |
-| Analytics/calculator | Quant | Market data, QA |
-| Live protocol | Live data | Frontend, SRE, security |
-| Strategy decision | Quant | Risk, architecture |
-| Risk authorization | Risk | Execution, security |
-| Execution/reconciliation | Execution | Risk, security, QA |
-| AI fact/output | AI/product | Quant, security |
+| Contract                 | Owner        | Required reviewers            |
+| ------------------------ | ------------ | ----------------------------- |
+| Auth/control REST        | Control team | Security, frontend            |
+| Instrument/event schemas | Market data  | Quant, frontend, architecture |
+| Analytics/calculator     | Quant        | Market data, QA               |
+| Live protocol            | Live data    | Frontend, SRE, security       |
+| Strategy decision        | Quant        | Risk, architecture            |
+| Risk authorization       | Risk         | Execution, security           |
+| Execution/reconciliation | Execution    | Risk, security, QA            |
+| AI fact/output           | AI/product   | Quant, security               |
 
 Breaking financial, security, or execution contract changes require an ADR,
 migration plan, rollback plan, and explicit phase approval.
+
+## 14. Spread opportunity and position contracts
+
+Phase 2B introduces read-only, versioned analytics contracts for:
+
+- canonical matched-instrument pairs;
+- current and historical spread;
+- executable spread at requested exact size;
+- venue-native funding differential and separately named derived comparisons;
+- opportunity lifecycle, anomaly evidence, ranking, quality, and expiry.
+
+Every calculation response identifies canonical legs, input market-data
+revisions, source/receive/processing time, exact-decimal values, formula version,
+required-size liquidity, quality, and unknown components.
+
+Phase 4 adds tenant-scoped position query/command contracts for:
+
+- manual and watch-only position creation;
+- canonical two-leg and extensible multi-leg definitions;
+- targets, notes, alert subscriptions, and state history;
+- exact entry and current executable valuation;
+- spread/funding/fee/slippage/net PnL breakdown;
+- residual delta, supported liquidation buffer, quality, and reconciliation.
+
+Position commands carry an idempotency key and expected aggregate version.
+Mode-inapplicable transitions are rejected. A position response never implies
+exchange synchronization unless its origin, authority, and reconciliation state
+explicitly say so.
+
+Phase 5 extends the same command family with paper-only previews and
+confirmations. Phase 6 adds read-only synchronization queries. Phase 7 may add
+live commands only behind accepted risk/execution contracts.
+
+## 15. Alert and notification contracts
+
+Alert contracts cover:
+
+- rule create/version/pause/resume/mute/unmute/expire;
+- canonical instrument/token, venue pair, strategy, metric, exact threshold,
+  direction, size, duration, cooldown, hysteresis, grouping, quiet hours,
+  severity, expiry, and channel preferences;
+- immutable evaluations and occurrences;
+- suppression, acknowledgment, and resolution.
+
+Notification contracts cover:
+
+- `Notification`, recipient, preference, template, delivery, action, outbox, and
+  attempt identifiers/states;
+- classification: public analytics, user private, financial sensitive, security
+  sensitive, or secret/non-renderable;
+- channels: in-app, Telegram private/channel, email, and web push;
+- delivery status and safe provider reason code;
+- optional provider message/edit reference;
+- stable deduplication and idempotency identity.
+
+External APIs do not expose raw outbox rows, provider secrets, raw provider
+payloads, or unrestricted provider errors. Internal delivery ports accept a
+classified, rendered message and idempotency key and return a typed result:
+delivered, retry-after, permanent rejection, unknown-provider-outcome, or
+disabled.
+
+Notification actions are opaque internal references. They do not serialize an
+order, credential, risk decision, or mutable financial parameters.
+
+## 16. Telegram linking and Mini App contracts
+
+The website-side linking contract:
+
+- requires an authenticated platform session;
+- creates an opaque, purpose/environment/user-bound, single-use, expiring link;
+- returns a safe deep-link presentation value;
+- never returns a Telegram bot secret;
+- supports status and unlink with recent authentication according to policy.
+
+The Telegram Gateway consumes a verified provider identity plus opaque token and
+returns only a generic success/failure result. Telegram username is display
+metadata. Link conflict details are not exposed for account enumeration.
+
+Mini App session exchange accepts the original initialization payload only over
+the approved encrypted boundary. The server verifies it, resolves a linked
+internal identity, enforces replay/age/environment policy, and returns a
+short-lived application session. A frontend Telegram user ID is not an accepted
+identity input.
+
+Exact payload fields and provider verification algorithms are defined only from
+current official Telegram documentation in the approved Phase 3 implementation.
+
+## 17. Telegram query and command contracts
+
+Bot and Mini App share backend query contracts for status, opportunities,
+positions, position detail, alerts, charts, executable spread by size, books,
+funding, calculator output, PnL, history, and action history. The Mini App may
+use richer presentation schemas but not divergent financial calculations.
+
+The future command envelope contains:
+
+- authenticated internal actor and linked-channel context;
+- command type and opaque target;
+- environment;
+- idempotency key;
+- expected aggregate/reconciliation version;
+- issue and expiry time;
+- optional preview ID and action handle;
+- required authentication strength.
+
+The future financial command progression is contractually separate:
+
+1. prepare;
+2. validate current state and data;
+3. obtain Risk Engine decision when applicable;
+4. issue an expiring immutable preview;
+5. confirm the exact preview;
+6. revalidate;
+7. hand off to Execution Engine;
+8. reconcile;
+9. query terminal or unknown status.
+
+Prepare and confirm are not exchange-adapter calls. A confirmation can return
+expired, state-changed, market-changed, authorization-required, risk-denied,
+accepted, rejected, unknown, or reconciliation-required. An unknown result has
+no generic retry operation.
+
+Critical action handles are single-use and bound to user, linked Telegram ID,
+session, environment, resource, command, state version, and preview. Expired or
+superseded message actions fail closed. Telegram-specific limits are represented
+as reductions below system/user risk limits, never as an authority increase.
+
+## 18. Future contract ownership
+
+| Contract                           | Owner           | Required reviewers                    |
+| ---------------------------------- | --------------- | ------------------------------------- |
+| Opportunity/spread                 | Quant/analytics | Market data, product, QA              |
+| Position/valuation                 | Position domain | Quant, security, risk                 |
+| Alert rule/evaluation              | Alerts          | Quant, product, SRE                   |
+| Notification/outbox/delivery       | Notifications   | Security, SRE, product                |
+| Telegram linking/session           | Identity        | Security, privacy, Telegram gateway   |
+| Telegram query/presentation        | Product clients | Domain owner, security, accessibility |
+| Telegram paper action              | Paper execution | Security, position domain, QA         |
+| Telegram live preview/confirmation | Execution       | Risk, security, reconciliation, QA    |
+
+Position, alert, notification, Telegram identity, and financial-command contract
+changes require compatibility tests and the owning phase approval. A provider
+API change cannot weaken the internal command-security boundary.
