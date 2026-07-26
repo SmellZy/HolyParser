@@ -393,3 +393,93 @@ suitability language, and AI explanation wording are not defined.
 
 No RPO, RTO, SLO/error budget, maintenance policy, or on-call model is supplied.
 These are necessary before production analytics and mandatory before live trading.
+
+## 7. Phase 0 discovery addendum — 2026-07-26
+
+The evidence and recommendations for these entries are recorded in
+[`PHASE_0_API_RESEARCH.md`](PHASE_0_API_RESEARCH.md) and
+[`PHASE_0_DECISIONS.md`](PHASE_0_DECISIONS.md).
+
+| Existing decision | Phase 0 evidence-based recommendation | Status / owner input |
+|---|---|---|
+| D-013 — MVP users and success metric | Start with professional/internal analysts and correctness/staleness evidence, not execution or monetization | **OWNER DECISION REQUIRED** |
+| D-014 — Pilot exchanges | Name product groups: OKX Exchange V5 Swap/Futures, Binance USDⓈ-M Futures and Bybit V5 linear; Bitget UTA V3 reserve | **OWNER DECISION REQUIRED** |
+| D-015 — Market-data rights and geography | Complete legal/terms review for the intended operator/user entities before production redistribution or authenticated validation | **BLOCKING BEFORE PRODUCTION PILOT** |
+| D-016 — Canonical asset governance | CEX identity includes official instrument/product/settlement; DEX uses chain plus token ID/address; four-eyes mappings | **OWNER DECISION REQUIRED** |
+| D-017 — Funding semantics | Store native rate/meaning/interval/time/source; derived comparison rate separately versioned; no hardcoded interval | **OWNER DECISION REQUIRED** |
+| D-019 — USDT/USDC and reporting currency | Keep assets distinct; no implicit parity/conversion | **OWNER DECISION REQUIRED** |
+| D-020 — Performance objectives | Use documented venue cadence plus measured receive/processing lag; no universal latency claim | **Can be specified in Phase 2A** |
+| D-027 — Initial live venues and products | Phase 0 makes no live recommendation; inventory is not authority | **DEFERRED UNTIL PAPER GRADUATION** |
+| D-032 — DEX custody and bridge policy | Keep DEX/RFQ outside generic CEX Phase 2A; no transaction construction | **OWNER DECISION REQUIRED FOR LATER DEX PHASE** |
+
+### D-036 — Phase 2A public/authenticated boundary
+
+- **Question:** may Phase 2A use read-only API keys?
+- **Recommendation:** no. Phase 2A is unauthenticated public analytics only.
+- **Why blocking:** permitting keys expands security scope into secret handling,
+  tenant authorization, revocation and private-data retention.
+- **Status:** **OWNER DECISION REQUIRED BEFORE PHASE 2A**.
+
+### D-037 — Order-book integrity without checksum
+
+- **Question:** may a venue be trusted when it documents sequence/replacement
+  semantics but no checksum?
+- **Recommendation:** yes for analytics when deterministic fixtures verify
+  sequence/gap/restart behavior; otherwise mark the book stale. Never fabricate
+  a checksum requirement.
+- **Evidence:** current OKX JSON and Bitget UTA V3 explicitly removed/disabled
+  checksum; Hyperliquid uses full snapshot replacement.
+- **Status:** **OWNER DECISION REQUIRED BEFORE PHASE 2A**.
+
+### D-038 — DEX/RFQ phase boundary
+
+- **Question:** should OKX DEX, Variational, Aster, Lighter or Hyperliquid share
+  the first generic exchange adapter?
+- **Recommendation:** no. Use later quote-, snapshot-book- and
+  transaction-aware ports.
+- **Status:** **OWNER DECISION REQUIRED BEFORE PHASE 2A**.
+
+### D-039 — Official documentation contradiction policy
+
+- **Question:** what evidence resolves conflicting official pages?
+- **Recommendation:** current canonical docs can guide non-financial research,
+  but financially critical use remains blocked until vendor clarification or a
+  repeatable official sandbox/public probe is recorded.
+- **Current conflicts:** OKX DEX V5/V6; Aster V1/V3; KuCoin legacy depth; Gate
+  limits; MEXC legacy/current Futures; MEXC Spot WS host.
+- **Status:** **OWNER DECISION REQUIRED; RESEARCH OWNER REQUIRED**.
+
+### D-040 — Venue-native price naming
+
+- **Question:** may venue fields such as MEXC `fairPrice` or Hyperliquid
+  `oraclePx` be silently mapped to canonical mark/index?
+- **Recommendation:** no. Preserve exchange-native semantic name until a
+  documented mapping decision is approved.
+- **Status:** **OWNER DECISION REQUIRED BEFORE THOSE VENUES ENTER SCOPE**.
+
+### C-019 — A checksum is not a universal order-book invariant
+
+The earlier planning matrix implied checksum research for every adapter.
+Official current evidence shows checksum is absent on many venues and explicitly
+removed/disabled on OKX JSON and Bitget UTA V3. Integrity must be
+capability-driven.
+
+### C-020 — “Predicted funding” is not a portable field
+
+Some venues expose predicted/next funding, some expose current or last rate,
+some return a nullable next rate, and others expose a multi-venue aggregator.
+Names must retain official semantics; absence is not permission to derive a
+prediction.
+
+### C-021 — Test endpoint is not testnet
+
+KuCoin order-test validates a request without providing a complete matching
+environment. Official SDK configuration alone also does not establish
+production parity. Testnet status must include host, products, authentication
+and known differences.
+
+### C-022 — Unified company APIs are not unified product semantics
+
+Binance, OKX, KuCoin, MEXC, Bitunix, BloFin and Bybit expose materially
+different product groups under one brand. A company-level capability flag can
+silently claim unsupported functionality and is prohibited.

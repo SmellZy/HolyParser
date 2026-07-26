@@ -1,203 +1,134 @@
 # Exchange Capability Matrix
 
-## 1. Status of this matrix
+## 1. Status
 
-This is a **research backlog**, not a verified capability claim. No official
-exchange documentation was audited during this planning task. API behavior is
-volatile, and `MASTER_SPEC.md` itself identifies scheduled deprecations and
-product-specific exceptions.
+Phase 0 official API discovery snapshot, retrieved **2026-07-26**.
+
+This matrix is a product-selection summary. Detailed field-level evidence is in
+[`PHASE_0_API_RESEARCH.md`](PHASE_0_API_RESEARCH.md); every reviewed official
+source is in
+[`PHASE_0_SOURCE_REGISTER.md`](PHASE_0_SOURCE_REGISTER.md).
 
 Legend:
 
-- `R` — required or candidate for the planned product scope;
-- `S` — statement/constraint reported by `MASTER_SPEC.md`, still requiring
-  confirmation in current official documentation;
-- `?` — unknown; official research required;
-- `N/A` — outside that venue/product family's intended role;
-- `BLOCKED` — the master specification says the capability is not currently
-  available or is unsuitable; official recheck required before status changes.
+- `VERIFIED` — current official evidence explicitly supports the capability;
+- `UNVERIFIED` — no reviewed official evidence confirms it;
+- `UNSUPPORTED` — official evidence confirms it is absent/inapplicable;
+- `RESEARCH_REQUIRED` — current official evidence is ambiguous,
+  contradictory, stale, or incomplete.
 
-Only a later `VERIFIED` status with an official URL, API/version, access date,
-product/environment scope, and tests may enable an adapter capability.
+“Trading support” means that an official API documents trading, not that this
+project is authorized to use it. No trading is approved.
 
-## 2. Planning matrix
+## 2. Product-level capability separation
 
-| Venue/product | Intended analytics scope | Public instruments/prices | Order book | Mark/index | Funding current/history | Private account/order data | Trading | Test environment | Special status |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| Binance CEX | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Candidate pilot |
-| Binance Alpha | Alpha market data, separate identity mapping | S/? | ? | ? | ? | ? | Later/? | ? | Internal `ALPHA_*` IDs reported; never strip suffix to map |
-| OKX CEX | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Candidate pilot; separate from OKX DEX |
-| OKX DEX | On-chain quote/swap analytics | R/? | N/A or ? | N/A | N/A | wallet/tx ? | Later/? | chain-specific ? | Separate venue; gas/approval/MEV/confirmation model |
-| Bybit | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Candidate pilot |
-| Bitget | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Candidate fourth pilot |
-| Bitunix | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Alternative fourth pilot; research maturity/support |
-| Gate.io | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Additional venue after pilot |
-| KuCoin | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Old incremental book stream reported sunset 2026-07-15; verify replacement |
-| Aster | Perpetual analytics/execution candidate | R/? | R/? | R/? | R/? | ? | Later/? | ? | HTTP 503 order outcome reported potentially unknown; reconciliation mandatory |
-| Variational | Read-only funding/analytics | S/? | ? | ? | S/? | N/A or ? | BLOCKED/S | ? | Public quotes reported cacheable up to 600s; trading API reported unavailable |
-| Lighter | Spot/perpetual or venue-specific analytics | R/? | R/? | ? | ? | ? | Later/? | ? | Account index, API-key index, nonce model reported |
-| BloFin | Perpetual analytics candidate | R/? | R/? | R/? | R/? | ? | Later/? | ? | Additional venue after pilot |
-| Hyperliquid | Spot/perpetual/on-chain venue analytics | R/? | R/? | ? | R/? | ? | Later/? | ? | Wallet/API-agent signing model reported; separate custody review |
-| MEXC | Spot/perpetual comparisons | R/? | R/? | R/? | R/? | ? | Later/? | ? | Additional venue after pilot |
+| Capability group | Public analytics support | Authenticated read-only support | Trading support | Testnet / demo support | First production pilot suitability |
+|---|---|---|---|---|---|
+| Binance USDⓈ-M Futures | `VERIFIED` — metadata, ticker, mark/index, funding, books | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` | **Recommended**, public derivatives analytics only |
+| Binance Spot | `VERIFIED` — metadata, ticker, books | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` | Recommended as a separate Spot tranche after the first derivatives slice |
+| Binance Alpha | `VERIFIED` public market data | `UNVERIFIED` | `UNVERIFIED` | `UNVERIFIED` | Analytics-only; not first pilot |
+| OKX Exchange V5 | `VERIFIED` across Spot/Swap/Futures/Options | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` Demo | **Recommended first pilot**, public derivatives analytics only |
+| OKX DEX / Onchain OS | `VERIFIED` quote/token/route analytics, developer authentication required | `VERIFIED` for project-authenticated quote data | Transaction construction `VERIFIED`; no CEX execution model; not approved | `UNVERIFIED` | Separate DEX analytics phase only |
+| Bitget UTA V3 | `VERIFIED` across Spot and futures categories | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` Demo | Preferred reserve/fourth public-analytics pilot |
+| Gate API v4 | `VERIFIED` Spot/Futures analytics | `VERIFIED` | `VERIFIED` documented; not approved | Futures `VERIFIED`; Spot REST parity `RESEARCH_REQUIRED` | Secondary analytics candidate after decimal-size/limit validation |
+| KuCoin Classic | `VERIFIED` with order-book transition caveats | `VERIFIED` | `VERIFIED` documented; not approved | Full sandbox `UNVERIFIED` | Analytics-only until depth-deprecation state is confirmed |
+| KuCoin UTA / Pro | Documentation exists | Documentation exists | Production use `UNSUPPORTED` by current official introduction | `UNVERIFIED` | Excluded from production |
+| Aster DEX / Perpetuals V3 | `VERIFIED` metadata/funding; book path `RESEARCH_REQUIRED` | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED`, parity `RESEARCH_REQUIRED` | Analytics research only until V3 host/book conflicts close |
+| Variational Omni | `VERIFIED` read-only funding/mark/RFQ stats; up to 600 s cache | `UNSUPPORTED` as a private API in reviewed docs | `UNSUPPORTED`; official trading API still in development | `UNVERIFIED` | Analytics-only, not real-time executable spread data |
+| Lighter v1 | `VERIFIED` Spot/Perp metadata, books and funding | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` via official SDK; parity `RESEARCH_REQUIRED` | Analytics-only initially |
+| Bitunix Futures v1 | `VERIFIED`, but book integrity `RESEARCH_REQUIRED` | `VERIFIED` | `VERIFIED` documented; not approved | `UNVERIFIED` | Funding/ticker analytics only; no first-pilot book |
+| Bitunix Spot | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | `UNVERIFIED` | Excluded |
+| BloFin OpenAPI v1 SWAP | `VERIFIED` | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` Demo | Secondary public-analytics candidate |
+| BloFin Spot | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | `UNVERIFIED` | Excluded |
+| Bybit V5 linear | `VERIFIED` | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` | **Recommended**, public derivatives analytics only |
+| Bybit V5 Spot/inverse/options | `VERIFIED` but category-specific | `VERIFIED` | `VERIFIED` documented; not approved | `VERIFIED` | Later separate category groups |
+| Hyperliquid HyperCore | `VERIFIED` Spot/Perp snapshot-book analytics | Public-by-address account queries `VERIFIED`; not conventional auth | `VERIFIED` signed actions; not approved | `VERIFIED` | Separate on-chain analytics phase |
+| MEXC Futures v1 | `VERIFIED` current API; source freshness `RESEARCH_REQUIRED` | `VERIFIED` | `VERIFIED` after 2026 relaunch; not approved | `UNVERIFIED` | Later analytics candidate after schema/source probe |
+| MEXC Spot v3 | `VERIFIED` REST; WS host `RESEARCH_REQUIRED` | `VERIFIED` | `VERIFIED` documented; not approved | `UNVERIFIED` | Analytics-only until secure WS host is confirmed |
 
-“Trading” in this table is not authorization to implement trading. Private
-capabilities receive a separate audit no earlier than Phase 9.
+## 3. Public analytics detail
 
-## 3. Capability checklist per venue
+| Capability group | Metadata / identity | Ticker / prices | Funding | Order book | Integrity status |
+|---|---|---|---|---|---|
+| Binance USDⓈ-M | `VERIFIED`; multiplier/linear flag gaps | `VERIFIED` mark/index | Current/history/next `VERIFIED`; interval/predicted gaps | Snapshot/delta `VERIFIED` | `U/u/pu`; no verified checksum; cadence/mixed-stream research |
+| Binance Spot | `VERIFIED` | Ticker `VERIFIED`; derivative prices `UNSUPPORTED` | `UNSUPPORTED` | Snapshot/delta `VERIFIED` | `lastUpdateId/U/u`; resync verified |
+| Binance Alpha | Token/chain identity `VERIFIED` | Ticker `VERIFIED`; mark/index unverified | `UNVERIFIED` | Snapshot/delta `VERIFIED` | Full resync `RESEARCH_REQUIRED` |
+| OKX Exchange | `VERIFIED`, including settlement/contract values | Derivative mark/index `VERIFIED` | Current/predicted/history/next `VERIFIED`; fixed interval field absent | Multiple snapshot/delta tiers `VERIFIED` | `seqId/prevSeqId`; checksum `UNSUPPORTED` |
+| OKX DEX | Chain + token address `VERIFIED` | Route quotes `VERIFIED` | `UNSUPPORTED` | `UNSUPPORTED` | Transaction/finality model, not book integrity |
+| Bitget UTA | `VERIFIED`; settlement/multiplier/type gaps | Futures mark/index `VERIFIED` | Current/history/interval/next `VERIFIED`; predicted unverified | Snapshot/delta `VERIFIED` | `seq/pseq`; checksum `UNSUPPORTED`; gap action research |
+| Gate | Spot/contract metadata `VERIFIED` with precision gaps | Mark/index `VERIFIED` | Current/next/history/interval `VERIFIED` | Snapshot/delta `VERIFIED` | `U/u`; checksum unverified; decimal-size opt-in |
+| KuCoin Classic | Spot/Futures `VERIFIED` | Mark/index `VERIFIED` | Current/predicted/history/time `VERIFIED` | Classic snapshot; replacement feed documented | Legacy shutdown and new-feed gap recovery `RESEARCH_REQUIRED` |
+| Aster V3 | `VERIFIED`; multiplier/type gaps | Mark/index `VERIFIED` | Current/history/interval/next `VERIFIED`; predicted ambiguous | V3/legacy path conflict | `U/u/pu` documented on legacy-family page |
+| Variational | Partial identity | Mark `VERIFIED` | Current/interval `VERIFIED`; other fields unverified | `UNSUPPORTED` | RFQ stats may be cached 600 s |
+| Lighter | IDs/precision/minimums `VERIFIED` | Current mark/index mapping research | Funding aggregator/history `VERIFIED`; semantics research | Snapshot/changes `VERIFIED` | `begin_nonce/nonce`; new snapshot after reconnect |
+| Bitunix Futures | Partial metadata | Mark/index `VERIFIED` | Current/history/interval/next `VERIFIED` | Snapshot/channels exist | Sequence/checksum/resync/cadence `RESEARCH_REQUIRED` |
+| BloFin SWAP | `VERIFIED` including multiplier/type | Mark/index `VERIFIED` | Current/history/interval/time `VERIFIED` | Snapshot/delta `VERIFIED` | `prevSeqId/seqId`; gap action research |
+| Bybit linear | `VERIFIED`; multiplier absent | Mark/index `VERIFIED` | Current/history/interval/next `VERIFIED` | Snapshot/delta `VERIFIED` | `u/seq`; snapshot replacement; checksum unverified |
+| Hyperliquid | Meta index/token ID `VERIFIED` | `markPx/oraclePx` `VERIFIED` | Current/predicted/history/hourly/next `VERIFIED` | Repeated snapshots `VERIFIED` | Incremental/sequence/checksum `UNSUPPORTED` |
+| MEXC Futures | `VERIFIED`; linear flag/min notional gaps | Index/fair `VERIFIED`; mark mapping research | Current/history/cycle/next `VERIFIED` | Snapshot/delta/commits `VERIFIED` | Version continuity and commits recovery verified |
+| MEXC Spot | Partial metadata; filters research | Ticker `VERIFIED` | `UNSUPPORTED` | REST/Protobuf delta `VERIFIED` | Continuity verified; secure WS host research |
 
-The researcher must record each item separately by product and environment:
+## 4. Operational readiness gates
 
-### Identity and metadata
+| Capability group | Rate limits / weights | Server time | Reconnect / resync | Primary unresolved blocker |
+|---|---|---|---|---|
+| Binance USDⓈ-M | `VERIFIED` dynamic/weighted | `VERIFIED` | `VERIFIED` | Mixed UM/CM stream filtering and cadence |
+| Binance Spot | `VERIFIED` dynamic/weighted | `VERIFIED` | `VERIFIED` | Jurisdiction/data rights |
+| Binance Alpha | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | Incomplete operational docs |
+| OKX Exchange | `VERIFIED` endpoint/user/tier | `VERIFIED` | Continuity verified; exact gap action research | Regional/VIP/product access |
+| OKX DEX | `VERIFIED` tiered | `UNVERIFIED` | Not a persistent book | V5/V6 contradiction and no sandbox |
+| Bitget UTA | `VERIFIED` | `VERIFIED` via common V2 | Gap action research | Jurisdiction/account mode |
+| Gate | Current canonical limits `VERIFIED`; stale mirror conflict | Endpoint verified; access conflict | Snapshot/replay verified | Decimal size and canonical limit policy |
+| KuCoin | Weighted pools verified; Pro WS contradiction | `VERIFIED` | Legacy/new-feed behavior differs | Post-2026-07-15 stream status |
+| Aster | Dynamic/example limits verified | `VERIFIED` V3 | V1/V3 conflict | Production V3 host/book procedure |
+| Variational | `VERIFIED` | `UNVERIFIED` | REST only | 600-second cache / no book |
+| Lighter | `VERIFIED` tiered/weighted | `UNVERIFIED` | `VERIFIED` new snapshot | Funding numeric/semantic model |
+| Bitunix Futures | Partial limits verified | `UNVERIFIED` | `RESEARCH_REQUIRED` | No integrity contract |
+| BloFin SWAP | `VERIFIED` | `UNVERIFIED` | Heartbeat verified; gap action research | Unknown-state/geography |
+| Bybit | `VERIFIED` tier/category | `VERIFIED` | `VERIFIED` | Category/account/region |
+| Hyperliquid | `VERIFIED` IP/address/WS | `UNVERIFIED` | Fresh snapshot | On-chain/quanto identity model |
+| MEXC Futures | `VERIFIED` endpoint-specific | `VERIFIED` | `VERIFIED` | Recent relaunch/source stability |
+| MEXC Spot | Documented | `VERIFIED` | Continuity documented | Secure WS endpoint inconsistency |
 
-- official product/API name and base URLs;
-- spot, linear perpetual, inverse perpetual, dated future, premarket, DEX scope;
-- instrument list and stable external identifier;
-- base, quote, settlement, margin asset semantics;
-- contract multiplier, inverse flag, tick, step, min/max size/notional;
-- lifecycle/delisting status and change stream if any;
-- token chain/address metadata;
-- server time and timestamp units.
+## 5. First pilot recommendation
 
-### Public data
+The recommended Phase 2A implementation tranche is:
 
-- ticker field semantics;
-- mark and index source/meaning;
-- current, predicted, next, settled, and historical funding distinctions;
-- funding interval and next settlement source per instrument;
-- order-book snapshot depth and update channel;
-- exact sequence, checksum, buffering, resnapshot, and reconnect algorithm;
-- trade side semantics;
-- open interest/volume availability and units;
-- published update cadence and rate limits.
+1. OKX Exchange V5 — public Swap/Futures analytics;
+2. Binance USDⓈ-M Futures — public derivatives analytics only;
+3. Bybit V5 `linear` — public derivatives analytics only.
 
-### Operational constraints
+Bitget UTA V3 is the reserve/fourth venue. The first pilot excludes Spot,
+authenticated endpoints and every trading feature to keep the canonical model
+and order-book integrity work independently testable.
 
-- REST weights and quotas;
-- WebSocket connection/subscription/message limits;
-- IP/account/product-specific limits;
-- 429/418/403/5xx semantics and backoff guidance;
-- maintenance/status endpoint or announcements;
-- schema/version/deprecation policy;
-- redistribution, retention, attribution, and commercial-use terms.
+## 6. Analytics-only / deferred groups
 
-### Private and trading capabilities (deferred)
+- Binance Alpha: public analytics only.
+- OKX DEX: separate token-address-aware quote analytics only.
+- KuCoin Classic: analytics only until stream deprecation is resolved; UTA
+  excluded from production.
+- Aster: analytics research only until V3 contradictions close.
+- Variational: cached funding/mark/RFQ analytics only.
+- Lighter: analytics only until numeric funding and on-chain operations are
+  modeled.
+- Bitunix Futures: ticker/funding only; exclude its book from trusted spreads.
+- Hyperliquid: separate on-chain snapshot-book analytics only.
+- MEXC Spot/Futures: analytics only after targeted current-schema probes.
+- BloFin and Gate: later public-analytics candidates, not first tranche.
 
-- credential types and permission inspection;
-- IP allowlisting and withdrawal-permission detection;
-- official testnet/sandbox parity;
-- account/position mode and leverage APIs;
-- balance, margin, orders, fills, and positions;
-- private WebSocket semantics and recovery;
-- supported order types, time in force, post-only/IOC/FOK;
-- client order ID support, uniqueness, length, charset, and queryability;
-- batch behavior and atomicity;
-- timeout/5xx/unknown-status guidance;
-- cancel/query/reconciliation sources and retention windows;
-- nonce/signature/time-drift requirements.
+## 7. Approval boundary
 
-### DEX/on-chain additions
+This matrix supports approval of a **mock-first, unauthenticated public
+analytics Phase 2A** after the product-owner decisions in
+[`PHASE_0_DECISIONS.md`](PHASE_0_DECISIONS.md) are accepted.
 
-- supported chains, canonical token identifiers, routers/contracts;
-- quote expiry and slippage/price-impact semantics;
-- approval and permit model;
-- transaction construction, simulation, signing, submission, replacement;
-- gas estimation and failed-transaction cost;
-- confirmations, reorg handling, finality, and status;
-- MEV protection and routing trust;
-- bridge assumptions and smart-contract audit status.
+It does not approve:
 
-## 4. Mandatory targeted research
-
-### Binance Alpha
-
-Confirm the official token-list/instrument discovery flow and the meaning of
-internal IDs such as `ALPHA_173USDT`. Document asset identity, USDT/USDC
-distinction, chain metadata, and symbol-change behavior. Generic Binance symbol
-parsing must not be reused.
-
-### Variational
-
-Confirm whether public access remains read-only, quote caching/freshness behavior,
-funding semantics, terms of use, and whether any official trading/test environment
-has become available. Until verified otherwise, keep trading `BLOCKED` and treat
-quotes according to their actual freshness, potentially unsuitable for live
-spread decisions.
-
-### OKX DEX
-
-Research as a separate on-chain integration, not an OKX futures feature. No common
-CEX order-book or order contract may be assumed.
-
-### KuCoin
-
-The specification says the old incremental order-book stream was scheduled to end
-on 2026-07-15, which is before the current repository date. Verify the current
-official replacement (the specification mentions “Increment Best 500” as a
-candidate), its reconstruction algorithm, and migration/deprecation status before
-writing an adapter.
-
-### Aster
-
-Verify official 503 and timeout semantics, client order identity, query/open
-order/fill/position sources, and a safe reconciliation algorithm. Unknown outcome
-must be a first-class state.
-
-### Lighter
-
-Verify account index, API-key index, nonce allocation/concurrency, signing,
-recovery after restart, and official environment support before any private
-integration.
-
-### Hyperliquid
-
-Verify spot/perpetual instrument identity, wallet versus API-agent authority,
-nonce/signing model, key rotation/revocation, and the boundary between on-chain
-and venue-managed state.
-
-### Bitunix and BloFin
-
-Assess official API completeness, documentation/versioning quality, sequence
-semantics, rate limits, test environment, private recovery sources, terms, and
-operational maturity before choosing either for the pilot or execution scope.
-
-## 5. Pilot selection gate
-
-The master specification proposes Binance, OKX, Bybit, and either Bitget or
-Bitunix. The roadmap reduces the first implementation to three venues; selection
-must consider:
-
-- verified public API completeness and unambiguous sequence semantics;
-- funding/mark/index metadata quality;
-- official documentation stability and deprecation policy;
-- legal/redistribution terms;
-- geographic/product availability for the intended deployment;
-- observed reliability under a read-only canary;
-- fixture/testnet support relevant to later phases;
-- team capacity to own the adapter.
-
-No schedule should force selection before this evidence exists.
-
-## 6. Research record template
-
-For every capability:
-
-```text
-Venue/product/environment:
-Capability:
-Status: VERIFIED | UNSUPPORTED | UNKNOWN | DEPRECATED | BLOCKED
-Official documentation URL:
-API/document version:
-Accessed at:
-Exact product scope:
-Semantics and units:
-Rate/update limits:
-Known error/recovery behavior:
-Terms/redistribution constraints:
-Fixture/canary evidence:
-Owner:
-Revalidate by:
-Notes:
-```
-
-Screenshots, blogs, SDK behavior, aggregator documentation, and old code examples
-may be supporting evidence but cannot replace current official documentation.
+- authenticated read-only calls;
+- credential storage;
+- paper trading;
+- private streams;
+- order entry;
+- Risk Engine or Execution Engine;
+- live trading.
