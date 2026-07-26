@@ -94,3 +94,26 @@ At every phase exit:
 Financial loss, secret exposure, unauthorized authority, undetected stale data,
 unknown orders, unmatched fills, or risk-engine bypass triggers immediate review
 regardless of phase.
+
+## 5. Phase 0 API-discovery additions — 2026-07-26
+
+| ID | Risk | Likelihood | Impact | Score | Earliest phase | Required controls | Owner | Trigger |
+|---|---|---:|---:|---:|---|---|---|---|
+| R-041 | Conflicting current/legacy official documentation selects the wrong API family or host | 4 | 5 | 20 | 0/2A | Dated source register, canonical-source policy, changelog recheck, vendor clarification or repeatable public/sandbox probe, venue kill switch | Adapter owner | V1/V3, V5/V6, maintenance/relaunch or host conflict |
+| R-042 | Company-level capability leaks one product's semantics into another | 4 | 5 | 20 | 2A | Product-group IDs, capability-driven ports, category-specific fixtures, no brand-level adapter claims | Architecture/Market Data | Spot field used for futures, DEX quote represented as CEX book |
+| R-043 | Precision is treated as tick/quantity step | 4 | 5 | 20 | 2A | Accept only explicit official filters/rules, exact decimals, quarantine missing constraints, boundary/property tests | Market Data/Quant | Order/size accepted by model but invalid at venue |
+| R-044 | Removed or absent checksum is fabricated as an integrity guarantee | 3 | 5 | 15 | 2A/2B | Per-venue integrity strategy, sequence/replacement tests, explicit `UNVERIFIED`/`UNSUPPORTED`, stale on gap | Market Data | OKX/Bitget checksum used, checksum assumed on undocumented venue |
+| R-045 | DEX/RFQ quote is normalized as an executable CEX order book | 4 | 5 | 20 | 2A/later DEX | Separate quote/book/transaction contracts, chain/token identity, quote expiry/gas/finality fields, analytics-only gate | Architecture/DEX | Route/RFQ shown as book depth or executable spread |
+| R-046 | Current/last/fair/oracle price or funding is silently renamed to a different canonical semantic | 4 | 4 | 16 | 2A | Preserve native field meaning/source, reviewed semantic mappings, never infer predicted funding or mark/index equivalence | Product/Quant | MEXC fair price or Hyperliquid oracle mapped without decision |
+| R-047 | Official test/demo/order-test is assumed to have production parity | 4 | 4 | 16 | 2A/5/9 | Environment capability record, parity gaps, reset behavior, production read-only canary before later financial use | QA/Adapter | Test success used as production execution evidence |
+| R-048 | Regional/account/API-tier restriction makes a pilot illegal or technically inaccessible | 4 | 5 | 20 | 0/2A | Product-owner jurisdiction/entity decision, legal/terms review, account-mode matrix, access preflight, no bypass | Product/Legal/Security | 403, unavailable product, VIP-only feed, terms conflict |
+| R-049 | Dynamic exchange rate limits or weights are hardcoded and cause bans/data gaps | 4 | 4 | 16 | 2A/2B | Current source date, dynamic headers/metadata where available, weighted limiter, conservative budgets, drift alert | Adapter/SRE | 429/418, stale mirror conflict, limit-table change |
+| R-050 | Public market-data transport is insecure, stale, or ambiguously documented | 3 | 5 | 15 | 2A | Require secure verified host, TLS validation, source/changelog probe, disable venue on host ambiguity | Security/Adapter | MEXC `ws://` inconsistency, host migration, certificate/domain mismatch |
+| R-051 | Decimal contract sizes are truncated by default wire representation | 3 | 5 | 15 | 2A/2B | String/exact-decimal wire values, documented protocol opt-in, fixtures for fractional contracts | Market Data/Quant | Gate decimal futures delivered as integer |
+| R-052 | Top-N or cached feed is presented as full/current depth | 4 | 4 | 16 | 2A/2B | Depth coverage metadata, cache age/freshness, `PARTIAL`/`STALE` quality, exclude from executable spread | Market Data/Product | KuCoin top-500 or Variational 600-second quote shown as full/live |
+
+Phase 2A must not start real public adapters until R-041 through R-046 have
+named control owners and the product-owner decisions in
+[`PHASE_0_DECISIONS.md`](PHASE_0_DECISIONS.md) are accepted. R-048 requires a
+legal/product owner before any production pilot; it cannot be delegated to an
+adapter implementation.
