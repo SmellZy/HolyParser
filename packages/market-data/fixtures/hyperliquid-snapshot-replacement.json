@@ -1,0 +1,51 @@
+{
+  "fixtureId": "hyperliquid-style-snapshot-replacement-v1",
+  "provenance": {
+    "sourceId": "HL-03",
+    "retrievalDate": "2026-07-26",
+    "productGroup": "Hyperliquid HyperCore l2Book",
+    "origin": "SYNTHETIC",
+    "transformations": [
+      "Converted repeated documented l2Book snapshots to replacement events.",
+      "Used a synthetic CEX-shaped test identity solely for the generic state machine.",
+      "No sequence or checksum behavior was added."
+    ]
+  },
+  "venue": "state-machine-fixture",
+  "productGroup": "hyperliquid-style-replacement-only",
+  "officialInstrumentId": "FIXTURE-BTC-USDC",
+  "marketType": "OTHER",
+  "settlementAsset": "asset:usdc",
+  "strategy": "SNAPSHOT_REPLACEMENT",
+  "sequencePolicy": "NONE",
+  "events": [
+    {
+      "kind": "SNAPSHOT",
+      "bids": [
+        ["100.0", "1"],
+        ["99.5", "2"]
+      ],
+      "asks": [
+        ["100.5", "1"],
+        ["101.0", "2"]
+      ],
+      "exchangeTimestamp": "2026-07-26T10:03:00.000Z",
+      "receiveTimestamp": "2026-07-26T10:03:00.010Z",
+      "processingTimestamp": "2026-07-26T10:03:00.011Z"
+    },
+    {
+      "kind": "REPLACEMENT_SNAPSHOT",
+      "bids": [
+        ["100.1", "1.5"],
+        ["99.6", "2"]
+      ],
+      "asks": [
+        ["100.6", "1.2"],
+        ["101.1", "2"]
+      ],
+      "exchangeTimestamp": "2026-07-26T10:03:00.500Z",
+      "receiveTimestamp": "2026-07-26T10:03:00.510Z",
+      "processingTimestamp": "2026-07-26T10:03:00.511Z"
+    }
+  ]
+}

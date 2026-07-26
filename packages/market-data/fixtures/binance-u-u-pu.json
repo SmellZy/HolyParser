@@ -1,0 +1,62 @@
+{
+  "fixtureId": "binance-usdm-u-u-pu-v1",
+  "provenance": {
+    "sourceId": "BNFUT-04",
+    "retrievalDate": "2026-07-26",
+    "productGroup": "Binance USDⓈ-M Futures",
+    "origin": "SYNTHETIC",
+    "transformations": [
+      "Reduced the snapshot and diff stream to minimal levels.",
+      "Mapped U, u and pu to firstUpdateId, updateId and previousUpdateId.",
+      "Changed numeric values while preserving the first-event U <= lastUpdateId <= u bridge and subsequent pu chaining."
+    ]
+  },
+  "venue": "binance-futures",
+  "productGroup": "usds-m-futures",
+  "officialInstrumentId": "BTCUSDT",
+  "marketType": "PERPETUAL",
+  "settlementAsset": "asset:usdt",
+  "strategy": "SEQUENCE_CHAINED_DELTA",
+  "sequencePolicy": "RANGE_WITH_PREVIOUS_ID",
+  "events": [
+    {
+      "kind": "SNAPSHOT",
+      "updateId": "200",
+      "bids": [
+        ["49999.9", "1"],
+        ["49999.8", "2"]
+      ],
+      "asks": [
+        ["50000.1", "1.5"],
+        ["50000.2", "3"]
+      ],
+      "receiveTimestamp": "2026-07-26T10:01:00.010Z",
+      "processingTimestamp": "2026-07-26T10:01:00.011Z"
+    },
+    {
+      "kind": "DELTA",
+      "firstUpdateId": "199",
+      "updateId": "202",
+      "previousUpdateId": "198",
+      "bidChanges": [
+        ["49999.9", "0"],
+        ["49999.95", "0.7"]
+      ],
+      "askChanges": [["50000.1", "2"]],
+      "exchangeTimestamp": "2026-07-26T10:01:00.100Z",
+      "receiveTimestamp": "2026-07-26T10:01:00.110Z",
+      "processingTimestamp": "2026-07-26T10:01:00.111Z"
+    },
+    {
+      "kind": "DELTA",
+      "firstUpdateId": "203",
+      "updateId": "203",
+      "previousUpdateId": "202",
+      "bidChanges": [["49999.95", "0.8"]],
+      "askChanges": [["50000.2", "0"]],
+      "exchangeTimestamp": "2026-07-26T10:01:00.200Z",
+      "receiveTimestamp": "2026-07-26T10:01:00.210Z",
+      "processingTimestamp": "2026-07-26T10:01:00.211Z"
+    }
+  ]
+}

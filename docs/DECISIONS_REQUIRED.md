@@ -134,6 +134,10 @@ be guessed prematurely.
 - **Question:** Which three venues are first, and is the fourth Bitget or Bitunix?
 - **Recommendation:** decide from verified API quality, rights, reliability, and
   ownership capacity—not brand priority.
+- **Decision (approved 2026-07-26):** the pilot product groups, in order, are
+  OKX Exchange V5 Swap/Futures, Binance USDⓈ-M Futures, and Bybit V5 `linear`.
+  Bitget UTA V3 is reserve-only. Company names do not authorize other product
+  groups.
 
 ### D-015 — Market-data rights and geography
 
@@ -149,6 +153,10 @@ be guessed prematurely.
   chain/address conflicts, and manual mappings?
 - **Recommendation:** named market-data owner plus four-eyes review for financially
   material changes.
+- **Decision (approved 2026-07-26):** canonical identity is never derived solely
+  from symbol text. Manual mappings require provenance, four-eyes review, and
+  conflict quarantine. A named operational owner is still required before a
+  production registry accepts manual mappings.
 
 ### D-017 — Funding semantics
 
@@ -157,6 +165,10 @@ be guessed prematurely.
   current, predicted, and settled funding distinguished?
 - **Recommendation:** show native interval and exact next settlement; offer an
   explicitly labeled comparison horizon derived from verified metadata.
+- **Decision (approved 2026-07-26):** store the venue-native value and semantic
+  label first. Unknown remains unknown. The normalized eight-hour comparison is
+  a separately named and versioned derived metric; it is not the stored native
+  value and does not justify a hardcoded venue interval.
 
 ### D-018 — Fee and cost source
 
@@ -173,6 +185,8 @@ be guessed prematurely.
   timestamp, haircut, and depeg policy?
 - **Recommendation:** keep exposures and PnL separate by default; conversion is a
   separately labeled view with risk adjustment.
+- **Decision (approved 2026-07-26):** USDT and USDC remain distinct. No implicit
+  parity, identity equivalence, aggregation, or conversion is approved.
 
 ### D-020 — Performance objective definitions
 
@@ -400,17 +414,23 @@ The evidence and recommendations for these entries are recorded in
 [`PHASE_0_API_RESEARCH.md`](PHASE_0_API_RESEARCH.md) and
 [`PHASE_0_DECISIONS.md`](PHASE_0_DECISIONS.md).
 
-| Existing decision | Phase 0 evidence-based recommendation | Status / owner input |
-|---|---|---|
-| D-013 — MVP users and success metric | Start with professional/internal analysts and correctness/staleness evidence, not execution or monetization | **OWNER DECISION REQUIRED** |
-| D-014 — Pilot exchanges | Name product groups: OKX Exchange V5 Swap/Futures, Binance USDⓈ-M Futures and Bybit V5 linear; Bitget UTA V3 reserve | **OWNER DECISION REQUIRED** |
-| D-015 — Market-data rights and geography | Complete legal/terms review for the intended operator/user entities before production redistribution or authenticated validation | **BLOCKING BEFORE PRODUCTION PILOT** |
-| D-016 — Canonical asset governance | CEX identity includes official instrument/product/settlement; DEX uses chain plus token ID/address; four-eyes mappings | **OWNER DECISION REQUIRED** |
-| D-017 — Funding semantics | Store native rate/meaning/interval/time/source; derived comparison rate separately versioned; no hardcoded interval | **OWNER DECISION REQUIRED** |
-| D-019 — USDT/USDC and reporting currency | Keep assets distinct; no implicit parity/conversion | **OWNER DECISION REQUIRED** |
-| D-020 — Performance objectives | Use documented venue cadence plus measured receive/processing lag; no universal latency claim | **Can be specified in Phase 2A** |
-| D-027 — Initial live venues and products | Phase 0 makes no live recommendation; inventory is not authority | **DEFERRED UNTIL PAPER GRADUATION** |
-| D-032 — DEX custody and bridge policy | Keep DEX/RFQ outside generic CEX Phase 2A; no transaction construction | **OWNER DECISION REQUIRED FOR LATER DEX PHASE** |
+**Approval record:** on 2026-07-26, the product owner approved P0-001 through
+P0-008 with Phase 2A remaining public and unauthenticated, the three named pilot
+product groups, Bitget UTA V3 as reserve-only, venue-native funding storage,
+separate versioned eight-hour normalization, sequence-only integrity under the
+documented-fixture rules, and deferred DEX/RFQ/on-chain adapters.
+
+| Existing decision                        | Phase 0 evidence-based recommendation                                                                                            | Status / owner input                                                                  |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| D-013 — MVP users and success metric     | Start with professional/internal analysts and correctness/staleness evidence, not execution or monetization                      | **OWNER DECISION REQUIRED**                                                           |
+| D-014 — Pilot exchanges                  | Name product groups: OKX Exchange V5 Swap/Futures, Binance USDⓈ-M Futures and Bybit V5 linear; Bitget UTA V3 reserve             | **APPROVED 2026-07-26**                                                               |
+| D-015 — Market-data rights and geography | Complete legal/terms review for the intended operator/user entities before production redistribution or authenticated validation | **BLOCKING BEFORE PRODUCTION PILOT**                                                  |
+| D-016 — Canonical asset governance       | CEX identity includes official instrument/product/settlement; DEX uses chain plus token ID/address; four-eyes mappings           | **POLICY APPROVED 2026-07-26; OPERATIONAL OWNER REQUIRED BEFORE PRODUCTION MAPPINGS** |
+| D-017 — Funding semantics                | Store native rate/meaning/interval/time/source; derived comparison rate separately versioned; no hardcoded interval              | **APPROVED 2026-07-26**                                                               |
+| D-019 — USDT/USDC and reporting currency | Keep assets distinct; no implicit parity/conversion                                                                              | **APPROVED 2026-07-26**                                                               |
+| D-020 — Performance objectives           | Use documented venue cadence plus measured receive/processing lag; no universal latency claim                                    | **Can be specified in Phase 2A**                                                      |
+| D-027 — Initial live venues and products | Phase 0 makes no live recommendation; inventory is not authority                                                                 | **DEFERRED UNTIL PAPER GRADUATION**                                                   |
+| D-032 — DEX custody and bridge policy    | Keep DEX/RFQ outside generic CEX Phase 2A; no transaction construction                                                           | **PHASE BOUNDARY APPROVED 2026-07-26; CUSTODY DECISIONS DEFERRED**                    |
 
 ### D-036 — Phase 2A public/authenticated boundary
 
@@ -418,7 +438,8 @@ The evidence and recommendations for these entries are recorded in
 - **Recommendation:** no. Phase 2A is unauthenticated public analytics only.
 - **Why blocking:** permitting keys expands security scope into secret handling,
   tenant authorization, revocation and private-data retention.
-- **Status:** **OWNER DECISION REQUIRED BEFORE PHASE 2A**.
+- **Decision (approved 2026-07-26):** Phase 2A is public and unauthenticated.
+  Credentials, signing, authenticated calls, and private data are excluded.
 
 ### D-037 — Order-book integrity without checksum
 
@@ -429,7 +450,10 @@ The evidence and recommendations for these entries are recorded in
   a checksum requirement.
 - **Evidence:** current OKX JSON and Bitget UTA V3 explicitly removed/disabled
   checksum; Hyperliquid uses full snapshot replacement.
-- **Status:** **OWNER DECISION REQUIRED BEFORE PHASE 2A**.
+- **Decision (approved 2026-07-26):** sequence-only books are acceptable when
+  official sequence semantics and deterministic fixture tests exist. Any gap or
+  undocumented recovery makes the book `STALE`; executable output remains
+  unavailable until explicit recovery.
 
 ### D-038 — DEX/RFQ phase boundary
 
@@ -437,7 +461,9 @@ The evidence and recommendations for these entries are recorded in
   the first generic exchange adapter?
 - **Recommendation:** no. Use later quote-, snapshot-book- and
   transaction-aware ports.
-- **Status:** **OWNER DECISION REQUIRED BEFORE PHASE 2A**.
+- **Decision (approved 2026-07-26):** DEX, RFQ, and on-chain venue adapters are
+  deferred to dedicated later phases. A Hyperliquid-style replacement fixture
+  may test a generic state machine but does not authorize a Hyperliquid adapter.
 
 ### D-039 — Official documentation contradiction policy
 
@@ -447,7 +473,9 @@ The evidence and recommendations for these entries are recorded in
   repeatable official sandbox/public probe is recorded.
 - **Current conflicts:** OKX DEX V5/V6; Aster V1/V3; KuCoin legacy depth; Gate
   limits; MEXC legacy/current Futures; MEXC Spot WS host.
-- **Status:** **OWNER DECISION REQUIRED; RESEARCH OWNER REQUIRED**.
+- **Decision (approved 2026-07-26):** apply the recommended fail-closed policy.
+  A named research owner and resolution evidence remain required before an
+  affected product group can support financially critical output.
 
 ### D-040 — Venue-native price naming
 
@@ -455,7 +483,9 @@ The evidence and recommendations for these entries are recorded in
   `oraclePx` be silently mapped to canonical mark/index?
 - **Recommendation:** no. Preserve exchange-native semantic name until a
   documented mapping decision is approved.
-- **Status:** **OWNER DECISION REQUIRED BEFORE THOSE VENUES ENTER SCOPE**.
+- **Decision for Phase 2A.1 (approved 2026-07-26):** no silent mapping is
+  permitted. A later product-specific adapter must record an approved mapping or
+  preserve the native semantic name.
 
 ### C-019 — A checksum is not a universal order-book invariant
 

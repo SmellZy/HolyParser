@@ -1,0 +1,32 @@
+{
+  "fixtureId": "canonical-adversarial-decimals-v1",
+  "provenance": {
+    "sourceId": "BNFUT-04",
+    "retrievalDate": "2026-07-26",
+    "productGroup": "Canonical parser and book harness",
+    "origin": "SYNTHETIC",
+    "transformations": [
+      "No exchange payload was copied.",
+      "Cases were constructed to challenge canonical decimal and book validation.",
+      "The source ID anchors sequence-sensitive cases only; decimal rejection is domain-defined."
+    ]
+  },
+  "invalidDecimals": [
+    "NaN",
+    "Infinity",
+    "-Infinity",
+    "1e-8",
+    "+1",
+    ".1",
+    "1.",
+    "01",
+    "1,2",
+    " 1",
+    "1 "
+  ],
+  "crossedBook": {
+    "bids": [["101", "1"]],
+    "asks": [["100", "1"]]
+  },
+  "malformedSequenceIds": ["-1", "1.0", "1e3", "+1", "01"]
+}

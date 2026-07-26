@@ -130,30 +130,61 @@ Acceptance gate:
 - architecture/security review has no unresolved critical finding;
 - product owner approves Phase 2 discovery-selected venues.
 
-### Phase 2A — Canonical instruments and adapter test harness
+### Phase 2A.1 — Canonical market-data foundation
 
 Deliverables:
 
-- versioned common public adapter interface;
-- canonical instrument registry and mapping-review workflow;
-- fixture, schema, replay, precision, and fault-injection harness;
-- capability enforcement and source-health state model;
-- mocks for all external exchanges.
+- versioned canonical public market-data contracts;
+- exact-decimal domain primitives and opaque instrument identity;
+- explicit capability, provenance, quality, and freshness contracts;
+- deterministic replacement, snapshot-plus-delta, sequence-chain, and
+  no-trusted-book state machines;
+- mock-only adapter harness and official-semantics fixtures;
+- observability contracts without monitoring infrastructure.
 
 Acceptance gate:
 
-- unknown symbols and metadata changes fail closed;
-- USDT/USDC, spot/perpetual, multiplier, inverse, and DEX identity test cases pass;
-- no real exchange is enabled until its Phase 0 audit is approved.
+- malformed or excessive financial decimals fail without rounding;
+- USDT and USDC instruments cannot compare equal;
+- gaps suppress executable output until explicit snapshot recovery;
+- deterministic replay, precision, duplicate, restart, crossed-book, stale, and
+  VWAP properties pass;
+- no network client or real exchange adapter exists.
 
-### Phase 2B — First public market-data adapters
+### Phase 2A.2 — OKX Exchange V5 public adapter
 
-Scope: three venues, selected after Phase 0. A fourth is a separate small change.
+Scope: OKX Exchange V5 Swap/Futures public, unauthenticated data only. This is a
+separate approval and implementation task.
 
 Deliverables:
 
-- instruments, funding where verified, prices, mark/index where verified, trades
-  if needed, and local order books;
+- a network boundary isolated behind the Phase 2A.1 public adapter ports;
+- documented instrument, funding, ticker/mark/index, snapshot, and WebSocket
+  book mappings only where current official OKX evidence supports them;
+- rate-limit, server-time, reconnect, resubscribe, sequence-chain, and explicit
+  replacement recovery behavior;
+- recorded integration fixtures, contract tests, fault injection, and a
+  credential-free canary mode;
+- capability declarations linked to current official source IDs.
+
+Acceptance gate:
+
+- no credentials, private calls, order methods, or non-OKX product groups;
+- JSON `seqId`/`prevSeqId` gaps immediately make output stale;
+- checksum is not invented after the documented JSON checksum removal;
+- unsupported, unverified, and research-required fields remain explicit;
+- sustained replay and bounded public test runs show deterministic recovery and
+  no undetected crossed healthy book.
+
+### Phase 2B — Remaining pilot public market-data adapters
+
+Scope: Binance USDⓈ-M Futures and Bybit V5 `linear`, each as a separate small
+approved increment. Bitget UTA V3 remains reserve-only.
+
+Deliverables:
+
+- instruments, funding where verified, prices, mark/index where verified, and
+  local order books;
 - snapshot/delta sequencing, reconnect, rate-limit manager, time sync, and health;
 - recorded fixtures from public endpoints only;
 - canary contract monitor with no production money or credentials.

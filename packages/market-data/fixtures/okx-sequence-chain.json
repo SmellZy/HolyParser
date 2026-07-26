@@ -1,0 +1,64 @@
+{
+  "fixtureId": "okx-sequence-chain-v1",
+  "provenance": {
+    "sourceId": "OKX-01",
+    "retrievalDate": "2026-07-26",
+    "productGroup": "OKX Exchange V5 Swap/Futures",
+    "origin": "SYNTHETIC",
+    "transformations": [
+      "Reduced to two bid and two ask levels.",
+      "Renamed seqId and prevSeqId to canonical update identifiers.",
+      "Changed values while preserving documented sequence-chain behavior."
+    ]
+  },
+  "venue": "okx-exchange",
+  "productGroup": "v5-swap-futures",
+  "officialInstrumentId": "BTC-USDT-SWAP",
+  "marketType": "PERPETUAL",
+  "settlementAsset": "asset:usdt",
+  "strategy": "SEQUENCE_CHAINED_DELTA",
+  "sequencePolicy": "PREVIOUS_ID_CHAIN",
+  "events": [
+    {
+      "kind": "SNAPSHOT",
+      "updateId": "100",
+      "bids": [
+        ["99.9", "2"],
+        ["99.8", "4"]
+      ],
+      "asks": [
+        ["100.1", "3"],
+        ["100.2", "5"]
+      ],
+      "exchangeTimestamp": "2026-07-26T10:00:00.000Z",
+      "receiveTimestamp": "2026-07-26T10:00:00.010Z",
+      "processingTimestamp": "2026-07-26T10:00:00.011Z"
+    },
+    {
+      "kind": "DELTA",
+      "previousUpdateId": "100",
+      "updateId": "101",
+      "bidChanges": [
+        ["99.9", "0"],
+        ["99.85", "1.5"]
+      ],
+      "askChanges": [["100.1", "2.5"]],
+      "exchangeTimestamp": "2026-07-26T10:00:00.100Z",
+      "receiveTimestamp": "2026-07-26T10:00:00.110Z",
+      "processingTimestamp": "2026-07-26T10:00:00.111Z"
+    },
+    {
+      "kind": "DELTA",
+      "previousUpdateId": "101",
+      "updateId": "102",
+      "bidChanges": [["99.85", "2"]],
+      "askChanges": [
+        ["100.2", "0"],
+        ["100.15", "1"]
+      ],
+      "exchangeTimestamp": "2026-07-26T10:00:00.200Z",
+      "receiveTimestamp": "2026-07-26T10:00:00.210Z",
+      "processingTimestamp": "2026-07-26T10:00:00.211Z"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY packages/design-tokens/package.json ./packages/design-tokens/package.json
+COPY packages/market-data/package.json ./packages/market-data/package.json
 
 RUN npm ci --no-audit --no-fund
 
@@ -13,6 +14,7 @@ COPY .editorconfig .prettierignore compose.yaml README.md ./
 COPY .github ./.github
 COPY apps ./apps
 COPY docs/LOCAL_DEVELOPMENT.md ./docs/LOCAL_DEVELOPMENT.md
+COPY docs/PHASE_0_SOURCE_REGISTER.md ./docs/PHASE_0_SOURCE_REGISTER.md
 COPY docs/adr ./docs/adr
 COPY packages ./packages
 COPY scripts ./scripts

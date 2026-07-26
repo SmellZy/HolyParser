@@ -6,6 +6,7 @@ COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY packages/design-tokens/package.json ./packages/design-tokens/package.json
+COPY packages/market-data/package.json ./packages/market-data/package.json
 
 RUN npm ci
 
