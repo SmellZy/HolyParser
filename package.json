@@ -1,0 +1,33 @@
+{
+  "name": "arbitrage-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Foundation monorepo for the multi-exchange analytics platform.",
+  "engines": {
+    "node": ">=24.18.0 <25",
+    "npm": ">=11.6.0 <12"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@arbitrage/web",
+    "build": "npm run build --workspace=@arbitrage/contracts && npm run build --workspace=@arbitrage/web",
+    "format": "sh scripts/format.sh --write",
+    "format:check": "sh scripts/format.sh --check",
+    "lint": "npm run lint --workspace=@arbitrage/contracts && npm run lint --workspace=@arbitrage/web",
+    "test": "npm run test --workspace=@arbitrage/contracts && npm run test --workspace=@arbitrage/web",
+    "typecheck": "npm run typecheck --workspace=@arbitrage/contracts && npm run typecheck --workspace=@arbitrage/web",
+    "verify:compose": "node scripts/verify-compose.mjs"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.23",
+      "sharp": "0.35.3"
+    }
+  }
+}

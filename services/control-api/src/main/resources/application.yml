@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: control-api
+    version: 0.1.0
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      connection-timeout: ${DATABASE_CONNECTION_TIMEOUT_MS:3000}
+  data:
+    redis:
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: ${REDIS_COMMAND_TIMEOUT:2s}
+
+server:
+  port: ${CONTROL_API_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        liveness:
+          include: livenessState,ping
+        readiness:
+          include: readinessState,db,redis
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: ${spring.application.version}

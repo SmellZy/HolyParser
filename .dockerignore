@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.git
+.gradle
+.idea
+.next
+.qodo
+.vscode
+**/build
+**/node_modules
+coverage
+dist
+*.log

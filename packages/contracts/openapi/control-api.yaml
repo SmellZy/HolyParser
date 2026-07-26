@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: Arbitrage Control API
+  version: 0.1.0
+  description: >-
+    Phase 1 public contract for service health only. Authentication,
+    exchange, trading, AI, execution, and billing operations are not exposed.
+paths:
+  /api/v1/health:
+    get:
+      operationId: getServiceHealth
+      summary: Returns the control API process health.
+      responses:
+        "200":
+          description: The process is serving requests.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: string
+      enum:
+        - UP
+        - DEGRADED
+        - DOWN
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - service
+        - version
+        - timestamp
+      properties:
+        status:
+          $ref: "#/components/schemas/HealthStatus"
+        service:
+          type: string
+          const: control-api
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
