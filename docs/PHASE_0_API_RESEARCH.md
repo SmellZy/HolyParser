@@ -6,7 +6,8 @@ This document records the Phase 0 discovery result for the requested venues.
 It is an evidence record, not an implementation design and not permission to
 call authenticated or trading APIs.
 
-Research date: **2026-07-26**
+Initial research date: **2026-07-26**. Binance USDⓈ-M Futures was re-retrieved
+for Phase 2A.3 on **2026-08-02**.
 
 Evidence sources are identified by source ID in
 [`PHASE_0_SOURCE_REGISTER.md`](PHASE_0_SOURCE_REGISTER.md). Status meanings:
@@ -41,25 +42,43 @@ exact wire values and fixture-tested before an adapter is approved.
 - **Product, API and access:** `VERIFIED` — Binance USDⓈ-M Futures; REST
   `/fapi/v1` and public/private WebSocket; public analytics, authenticated
   read-only and trading APIs exist. Markets are USDⓈ-margined perpetual and
-  delivery futures. Sources: BNFUT-01..07.
+  delivery futures. Current public-adapter evidence: BNFUT-01..05 and
+  BNFUT-08..11. Trading inventory remains sourced by BNFUT-06..07.
 - **Instrument identity and constraints:** `VERIFIED` — `symbol`, `pair`,
   `baseAsset`, `quoteAsset`, `marginAsset`, `contractType`, filters for
   `tickSize`, `stepSize`, `minQty` and minimum notional. Ticker format is
   concatenated, for example `BTCUSDT`. Contract multiplier is `UNVERIFIED`;
   a direct linear/inverse field is `UNVERIFIED` and therefore canonical
   classification is `RESEARCH_REQUIRED`. Do not use `pricePrecision` or
-  `quantityPrecision` as tick/step.
-- **Prices and funding:** mark price, index price, current documented funding
-  rate, history and `nextFundingTime` are `VERIFIED`. Predicted-rate semantics
-  are `UNVERIFIED`. A complete per-symbol funding interval is
-  `RESEARCH_REQUIRED`: `fundingIntervalHours` is published for adjusted
-  symbols, so no global interval may be assumed.
-- **Books and operations:** REST depth and incremental depth are `VERIFIED`;
-  `U/u/pu` continuity and resnapshot on gap are `VERIFIED`; checksum is
-  `UNVERIFIED`. Documented cadence is `RESEARCH_REQUIRED` because current prose
-  and enum values differ. Current migrated streams can include USDⓈ-M and
-  COIN-M records and must be filtered by documented `st`. Limits/weights and
-  `/fapi/v1/time` are `VERIFIED`. Demo REST/WS is `VERIFIED`.
+  `quantityPrecision` as tick/step. Official IDs and asset references are
+  opaque strings and can be non-ASCII. A bounded 2026-08-02 public canary
+  observed `TRADIFI_PERPETUAL`; the REST catalog partially lists that value for
+  continuous-contract data, but does not define sufficient exchangeInfo and
+  canonical identity semantics. It remains `RESEARCH_REQUIRED`, and Phase
+  2A.3 quarantines those rows rather than mapping or rejecting the supported
+  catalog. `PERPETUAL_DELIVERING` is also quarantined because the reviewed
+  definition does not justify mapping it to a canonical dated Future.
+- **Prices and funding:** V2 symbol price, book ticker, mark price, index price,
+  latest documented funding rate, history and `nextFundingTime` are
+  `VERIFIED`. `lastFundingRate` is preserved as semantic `LAST`; predicted-rate
+  semantics are `UNVERIFIED`. A complete per-symbol funding interval is
+  `RESEARCH_REQUIRED`: `fundingIntervalHours` is published only for adjusted
+  symbols, so absence remains unknown and no global interval may be assumed.
+  Funding-history `rateType` is current as of the 2026-07-23 changelog.
+  `Regular` rows map normally; `Special` rows fail closed until the frozen
+  canonical model has an approved distinct semantic.
+- **Books and operations:** REST depth and routed public incremental depth are
+  `VERIFIED`; `U/u/pu` initialization/continuity and new-snapshot replay after
+  a gap are `VERIFIED`; checksum is `UNVERIFIED`. The current public stream
+  requires `st=1` for USDⓈ-M and rejects `st=2` COIN-M. Documented cadence is
+  `RESEARCH_REQUIRED` because prose lists 250/500/100 ms while the parameter
+  enum lists 100/500 ms; Phase 2A.3 exposes native, 100 ms and 500 ms only and
+  makes no universal cadence claim. The current routed origin is
+  `wss://fstream.binance.com/public`. Migration guidance contradicts itself
+  about unrouted public-depth compatibility, so no legacy route is used.
+  Endpoint weights, a 2400-weight/minute public budget,
+  `/fapi/v1/time`, 429 and 418 semantics are `VERIFIED`. No `Retry-After`
+  behavior is invented. Demo REST/WS is documented but not implemented.
 - **Authentication and trading inventory:** signed API-key requests, private
   order/position streams, client ID (maximum 36 with documented pattern),
   `LIMIT`, `MARKET`, `STOP`, `STOP_MARKET`, `TAKE_PROFIT`,
@@ -508,17 +527,17 @@ exact wire values and fixture-tested before an adapter is approved.
 
 ## 5. Explicitly unsupported capability summary
 
-| Product group | Confirmed unsupported capability |
-|---|---|
-| Binance Spot | Derivative contract/settlement, mark/index, funding and derivative positions |
-| OKX Exchange | JSON order-book checksum after 2026-06-23; Spot mark price as derivative concept |
-| OKX DEX | CEX symbol/book/funding/positions/order lifecycle and CEX TIF/order types |
-| Bitget UTA V3 | Order-book checksum after 2026-05-19 |
-| KuCoin UTA | Production/live use under the current official UTA introduction |
-| Variational Omni | Order book and currently available trading API |
-| Lighter | FOK in the reviewed documented enum |
-| Hyperliquid | Incremental delta book, sequence/checksum and FOK |
-| MEXC Spot | Derivative mark/index/funding/contract semantics |
+| Product group    | Confirmed unsupported capability                                                 |
+| ---------------- | -------------------------------------------------------------------------------- |
+| Binance Spot     | Derivative contract/settlement, mark/index, funding and derivative positions     |
+| OKX Exchange     | JSON order-book checksum after 2026-06-23; Spot mark price as derivative concept |
+| OKX DEX          | CEX symbol/book/funding/positions/order lifecycle and CEX TIF/order types        |
+| Bitget UTA V3    | Order-book checksum after 2026-05-19                                             |
+| KuCoin UTA       | Production/live use under the current official UTA introduction                  |
+| Variational Omni | Order book and currently available trading API                                   |
+| Lighter          | FOK in the reviewed documented enum                                              |
+| Hyperliquid      | Incremental delta book, sequence/checksum and FOK                                |
+| MEXC Spot        | Derivative mark/index/funding/contract semantics                                 |
 
 ## 6. Research-required blockers
 

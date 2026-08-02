@@ -1,0 +1,21 @@
+{
+  "malformedJson": "{\"u\":",
+  "hugeDecimal": "999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+  "scientificDecimal": "1e-8",
+  "crossedSnapshot": {
+    "lastUpdateId": 100,
+    "E": 1785628800100,
+    "T": 1785628800099,
+    "bids": [["60001", "1"]],
+    "asks": [["60000", "1"]]
+  },
+  "lockedSnapshot": {
+    "lastUpdateId": 100,
+    "E": 1785628800100,
+    "T": 1785628800099,
+    "bids": [["60000", "1"]],
+    "asks": [["60000", "1"]]
+  },
+  "rateLimit429": { "code": -1003, "msg": "Too many requests." },
+  "rateLimit418": { "code": -1003, "msg": "IP banned." }
+}

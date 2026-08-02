@@ -3,7 +3,8 @@
 ## 1. Roadmap rules
 
 - Only one explicitly approved implementation phase may be active.
-- Phase 1 and Phase 2A.1 are frozen; this roadmap does not reopen them.
+- Phase 1, Phase 2A.1 and Phase 2A.2 are frozen; this roadmap does not reopen
+  them.
 - Every phase has independently testable deliverables, non-goals, acceptance
   evidence, rollback notes, and a formal review.
 - No exchange capability exists because it appears on a roadmap. Current
@@ -113,8 +114,8 @@ Not delivered:
 
 ### Phase 2A.2 — OKX Exchange V5 Swap/Futures public adapter
 
-Status: implemented on 2026-07-26; formal acceptance review pending. This
-status does not freeze or approve the phase.
+Status: frozen and approved after the independent formal acceptance review on
+2026-07-27.
 
 Scope:
 
@@ -152,6 +153,10 @@ Implementation evidence:
 
 ### Phase 2A.3 — Binance USDⓈ-M Futures public adapter
 
+Status: formal independent acceptance completed on 2026-08-02 with
+`PASS_WITH_WARNINGS`; freeze is recommended and awaits explicit product-owner
+approval. Phase 2A.4 has not started.
+
 Scope:
 
 - one isolated public, unauthenticated Binance USDⓈ-M product-group adapter;
@@ -174,6 +179,19 @@ Acceptance:
 - any gap, ambiguous restart, or schema drift makes output stale;
 - USDT and USDC remain distinct;
 - Phase 2A.1 and 2A.2 tests remain green.
+
+Implementation evidence:
+
+- isolated `@arbitrage/binance-usdm-public-adapter` workspace;
+- runtime-bounded public REST and routed diff-depth WebSocket boundaries;
+- exact metadata, price and native-funding mappings with explicit unknown,
+  unsupported, unverified and research-required states;
+- official initial overlap plus subsequent `pu` continuity, immediate stale
+  suppression and replacement-snapshot/replay recovery;
+- provenance fixtures, deterministic/fault tests, low-cardinality telemetry
+  contracts and an opt-in bounded canary;
+- [`PHASE_2A_3_BINANCE_USDM_PUBLIC_ADAPTER.md`](PHASE_2A_3_BINANCE_USDM_PUBLIC_ADAPTER.md),
+  implementation pre-acceptance evidence and ADR 0007.
 
 ### Phase 2A.4 — Bybit V5 `linear` public adapter
 

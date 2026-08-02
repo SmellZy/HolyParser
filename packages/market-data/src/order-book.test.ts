@@ -142,7 +142,9 @@ describe("official-semantics fixture replay", () => {
 
     for (const fixtureName of fixtureNames) {
       const fixture = loadFixture(fixtureName);
-      expect(sourceRegister).toContain(`| ${fixture.provenance.sourceId} |`);
+      expect(sourceRegister).toMatch(
+        new RegExp(`\\|\\s*${fixture.provenance.sourceId}\\s*\\|`),
+      );
       expect(fixture.provenance.retrievalDate).toBe("2026-07-26");
       expect(fixture.provenance.productGroup.length).toBeGreaterThan(0);
       expect(fixture.provenance.transformations.length).toBeGreaterThan(0);
@@ -157,7 +159,9 @@ describe("official-semantics fixture replay", () => {
         "utf8",
       ),
     ) as { provenance: RawBookFixture["provenance"] };
-    expect(sourceRegister).toContain(`| ${adversarial.provenance.sourceId} |`);
+    expect(sourceRegister).toMatch(
+      new RegExp(`\\|\\s*${adversarial.provenance.sourceId}\\s*\\|`),
+    );
     expect(adversarial.provenance.retrievalDate).toBe("2026-07-26");
     expect(adversarial.provenance.transformations.length).toBeGreaterThan(0);
   });

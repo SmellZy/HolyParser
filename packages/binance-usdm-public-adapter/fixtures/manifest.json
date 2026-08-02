@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "binance-usdm-fixture-manifest/v1",
+  "retrievalDate": "2026-08-02",
+  "productGroup": "BINANCE_USDM_FUTURES",
+  "fixtures": [
+    {
+      "path": "exchange-info.json",
+      "sourceIds": ["BNFUT-01", "BNFUT-10"],
+      "origin": "synthetic",
+      "transformations": "Minimal field subset preserving official exchangeInfo asset, contract, status and filter semantics; values are non-production examples."
+    },
+    {
+      "path": "public-rest.json",
+      "sourceIds": ["BNFUT-01"],
+      "origin": "minimally-transformed",
+      "transformations": "Official example shapes reduced to bounded single-symbol rows; numeric values changed and sequence IDs represented as JSON integer tokens where the API does so."
+    },
+    {
+      "path": "depth-sequence.json",
+      "sourceIds": ["BNFUT-02", "BNFUT-04", "BNFUT-09"],
+      "origin": "synthetic",
+      "transformations": "Small U/u/pu streams preserve documented overlap, chaining, absolute quantities, zero deletion, UM st=1 and CM st=2 discrimination without copying extended prose."
+    },
+    {
+      "path": "malformed.json",
+      "sourceIds": ["BNFUT-01", "BNFUT-02", "BNFUT-05"],
+      "origin": "synthetic",
+      "transformations": "Adversarial malformed, crossed, excessive, wrong-family and error payloads created locally; no exchange payload copied."
+    }
+  ]
+}
