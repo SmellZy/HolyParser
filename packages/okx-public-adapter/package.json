@@ -1,0 +1,36 @@
+{
+  "name": "@arbitrage/okx-public-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "fixtures"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "canary": "node dist/canary.js",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "prelint": "npm run build --workspace=@arbitrage/market-data",
+    "pretest": "npm run build --workspace=@arbitrage/market-data",
+    "pretypecheck": "npm run build --workspace=@arbitrage/market-data",
+    "test": "vitest run",
+    "test:canary": "OKX_LIVE_CANARY=1 vitest run src/live-canary.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@arbitrage/market-data": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "fast-check": "4.9.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
+  }
+}

@@ -123,24 +123,38 @@ exact wire values and fixture-tested before an adapter is approved.
 - **Product, API and access:** `VERIFIED` — OKX Exchange API V5, public and
   authenticated REST/WS. Markets: Spot, Margin, Swap, Futures, Option and
   documented Events. Sources: OKX-01..03.
-- **Instrument identity and constraints:** `VERIFIED` — examples
-  `BTC-USDT`, `BTC-USDT-SWAP`, `BTC-USDC-SWAP`, `BTC-USD-SWAP`;
-  `baseCcy`, `quoteCcy`, `settleCcy`, `ctVal`, `ctMult`, `ctValCcy`,
-  `ctType` (`linear`/`inverse`), `tickSz`, `lotSz`, `minSz`. Tick-band
-  instruments require the official tick-band source. Minimum notional is
-  `UNVERIFIED`.
-- **Prices and funding:** ticker, derivative mark/index, current/historical
-  funding and next timestamp are `VERIFIED`. Predicted/next rate is `VERIFIED`
-  but can be null. A fixed interval field is `UNVERIFIED`; official schedules
-  can be 8/6/4/2/1 hours, so timestamps are authoritative. Spot mark price is
-  `UNSUPPORTED`.
+- **Instrument identity and constraints:** `VERIFIED` — official `instId`,
+  `instType`, `instFamily`, `uly`, `settleCcy`, `ctVal`, `ctMult`, `ctValCcy`,
+  `ctType` (`linear`/`inverse`), `tickSz`, `lotSz`, `minSz`, state and
+  `ruleType`. For derivatives, the current guide explicitly limits `baseCcy`
+  and `quoteCcy` to Spot/Margin; they must not be parsed from `instId`.
+  Linear base/quote/settlement roles are obtained from
+  `ctValCcy`/`settleCcy`; inverse roles remain distinct. Pre-market X-Perps
+  use `instType=FUTURES` plus `ruleType=pre_market`, later `xperp`. Minimum
+  notional is `UNVERIFIED`. Source: OKX-01, OKX-02.
+- **Prices and funding:** ticker `last`/`bidPx`/`askPx`, derivative `markPx`,
+  and index `idxPx` are `VERIFIED` and are not interchangeable.
+  `fundingRate` is explicitly the `PREDICTED` upcoming-settlement rate;
+  `settFundingRate` is `CURRENT` only while `settState=processing`, otherwise
+  it is `LAST`. `nextFundingRate` is `UNSUPPORTED` for `current_period`;
+  `next_period` is no longer supported. The actual interval is the difference
+  between `fundingTime` and `nextFundingTime`; it can be 8/6/4/2/1 hours and
+  is never hardcoded. Funding applies to Swap and X-Perp Futures, not
+  traditional expiry Futures. History is `VERIFIED`; derivative minimum
+  notional remains `UNVERIFIED`. Source: OKX-01.
 - **Books and operations:** `/market/books` (400) and `/market/books-full`
   (5000, one-second cache) are `VERIFIED`. WS `books` 100 ms, eligible
   `books-l2-tbt`/`books50-l2-tbt` 10 ms, `books5` snapshot 100 ms and BBO are
-  documented. `prevSeqId/seqId` continuity is `VERIFIED`. JSON checksum is
-  `UNSUPPORTED` after 2026-06-23: the field remains but is always `0`. Exact
-  gap recovery is `RESEARCH_REQUIRED`. Endpoint/user/instrument limits,
-  `/api/v5/public/time` and Demo Trading are `VERIFIED`.
+  documented. `prevSeqId/seqId` continuity, the same-ID empty no-update
+  message, and the smaller-ID maintenance reset exception are `VERIFIED`.
+  JSON checksum is `UNSUPPORTED` after 2026-06-23: the field remains but is
+  always `0`. Exact server-prescribed JSON gap recovery is
+  `RESEARCH_REQUIRED`; Phase 2A.2 therefore closes and resubscribes, accepting
+  executable recovery only from a new `action=snapshot`. Endpoint limits,
+  WebSocket 3-connect-requests/s, 480 operations/connection/hour, 64 KB
+  subscription bound, heartbeat behavior, `/api/v5/public/time`, Global
+  public hosts and Demo Trading are `VERIFIED`. Region-specific WebSocket
+  routing remains `RESEARCH_REQUIRED`. Sources: OKX-01..03.
 - **Authentication and trading inventory:** API key/secret/passphrase,
   HMAC-SHA256 Base64 headers, private order/position streams, `clOrdId`
   (32 alphanumeric, pending-order uniqueness), market/limit/post-only/FOK/IOC

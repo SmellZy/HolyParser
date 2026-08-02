@@ -113,6 +113,9 @@ Not delivered:
 
 ### Phase 2A.2 — OKX Exchange V5 Swap/Futures public adapter
 
+Status: implemented on 2026-07-26; formal acceptance review pending. This
+status does not freeze or approve the phase.
+
 Scope:
 
 - current officially verified public, unauthenticated OKX V5 Swap/Futures
@@ -135,6 +138,17 @@ Acceptance:
   recovery;
 - malformed, stale, reconnect, resubscribe, limit, and drift cases pass;
 - all repository quality, build, audit, Docker, and runtime checks remain green.
+
+Implementation evidence:
+
+- isolated `@arbitrage/okx-public-adapter` workspace;
+- exact runtime schemas and explicit derivative identity/funding mappings;
+- bounded public REST/JSON-WebSocket transports, injected freshness policy and
+  low-cardinality observability contracts;
+- deterministic provenance fixtures, fault injection, replay tests and an
+  opt-in credential-free live canary;
+- [`PHASE_2A_2_OKX_PUBLIC_ADAPTER.md`](PHASE_2A_2_OKX_PUBLIC_ADAPTER.md) and
+  [`PHASE_2A_2_ACCEPTANCE.md`](PHASE_2A_2_ACCEPTANCE.md).
 
 ### Phase 2A.3 — Binance USDⓈ-M Futures public adapter
 

@@ -53,7 +53,7 @@ project is authorized to use it. No trading is approved.
 | Binance USDⓈ-M | `VERIFIED`; multiplier/linear flag gaps | `VERIFIED` mark/index | Current/history/next `VERIFIED`; interval/predicted gaps | Snapshot/delta `VERIFIED` | `U/u/pu`; no verified checksum; cadence/mixed-stream research |
 | Binance Spot | `VERIFIED` | Ticker `VERIFIED`; derivative prices `UNSUPPORTED` | `UNSUPPORTED` | Snapshot/delta `VERIFIED` | `lastUpdateId/U/u`; resync verified |
 | Binance Alpha | Token/chain identity `VERIFIED` | Ticker `VERIFIED`; mark/index unverified | `UNVERIFIED` | Snapshot/delta `VERIFIED` | Full resync `RESEARCH_REQUIRED` |
-| OKX Exchange | `VERIFIED`, including settlement/contract values | Derivative mark/index `VERIFIED` | Current/predicted/history/next `VERIFIED`; fixed interval field absent | Multiple snapshot/delta tiers `VERIFIED` | `seqId/prevSeqId`; checksum `UNSUPPORTED` |
+| OKX Exchange | `VERIFIED`; derivative asset roles use `ctValCcy`/`settleCcy`, not Spot-only base/quote fields; minimum notional `UNVERIFIED` | Ticker last/bid/ask and derivative mark/index `VERIFIED` as separate semantics | Predicted/current-or-last/history/settlement time `VERIFIED`; next-period rate `UNSUPPORTED`; interval derived from timestamps | REST snapshot and JSON `books` snapshot/delta `VERIFIED` | `seqId/prevSeqId` verified; checksum `UNSUPPORTED`; exact server gap recovery `RESEARCH_REQUIRED` |
 | OKX DEX | Chain + token address `VERIFIED` | Route quotes `VERIFIED` | `UNSUPPORTED` | `UNSUPPORTED` | Transaction/finality model, not book integrity |
 | Bitget UTA | `VERIFIED`; settlement/multiplier/type gaps | Futures mark/index `VERIFIED` | Current/history/interval/next `VERIFIED`; predicted unverified | Snapshot/delta `VERIFIED` | `seq/pseq`; checksum `UNSUPPORTED`; gap action research |
 | Gate | Spot/contract metadata `VERIFIED` with precision gaps | Mark/index `VERIFIED` | Current/next/history/interval `VERIFIED` | Snapshot/delta `VERIFIED` | `U/u`; checksum unverified; decimal-size opt-in |
@@ -75,7 +75,7 @@ project is authorized to use it. No trading is approved.
 | Binance USDⓈ-M | `VERIFIED` dynamic/weighted | `VERIFIED` | `VERIFIED` | Mixed UM/CM stream filtering and cadence |
 | Binance Spot | `VERIFIED` dynamic/weighted | `VERIFIED` | `VERIFIED` | Jurisdiction/data rights |
 | Binance Alpha | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | `RESEARCH_REQUIRED` | Incomplete operational docs |
-| OKX Exchange | `VERIFIED` endpoint/user/tier | `VERIFIED` | Continuity verified; exact gap action research | Regional/VIP/product access |
+| OKX Exchange | `VERIFIED` endpoint/IP plus WS operation limits | `VERIFIED` | Heartbeat, resubscribe inputs and continuity verified; adapter uses fail-closed replacement snapshot because exact server gap action is `RESEARCH_REQUIRED` | Regional WebSocket routing and legal/product access |
 | OKX DEX | `VERIFIED` tiered | `UNVERIFIED` | Not a persistent book | V5/V6 contradiction and no sandbox |
 | Bitget UTA | `VERIFIED` | `VERIFIED` via common V2 | Gap action research | Jurisdiction/account mode |
 | Gate | Current canonical limits `VERIFIED`; stale mirror conflict | Endpoint verified; access conflict | Snapshot/replay verified | Decimal size and canonical limit policy |

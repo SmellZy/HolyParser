@@ -1,0 +1,53 @@
+{
+  "fixtureSet": "okx-v5-public-swap-futures/v1",
+  "retrievalDate": "2026-07-27",
+  "productGroup": "OKX_V5_SWAP_FUTURES",
+  "sources": [
+    {
+      "sourceId": "OKX-01",
+      "url": "https://www.okx.com/docs-v5/en/"
+    },
+    {
+      "sourceId": "OKX-02",
+      "url": "https://www.okx.com/docs-v5/log_en/"
+    },
+    {
+      "sourceId": "OKX-03",
+      "url": "https://www.okx.com/en-eu/help/okx-order-book-channels-checksum-field-deprecation"
+    }
+  ],
+  "fixtures": [
+    {
+      "file": "public-rest.json",
+      "origin": "MINIMALLY_TRANSFORMED",
+      "sourceIds": ["OKX-01"],
+      "transformations": [
+        "Reduced every official response to fields consumed by the adapter.",
+        "Changed values and timestamps to compact deterministic examples.",
+        "Added separate USDT and USDC linear instruments to test identity separation.",
+        "Preserved the official guide example's empty ctMult. Point-in-time live rows returned 1; any non-empty, non-unit multiplier fails closed pending a separately approved mapping."
+      ]
+    },
+    {
+      "file": "books-sequence.json",
+      "origin": "SYNTHETIC",
+      "sourceIds": ["OKX-01", "OKX-02", "OKX-03"],
+      "transformations": [
+        "Preserved documented snapshot prevSeqId=-1 semantics.",
+        "Preserved prevSeqId to previous seqId chaining.",
+        "Preserved the documented empty no-update message and maintenance reset.",
+        "Used synthetic prices, sizes, sequence IDs and timestamps.",
+        "Kept deprecated checksum fixed at zero."
+      ]
+    },
+    {
+      "file": "malformed.json",
+      "origin": "SYNTHETIC",
+      "sourceIds": ["OKX-01", "OKX-03"],
+      "transformations": [
+        "Created adversarial identity, decimal, sequence, checksum and structure failures.",
+        "Does not quote an official response."
+      ]
+    }
+  ]
+}

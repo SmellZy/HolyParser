@@ -1,0 +1,107 @@
+{
+  "snapshot": {
+    "arg": {
+      "channel": "books",
+      "instId": "ALPHA-USDT-SWAP"
+    },
+    "action": "snapshot",
+    "data": [
+      {
+        "asks": [["10.26", "20", "0", "2"]],
+        "bids": [["10.24", "15", "0", "3"]],
+        "ts": "1785024000140",
+        "checksum": 0,
+        "prevSeqId": -1,
+        "seqId": 100
+      }
+    ]
+  },
+  "delta": {
+    "arg": {
+      "channel": "books",
+      "instId": "ALPHA-USDT-SWAP"
+    },
+    "action": "update",
+    "data": [
+      {
+        "asks": [
+          ["10.26", "0", "0", "0"],
+          ["10.27", "8", "0", "1"]
+        ],
+        "bids": [["10.25", "9", "0", "1"]],
+        "ts": "1785024000150",
+        "checksum": 0,
+        "prevSeqId": 100,
+        "seqId": 104
+      }
+    ]
+  },
+  "heartbeat": {
+    "arg": {
+      "channel": "books",
+      "instId": "ALPHA-USDT-SWAP"
+    },
+    "action": "update",
+    "data": [
+      {
+        "asks": [],
+        "bids": [],
+        "ts": "1785024060150",
+        "checksum": 0,
+        "prevSeqId": 104,
+        "seqId": 104
+      }
+    ]
+  },
+  "gap": {
+    "arg": {
+      "channel": "books",
+      "instId": "ALPHA-USDT-SWAP"
+    },
+    "action": "update",
+    "data": [
+      {
+        "asks": [],
+        "bids": [["10.23", "4", "0", "1"]],
+        "ts": "1785024000160",
+        "checksum": 0,
+        "prevSeqId": 102,
+        "seqId": 108
+      }
+    ]
+  },
+  "maintenanceReset": {
+    "arg": {
+      "channel": "books",
+      "instId": "ALPHA-USDT-SWAP"
+    },
+    "action": "update",
+    "data": [
+      {
+        "asks": [],
+        "bids": [],
+        "ts": "1785024000170",
+        "checksum": 0,
+        "prevSeqId": 104,
+        "seqId": 3
+      }
+    ]
+  },
+  "recovery": {
+    "arg": {
+      "channel": "books",
+      "instId": "ALPHA-USDT-SWAP"
+    },
+    "action": "snapshot",
+    "data": [
+      {
+        "asks": [["10.30", "12", "0", "2"]],
+        "bids": [["10.20", "11", "0", "2"]],
+        "ts": "1785024000180",
+        "checksum": 0,
+        "prevSeqId": -1,
+        "seqId": 200
+      }
+    ]
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "instruments": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "instType": "SWAP",
+        "instId": "ALPHA-USDT-SWAP",
+        "instFamily": "ALPHA-USDT",
+        "uly": "ALPHA-USDT",
+        "baseCcy": "",
+        "quoteCcy": "",
+        "settleCcy": "USDT",
+        "ctVal": "0.01",
+        "ctMult": "",
+        "ctValCcy": "ALPHA",
+        "ctType": "linear",
+        "tickSz": "0.0001",
+        "lotSz": "1",
+        "minSz": "1",
+        "listTime": "1785024000000",
+        "expTime": "",
+        "state": "live",
+        "ruleType": "normal",
+        "futureSettlement": false
+      },
+      {
+        "instType": "SWAP",
+        "instId": "ALPHA-USDC-SWAP",
+        "instFamily": "ALPHA-USDC",
+        "uly": "ALPHA-USDC",
+        "baseCcy": "",
+        "quoteCcy": "",
+        "settleCcy": "USDC",
+        "ctVal": "0.01",
+        "ctMult": "",
+        "ctValCcy": "ALPHA",
+        "ctType": "linear",
+        "tickSz": "0.0001",
+        "lotSz": "1",
+        "minSz": "1",
+        "listTime": "1785024000000",
+        "expTime": "",
+        "state": "live",
+        "ruleType": "normal",
+        "futureSettlement": false
+      }
+    ]
+  },
+  "ticker": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "instType": "SWAP",
+        "instId": "ALPHA-USDT-SWAP",
+        "last": "10.25",
+        "bidPx": "10.24",
+        "askPx": "10.26",
+        "ts": "1785024000100"
+      }
+    ]
+  },
+  "mark": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "instType": "SWAP",
+        "instId": "ALPHA-USDT-SWAP",
+        "markPx": "10.251",
+        "ts": "1785024000110"
+      }
+    ]
+  },
+  "index": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "instId": "ALPHA-USDT",
+        "idxPx": "10.249",
+        "ts": "1785024000120"
+      }
+    ]
+  },
+  "funding": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "instType": "SWAP",
+        "instId": "ALPHA-USDT-SWAP",
+        "method": "current_period",
+        "fundingRate": "0.00012",
+        "fundingTime": "1785027600000",
+        "nextFundingRate": "",
+        "nextFundingTime": "1785042000000",
+        "settFundingRate": "0.00010",
+        "settState": "settled",
+        "ts": "1785024000130"
+      }
+    ]
+  },
+  "book": {
+    "code": "0",
+    "msg": "",
+    "data": [
+      {
+        "asks": [["10.26", "20", "0", "2"]],
+        "bids": [["10.24", "15", "0", "3"]],
+        "ts": "1785024000140",
+        "seqId": 100
+      }
+    ]
+  }
+}

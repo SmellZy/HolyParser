@@ -3,7 +3,9 @@
 ## 1. Scope and evidence rules
 
 This register contains only first-party exchange or protocol documentation
-reviewed for Phase 0. Retrieval date for every row is **2026-07-26**.
+reviewed for Phase 0. The initial register was retrieved on **2026-07-26**;
+individual rows carry later re-retrieval dates when refreshed for an adapter
+acceptance review.
 
 Evidence labels used by the research record are:
 
@@ -21,7 +23,7 @@ libraries are not API evidence.
 ## 2. Source register
 
 | Source ID | Exchange / product group | Official document title | Official URL | Retrieval date | API family / version | Capabilities supported by this source | Staleness or ambiguity warning |
-|---|---|---|---|---|---|---|---|
+| ----------- | ---------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | BNSPOT-01 | Binance Spot | General — Spot REST API | https://developers.binance.com/en/docs/catalog/core-trading-spot-trading/api/rest-api/general | 2026-07-26 | Spot REST API v3 | Exchange metadata, filters, rate-limit declarations and server time | Limits and filters are dynamic |
 | BNSPOT-02 | Binance Spot | Market — Spot REST API | https://developers.binance.com/en/docs/catalog/core-trading-spot-trading/api/rest-api/market | 2026-07-26 | Spot REST API v3 | Depth snapshots, tickers, public trades and klines | Depth weight varies with requested limit |
 | BNSPOT-03 | Binance Spot | Spot WebSocket Market Streams | https://developers.binance.com/en/docs/catalog/core-trading-spot-trading/api/ws-streams/~ | 2026-07-26 | Spot WebSocket Streams | Public ticker, depth and trade streams | Subscription symbols are lowercase; REST symbols are uppercase |
@@ -58,9 +60,9 @@ libraries are not API evidence.
 | BYBIT-15 | Bybit | Execution | https://bybit-exchange.github.io/docs/v5/websocket/private/execution | 2026-07-26 | Private WebSocket V5 | Execution/fill events | A message may contain multiple fills |
 | BYBIT-16 | Bybit | Enums Definitions | https://bybit-exchange.github.io/docs/v5/enum | 2026-07-26 | API V5 | Status, TIF and rejection enums | Enum surface changes with products |
 | BYBIT-17 | Bybit | Get Order History | https://bybit-exchange.github.io/docs/v5/order/order-list | 2026-07-26 | REST API V5 | Reconciliation by order or client ID | Retention and account-upgrade behavior require explicit handling |
-| OKX-01 | OKX Exchange | OKX API guide | https://www.okx.com/docs-v5/en/ | 2026-07-26 | Exchange API V5 | Authentication, instruments, market data, funding, books, private streams, orders, rate limits and demo trading | Regional domains and account modes vary |
-| OKX-02 | OKX Exchange | OKX API changelog | https://www.okx.com/docs-v5/log_en/ | 2026-07-26 | Exchange API V5 | Current deprecations, funding changes, stream changes and checksum removal | Must be reviewed before every adapter release |
-| OKX-03 | OKX Exchange | Order Book Channels Checksum Field Deprecation | https://www.okx.com/en-eu/help/okx-order-book-channels-checksum-field-deprecation | 2026-07-26 | Exchange V5 JSON WebSocket | Effective production checksum-removal date | Regional help URL, but the change is documented as production-wide |
+| OKX-01 | OKX Exchange V5 Swap/Futures | OKX API guide | https://www.okx.com/docs-v5/en/ | 2026-07-27 | Exchange API V5 REST and JSON WebSocket | Public instruments, tickers, mark/index prices, funding/current settlement semantics, history, REST/WS books, `seqId`/`prevSeqId`, heartbeat, public server time, endpoint limits and public hosts | Re-retrieved for Phase 2A.2 formal acceptance. Derivative `baseCcy`/`quoteCcy` are inapplicable; derive asset roles only from documented derivative fields. `ctVal` and `ctMult` remain distinct native fields; the guide example leaves `ctMult` empty while point-in-time live rows returned `1`. Global and regional domains differ. Exact JSON-book gap recovery remains incomplete. |
+| OKX-02 | OKX Exchange V5 Swap/Futures | OKX API changelog | https://www.okx.com/docs-v5/log_en/ | 2026-07-27 | Exchange API V5 | 2026-07-16 Pre-market X-Perp `FUTURES`, 2026-06-23 checksum deprecation, 2026-05-20 Global REST-domain change and current API changes through 2026-07-23 | Re-retrieved for Phase 2A.2 formal acceptance. A 2026-07-28 `books-rpi` rollout is future-dated and does not alter the implemented JSON `books` channel. Must be reviewed before every adapter release. |
+| OKX-03 | OKX Exchange V5 JSON books | Order Book Channels Checksum Field Deprecation | https://www.okx.com/en-eu/help/okx-order-book-channels-checksum-field-deprecation | 2026-07-27 | Exchange V5 JSON WebSocket | Confirms that JSON `books` checksum is fixed to `0` and must not be used for integrity verification | Re-retrieved for Phase 2A.2 formal acceptance. Regional help URL; use together with OKX-01 and OKX-02. |
 | OKXDEX-01 | OKX DEX / Onchain OS | API Access and Usage | https://web3.okx.com/onchainos/dev-docs-v5/dex-api/dex-api-access-and-usage | 2026-07-26 | Page family V5; examples V6 | Developer-project authentication, signature and timestamp | V5/V6 endpoint-family contradiction blocks implementation |
 | OKXDEX-02 | OKX DEX / Onchain OS | API Fee | https://web3.okx.com/onchainos/dev-docs-v5/dex-api/dex-api-fee | 2026-07-26 | DEX API V5 | Access tiers, RPS and commercial constraints | RPS depends on plan, approval and volume |
 | OKXDEX-03 | OKX DEX / Onchain OS | Get Supported Chains | https://web3.okx.com/onchainos/dev-docs-v5/dex-api/dex-get-aggregator-supported-chains | 2026-07-26 | DEX API V5 endpoint | Dynamic chain support and chain identity | Static chain lists become stale |

@@ -1,0 +1,8 @@
+{
+  "scientificPrice": "1e-8",
+  "nonZeroChecksum": 42,
+  "unsafeSequenceText": "900719925474099312345",
+  "wrongInstrumentId": "BETA-USDT-SWAP",
+  "missingPreviousSequence": null,
+  "oversizedMessageBytes": 1000001
+}
