@@ -195,6 +195,8 @@ Implementation evidence:
 
 ### Phase 2A.4 — Bybit V5 `linear` public adapter
 
+Implementation status: **implemented; independent formal acceptance pending**.
+
 Scope:
 
 - one isolated public, unauthenticated Bybit V5 `linear` adapter;
@@ -215,6 +217,22 @@ Acceptance:
   executable output;
 - category, settlement, funding semantic, and exact-decimal boundaries pass;
 - full three-adapter deterministic and runtime regression suite passes.
+
+Implementation evidence:
+
+- isolated `@arbitrage/bybit-linear-public-adapter` workspace;
+- bounded public REST and `wss://stream.bybit.com/v5/public/linear` boundaries;
+- exact metadata, price, funding and book mappings with explicit evidence
+  states and USDT/USDC separation;
+- snapshot/delta application, duplicate/older rejection, `u=1` replacement,
+  transport-gap suppression and replacement-snapshot recovery;
+- full sequence-gap detection remains `RESEARCH_REQUIRED` because current
+  official payloads contain neither a previous ID nor a contiguous-increment
+  contract;
+- source-provenanced fixtures, deterministic/property/fault tests,
+  low-cardinality telemetry and a default-off bounded public canary;
+- [`PHASE_2A_4_BYBIT_LINEAR_PUBLIC_ADAPTER.md`](PHASE_2A_4_BYBIT_LINEAR_PUBLIC_ADAPTER.md),
+  implementation pre-acceptance evidence and ADR 0008.
 
 ## 5. Analytics and notification foundations
 

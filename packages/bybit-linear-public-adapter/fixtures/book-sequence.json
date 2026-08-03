@@ -1,0 +1,125 @@
+{
+  "topic": "orderbook.50.BTCUSDT",
+  "messages": [
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "snapshot",
+      "ts": "1700000000000",
+      "cts": "1700000000000",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [
+          ["100.0", "2"],
+          ["99.5", "1"]
+        ],
+        "a": [["100.2", "3"]],
+        "u": "100",
+        "seq": "1000"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "delta",
+      "ts": "1700000000010",
+      "cts": "1700000000010",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["100.0", "1"]],
+        "a": [],
+        "u": "105",
+        "seq": "1010"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "delta",
+      "ts": "1700000000020",
+      "cts": "1700000000020",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["99.9", "1"]],
+        "a": [],
+        "u": "105",
+        "seq": "1010"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "delta",
+      "ts": "1700000000030",
+      "cts": "1700000000030",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["100.0", "0"]],
+        "a": [],
+        "u": "106",
+        "seq": "1011"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "delta",
+      "ts": "1700000000035",
+      "cts": "1700000000035",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["99.7", "1"]],
+        "a": [],
+        "u": "105",
+        "seq": "1010"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "delta",
+      "ts": "1700000000040",
+      "cts": "1700000000040",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["99.6", "1"]],
+        "a": [],
+        "u": "107",
+        "seq": "1010"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "delta",
+      "ts": "1700000000045",
+      "cts": "1700000000045",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["99.5", "1"]],
+        "a": [],
+        "u": "108",
+        "seq": "1012"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "snapshot",
+      "ts": "1700000000050",
+      "cts": "1700000000050",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["99.8", "4"]],
+        "a": [["100.3", "4"]],
+        "u": "200",
+        "seq": "2000"
+      }
+    },
+    {
+      "topic": "orderbook.50.BTCUSDT",
+      "type": "snapshot",
+      "ts": "1700000000060",
+      "cts": "1700000000060",
+      "data": {
+        "s": "BTCUSDT",
+        "b": [["99.8", "4"]],
+        "a": [["100.3", "4"]],
+        "u": "1",
+        "seq": "2000"
+      }
+    }
+  ]
+}

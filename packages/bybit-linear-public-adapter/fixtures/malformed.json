@@ -1,0 +1,24 @@
+{
+  "wrongCategory": {
+    "retCode": 0,
+    "retMsg": "OK",
+    "result": { "category": "inverse", "list": [] },
+    "retExtInfo": {},
+    "time": "1700000000000"
+  },
+  "crossedBook": {
+    "topic": "orderbook.50.BTCUSDT",
+    "type": "snapshot",
+    "ts": "1700000000000",
+    "cts": "1700000000000",
+    "data": {
+      "s": "BTCUSDT",
+      "b": [["101", "1"]],
+      "a": [["100", "1"]],
+      "u": "100",
+      "seq": "1000"
+    }
+  },
+  "malformedDecimal": "1e-8",
+  "oversizedUpdateId": "1234567890123456789012345678901"
+}

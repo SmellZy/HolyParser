@@ -9,6 +9,7 @@ COPY packages/design-tokens/package.json ./packages/design-tokens/package.json
 COPY packages/market-data/package.json ./packages/market-data/package.json
 COPY packages/okx-public-adapter/package.json ./packages/okx-public-adapter/package.json
 COPY packages/binance-usdm-public-adapter/package.json ./packages/binance-usdm-public-adapter/package.json
+COPY packages/bybit-linear-public-adapter/package.json ./packages/bybit-linear-public-adapter/package.json
 
 RUN npm ci --no-audit --no-fund
 

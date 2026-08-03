@@ -1,0 +1,60 @@
+{
+  "category": "linear",
+  "list": [
+    {
+      "symbol": "BTCUSDT",
+      "contractType": "LinearPerpetual",
+      "status": "Trading",
+      "baseCoin": "BTC",
+      "quoteCoin": "USDT",
+      "settleCoin": "USDT",
+      "launchTime": "1700000000000",
+      "deliveryTime": "0",
+      "priceScale": "1",
+      "priceFilter": { "tickSize": "0.1" },
+      "lotSizeFilter": {
+        "qtyStep": "0.001",
+        "minOrderQty": "0.001",
+        "minNotionalValue": "5"
+      },
+      "fundingInterval": 480
+    },
+    {
+      "symbol": "BTCPERP",
+      "contractType": "LinearPerpetual",
+      "status": "Trading",
+      "baseCoin": "BTC",
+      "quoteCoin": "USDC",
+      "settleCoin": "USDC",
+      "launchTime": "1700000000000",
+      "deliveryTime": "0",
+      "priceScale": "1",
+      "priceFilter": { "tickSize": "0.1" },
+      "lotSizeFilter": {
+        "qtyStep": "0.001",
+        "minOrderQty": "0.001",
+        "minNotionalValue": "5"
+      },
+      "fundingInterval": 60
+    },
+    {
+      "symbol": "BTC-30DEC26",
+      "contractType": "LinearFutures",
+      "status": "Trading",
+      "baseCoin": "BTC",
+      "quoteCoin": "USDT",
+      "settleCoin": "USDT",
+      "launchTime": "1700000000000",
+      "deliveryTime": "1798588800000",
+      "priceScale": "1",
+      "priceFilter": { "tickSize": "0.1" },
+      "lotSizeFilter": {
+        "qtyStep": "0.001",
+        "minOrderQty": "0.001",
+        "minNotionalValue": "5"
+      },
+      "fundingInterval": 480
+    }
+  ],
+  "nextPageCursor": ""
+}

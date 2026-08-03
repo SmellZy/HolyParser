@@ -1,0 +1,37 @@
+{
+  "retrievalDate": "2026-08-03",
+  "productGroup": "BYBIT_V5_LINEAR",
+  "fixtures": [
+    {
+      "file": "instruments.json",
+      "sourceIds": ["BYBIT-02", "BYBIT-16"],
+      "origin": "synthetic",
+      "transformations": "Minimal USDT perpetual, USDC perpetual and USDT delivery rows preserving documented field names and enum semantics."
+    },
+    {
+      "file": "public-rest.json",
+      "sourceIds": [
+        "BYBIT-03",
+        "BYBIT-04",
+        "BYBIT-05",
+        "BYBIT-09",
+        "BYBIT-10",
+        "BYBIT-11"
+      ],
+      "origin": "synthetic",
+      "transformations": "Values reduced and identifiers encoded as strings so exact boundary parsing can be tested without copying substantial documentation; rate-limit evidence is synthetic and contains no raw production error."
+    },
+    {
+      "file": "book-sequence.json",
+      "sourceIds": ["BYBIT-06", "BYBIT-08"],
+      "origin": "synthetic",
+      "transformations": "Snapshot, monotonic delta, duplicate, older, contradictory ordering, stale suppression, explicit replacement recovery, zero deletion and u=1 replacement preserve only documented semantics."
+    },
+    {
+      "file": "malformed.json",
+      "sourceIds": ["BYBIT-02", "BYBIT-05", "BYBIT-06", "BYBIT-10"],
+      "origin": "synthetic",
+      "transformations": "Wrong category, crossed book, malformed decimal and oversized identifier are adversarial constructions."
+    }
+  ]
+}

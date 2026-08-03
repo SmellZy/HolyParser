@@ -425,30 +425,43 @@ exact wire values and fixture-tested before an adapter is approved.
   `VERIFIED`. Some business errors use HTTP 200. Unknown-state policy and
   geography are `RESEARCH_REQUIRED`.
 
-### 3.14 Bybit
+### 3.14 Bybit V5 linear
 
 - **Product, API and access:** `VERIFIED` — Bybit API V5 Unified Trading,
   public/authenticated REST and public/private/order-entry WS. Spot, linear,
-  inverse and options must be separate categories. Sources: BYBIT-01..17.
-- **Instrument identity and constraints:** symbol, category-specific format,
-  base/quote/settlement, contract type, tick, quantity step and derivatives
-  minimum quantity/notional are `VERIFIED`. Spot `minOrderQty` is deprecated;
-  current minimum amount is authoritative. Derivative contract multiplier is
-  `UNVERIFIED`.
-- **Prices and funding:** derivative ticker, mark, index, current/history,
-  per-instrument interval and next time are `VERIFIED`; predicted funding is
-  `UNVERIFIED`.
+  inverse and options must be separate categories. Phase 2A.4 public evidence
+  is BYBIT-01..11, BYBIT-16 and BYBIT-18, re-retrieved 2026-08-03.
+- **Instrument identity and constraints:** `category=linear`, opaque `symbol`,
+  `baseCoin`, `quoteCoin`, `settleCoin`, `LinearPerpetual`/`LinearFutures`,
+  lifecycle status, `priceFilter.tickSize`, `lotSizeFilter.qtyStep`,
+  `minOrderQty`, `minNotionalValue`, `priceScale`, launch/delivery times and
+  explicit funding interval are `VERIFIED`. The adapter never queries by
+  `baseCoin`, because the official warning says that can return linear and
+  inverse rows together. Derivative contract multiplier is `UNVERIFIED`.
+- **Prices and funding:** separate last/bid/ask/mark/index, venue-native
+  current funding, settled history, explicit per-instrument interval and next
+  time are `VERIFIED`. Predicted funding is `UNVERIFIED`. Empty expiry-Futures
+  funding fields remain absent, and delivery Futures funding is `UNSUPPORTED`.
 - **Books and operations:** REST snapshot and WS snapshot/delta, `u`, cross
-  sequence, restart `u=1`, replacement snapshots and category/depth cadences
-  are `VERIFIED`. Checksum is `UNVERIFIED`. IP/UID/endpoint/WS limits, server
-  time and testnet are `VERIFIED`.
+  sequence ordering, restart `u=1`, replacement snapshots, zero deletion and
+  category/depth cadences are `VERIFIED`. Full silent-gap detection is
+  `RESEARCH_REQUIRED`: the selected WS payload has no previous ID and the
+  documentation does not define contiguous `u` or `seq` increments. The
+  adapter therefore detects duplicate/older and contradictory ordering plus
+  transport loss, but never invents `+1` continuity. Checksum is `UNVERIFIED`.
+  Default 600 HTTP requests/5 seconds/IP, WS connection limits, public server
+  time and testnet are `VERIFIED`; endpoint-level public market budgets are
+  incomplete, so the implementation uses a conservative process-local budget.
+  The canonical order-book page currently documents linear depth 1..1000;
+  the official API Explorer still shows an older limit and is treated as stale.
 - **Authentication and trading inventory:** HMAC-SHA256 or RSA-SHA256,
   private orders/positions/executions, `orderLinkId` (36, unique), limit,
   market, IOC/FOK/post-only and conditional/TP-SL are `VERIFIED`. Market
   becomes IOC limit; acknowledgement is asynchronous. Exhaustive timeout
   unknown-state behavior is `RESEARCH_REQUIRED`; reconcile before retry.
   Regional 403/entity hosts and account-category restrictions are documented
-  and require owner validation.
+  and require owner validation. Phase 2A.4 uses only the Global public TLS
+  origins and contains no authentication or trading path.
 
 ### 3.15 Hyperliquid
 
