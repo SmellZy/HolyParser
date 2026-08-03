@@ -658,6 +658,133 @@ parameter and policy questions remain open and do not authorize implementation.
 - **Recommendation:** data-classification allowlists, minimal private content,
   no secrets, versioned consent, and immutable security audit.
 
+## 9. Phase 2B Spread Analytics Core decisions — 2026-08-03
+
+For D-055 through D-064, every authority named in `Status` must approve and the
+product owner records the final decision. `When: before Phase 2B.x` means before
+any implementation of that subphase, not merely before production deployment.
+An unresolved item must not be converted into an implementation default.
+
+### D-055 — Canonical instrument compatibility and mapping governance
+
+- **When:** before Phase 2B.1
+- **Status:** `BLOCKING PRODUCT/QUANT/MARKET-DATA DECISION`
+- **Question:** Which market/contract types and lifecycle/status combinations,
+  expiries, multiplier and contract-value units are compatible; what expiry
+  tolerance and one-to-one/one-to-many cardinality rules apply; who owns
+  mappings; and how are correction, supersession, rollback, effective time,
+  proposer/reviewer separation, and deterministic confidence classes governed?
+- **Recommendation:** initially allow only an explicitly enumerated pilot
+  derivatives compatibility matrix; require exact canonical base/quote/
+  settlement roles, compatible economic units, four-eyes review, immutable
+  versions, conflict quarantine, and no probabilistic auto-approval.
+
+### D-056 — Requested exposure and depth-completion policy
+
+- **When:** before Phase 2B.2
+- **Status:** `BLOCKING PRODUCT/QUANT DECISION`
+- **Question:** Is requested size expressed as base quantity, quote notional, or
+  settlement notional; how are contract values converted; what receive-time
+  skew and minimum/maximum requested exposure apply; and may partial depth be
+  displayed?
+- **Recommendation:** require an explicit unit on every request, derive common
+  exposure only from approved exact multiplier/unit data, require full depth on
+  both legs for executable output, and expose any partial result as a separately
+  named non-actionable diagnostic with residual quantity.
+
+### D-057 — Spread direction, denominator, scale, and rounding
+
+- **When:** before Phase 2B.2
+- **Status:** `BLOCKING PRODUCT/QUANT DECISION`
+- **Question:** Approve long/short sign, entry and exit bid/ask direction,
+  percentage denominator, output scale, midpoint scale, and named rounding
+  policies.
+- **Recommendation:** use the candidate formulas in
+  `PHASE_2B_SPREAD_ANALYTICS_PLAN.md`; independently approve golden vectors and
+  make every division policy explicit. Do not describe entry-minus-exit spread
+  as monetary PnL.
+
+### D-058 — Required cost and expected-result policy
+
+- **When:** before Phase 2B.2 expected-result output or Phase 2B.7 ranking
+- **Status:** `BLOCKING PRODUCT/QUANT DECISION`
+- **Question:** Which fees and costs are mandatory; which maker/taker tier and
+  notional/currency basis apply; what exact reference defines slippage; and
+  what scenario defines expected gross convergence?
+- **Recommendation:** model each cost as an explicit versioned input with
+  source/effective time and currency. If a policy-required component is unknown,
+  expected net is unavailable. Do not use a zero default or guaranteed-profit
+  wording.
+
+### D-059 — Funding compatibility, direction, and settlement alignment
+
+- **When:** before Phase 2B.3
+- **Status:** `BLOCKING PRODUCT/QUANT/MARKET-DATA DECISION`
+- **Question:** Which combinations of `CURRENT`, `LAST`, `PREDICTED`, and
+  historical semantics may be compared; what sign and basis notional apply;
+  what next-settlement skew is acceptable; and which scale/rounding policy
+  applies to normalized and cash-flow results?
+- **Recommendation:** always preserve native observations; permit a directional
+  or expected cash-flow result only for an enumerated compatible semantic and
+  timing policy. Keep the frozen normalized eight-hour calculation separately
+  named/versioned and unavailable when interval is unknown.
+
+### D-060 — Opportunity lifecycle policy
+
+- **When:** before Phase 2B.4
+- **Status:** `BLOCKING PRODUCT/QUANT DECISION`
+- **Question:** What entry/exit thresholds, minimum duration, convergence rule,
+  expiry, duplicate key, funding gate, requalification delay, and policy-version
+  migration apply?
+- **Recommendation:** approve a complete transition table. Any failed required
+  gate enters `DEGRADED`; recovery returns to `QUALIFYING`, not directly to
+  `ACTIVE`; duplicate revisions are idempotent and out-of-order revisions fail
+  closed.
+
+### D-061 — Deterministic anomaly catalogue
+
+- **When:** before Phase 2B.5
+- **Status:** `BLOCKING PRODUCT/QUANT DECISION`
+- **Question:** Which anomaly rules, exact thresholds, baseline/window methods,
+  minimum durations, severity levels, and resolution rules apply?
+- **Recommendation:** use bounded, versioned deterministic rules only; separate
+  market anomalies from source-quality anomalies; prohibit ML/AI and future
+  leakage.
+
+### D-062 — History, downsampling, export, and correction semantics
+
+- **When:** before Phase 2B.6
+- **Status:** `BLOCKING PRODUCT/DATA/LEGAL DECISION`
+- **Question:** In addition to D-021, what immutable record, gap, ordering,
+  downsampling coverage, correction, schema evolution, export format, and
+  reproducibility-horizon semantics apply?
+- **Recommendation:** define exact versioned contracts and fixture replay in
+  2B.6, retain gaps explicitly, and defer every persistence implementation and
+  retention job to separate approval.
+
+### D-063 — Ranking eligibility, score, tie-break, and copy policy
+
+- **When:** before Phase 2B.7
+- **Status:** `BLOCKING PRODUCT/QUANT/LEGAL DECISION`
+- **Question:** Which inputs are required, which deterministic tuple or weighted
+  score ranks eligible candidates, how are components normalized, how are ties
+  resolved, what does completeness mean, and which product wording is allowed?
+- **Recommendation:** gate eligibility before ranking; exclude stale/gapped,
+  incomplete-depth, unresolved-mapping, and unknown-required-cost candidates;
+  use deterministic completeness rather than success probability; prohibit
+  guaranteed-profit language.
+
+### D-064 — Analytics freshness, skew, and bounded-load policies
+
+- **When:** before the affected Phase 2B.x subphase
+- **Status:** `BLOCKING PRODUCT/MARKET-DATA/SRE DECISION`
+- **Question:** What venue/product/channel freshness, cross-leg receive-time
+  skew, batch, book-level, window, replay/export, ranking-candidate, decimal,
+  provenance-count/byte, processing-deadline, and cancellation limits apply?
+- **Recommendation:** version policies by input kind rather than use a global
+  timeout; enforce explicit fail-closed resource bounds and finite-cardinality
+  telemetry.
+
 ### C-023 — Alert foundation precedes user identity
 
 The approved roadmap places Phase 2C before Phase 3 identity. Therefore Phase 2C
@@ -693,8 +820,32 @@ conversion semantics.
 
 ### C-028 — Consolidated acceptance register uses legacy phase labels
 
-`ACCEPTANCE_CRITERIA.md` still names the superseded Phase 2B–13 sequence and was
-not in the approved update list for this amendment. `ROADMAP.md` is authoritative
-for future phase names and gates. Each newly approved implementation phase must
-reconcile its detailed criteria into the consolidated register before freeze;
-legacy labels do not authorize work.
+`ACCEPTANCE_CRITERIA.md` retains the superseded Phase 2B–13 sequence as
+historical evidence and now contains a separately labelled current-roadmap
+Phase 2B register. The current roadmap and
+`PHASE_2B_SPREAD_ANALYTICS_PLAN.md` govern; legacy labels authorize no work.
+
+### C-029 — Instrument match is not asset conversion
+
+A valid Phase 2B.1 match proves only the compatibility policy recorded in its
+version. It does not assert stablecoin parity, cross-chain fungibility,
+conversion availability, custody, or settlement equivalence. USDT and USDC do
+not match implicitly.
+
+### C-030 — Partial depth is not an executable quote
+
+A partial VWAP can be a bounded diagnostic only. It cannot satisfy executable
+spread, actionability, expected-net, or ranking eligibility for the requested
+size. Residual exposure remains explicit.
+
+### C-031 — Funding comparison is not funding prediction
+
+Native `LAST`, `CURRENT`, and `PREDICTED` observations are not interchangeable.
+Normalization changes horizon representation, not semantic certainty. A
+semantic or timing mismatch makes an expected cash-flow result unavailable.
+
+### C-032 — Completeness is not probability
+
+Matching and ranking confidence in Phase 2B describes deterministic evidence
+and required-field completeness only. It must not be presented as probability
+of profit, strategy success, or execution quality.

@@ -87,6 +87,46 @@ hold private exchange credentials.
 Controls: schema validation, capability gates, provenance, staleness gates,
 resource quotas, and isolated adapter failures.
 
+#### Phase 2B analytics sub-boundary
+
+The Spread Analytics Core is a pure in-process consumer of immutable canonical
+observations. It has no network origin, URL, credential, tenant command,
+position, notification, Risk Engine, or Execution Engine port. Dependency
+direction is enforced from analytics contracts toward frozen market-data
+contracts only; adapters never import analytics business rules.
+
+Security and integrity controls are:
+
+- canonical identity and reviewed mapping version are mandatory; ticker text
+  cannot authorize a match;
+- exact-decimal bounds apply to digits, scale, arithmetic operations, division,
+  and output size;
+- unsupported, unverified, research-required, ambiguous, stale, gapped,
+  invalid, locked, or crossed required inputs fail closed;
+- input revision, formula/rule/policy version, provenance, units, quality, and
+  unavailable reason are audit-visible;
+- candidate batches, mapping evidence/chains, book levels, comparison windows,
+  replay records, export bytes, ranking candidates, and processing time have
+  explicit bounds and cancellation;
+- duplicate and out-of-order lifecycle/history inputs are idempotent or
+  rejected according to a versioned deterministic contract;
+- history and export interfaces are contracts only; no persistence or external
+  delivery is introduced in Phase 2B;
+- structured events use bounded schemas and safe reason codes. Metric labels
+  must not contain symbols, instrument/asset/mapping IDs, prices, URLs,
+  payloads, free-form text, raw errors, or unbounded full formula/rule/policy/
+  mapping/input versions; full versions remain bounded structured-event fields;
+- executable market input, valid/displayable/comparable analytics, and
+  actionable analytics use separate fail-closed classifications;
+- anomalous source quality can be reported but cannot create an actionable
+  market opportunity;
+- ranked output is eligibility-gated before sorting, and copy must not claim
+  guaranteed profit.
+
+Resource-limit failure produces a typed non-actionable outcome. It must not
+fall back to a smaller silent sample, partial book presented as full depth, or
+unknown value presented as zero.
+
 ### Zone D — Financial control (later)
 
 Risk Engine, execution coordinator, reconciliation, and credential-decrypting

@@ -296,17 +296,76 @@ migration plan, rollback plan, and explicit phase approval.
 
 ## 14. Spread opportunity and position contracts
 
-Phase 2B introduces read-only, versioned analytics contracts for:
+Phase 2B introduces in-process, read-only, versioned analytics contracts in
+seven frozen increments. Phase 2B does not itself authorize a public HTTP API,
+persistence, or event bus.
 
-- canonical matched-instrument pairs;
-- current and historical spread;
-- executable spread at requested exact size;
-- venue-native funding differential and separately named derived comparisons;
-- opportunity lifecycle, anomaly evidence, ranking, quality, and expiry.
+### 14.1 Phase 2B.1 matching contracts
 
-Every calculation response identifies canonical legs, input market-data
-revisions, source/receive/processing time, exact-decimal values, formula version,
-required-size liquidity, quality, and unknown components.
+- `InstrumentMatchCandidate` and bounded evidence;
+- compatibility assessment for venue/product group, canonical base/quote/
+  settlement assets, market/contract type, expiry, multiplier and unit;
+- versioned manual proposal, independent review, effective period, conflict,
+  provenance, and correction records;
+- typed `MATCHED`, `NOT_MATCHED`, `AMBIGUOUS`, `QUARANTINED`, and `UNAVAILABLE`
+  results.
+
+### 14.2 Phase 2B.2 spread contracts
+
+- requested exposure with an explicit approved unit;
+- immutable book-input revisions and exact level consumption;
+- long/short entry and exit leg quote, VWAP, filled/residual quantity, depth
+  availability, fee input, and slippage derivation;
+- separately named midpoint, entry-spread, exit-spread, expected-gross, and
+  expected-net availability.
+
+Partial-depth diagnostics are non-actionable. Unknown required cost makes
+expected net unavailable.
+
+### 14.3 Phase 2B.3 funding contracts
+
+- independently preserved venue-native observations and semantics;
+- semantic compatibility, native interval, next-settlement alignment, and
+  exact directional comparison;
+- frozen `NormalizedFundingRate8hV1` references with formula ID
+  `normalized-funding-8h/v1`, rather than replacing native values;
+- funding-basis notional/unit and cash-flow scenario only when every required
+  input is compatible and known.
+
+### 14.4 Phase 2B.4–2B.7 analytical result contracts
+
+- immutable opportunity revisions and deterministic transition events for
+  `DISCOVERED`, `QUALIFYING`, `ACTIVE`, `CONVERGING`, `DEGRADED`,
+  `SUPPRESSED`, `EXPIRED`, and `RESOLVED`;
+- deterministic anomaly rules, bounded input windows, evidence and occurrence;
+- immutable spread observations, gap markers, replay manifests, downsampling
+  specifications, and bounded export envelopes without a persistence
+  implementation;
+- eligibility-first ranking inputs, completeness, components, exclusions,
+  tie-breaks, and ordered results.
+
+Across every Phase 2B contract:
+
+- canonical legs refer to an approved match version; display symbols never
+  define identity;
+- result IDs/idempotency keys, input revisions, formula/rule/policy versions,
+  source/receive/processing/calculation times, exact values and units,
+  provenance, freshness, quality, capability, and knowledge are explicit;
+- success, unavailable, rejected, and quarantined are distinct typed outcomes;
+- executable market input, valid analytics, displayable analytics, comparable
+  analytics, and actionable analytics are separate typed classifications;
+- unsupported behavior has no fake empty implementation;
+- decimal division names scale and rounding policy;
+- stale, gapped, invalid, unsupported, unverified, research-required, or
+  ambiguous mandatory input cannot become executable or actionable;
+- metric/event reason codes are finite and payloads are bounded.
+- full formula/rule/policy/mapping/input versions are bounded event/result
+  fields, never unbounded metric labels.
+
+The exact request/response contracts and formulas are governed by
+[`PHASE_2B_SPREAD_ANALYTICS_PLAN.md`](PHASE_2B_SPREAD_ANALYTICS_PLAN.md) and
+ADR 0009. External REST/live-stream exposure belongs to a later explicitly
+approved delivery phase.
 
 Phase 4 adds tenant-scoped position query/command contracts for:
 

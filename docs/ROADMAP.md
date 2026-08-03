@@ -3,8 +3,8 @@
 ## 1. Roadmap rules
 
 - Only one explicitly approved implementation phase may be active.
-- Phase 1, Phase 2A.1 and Phase 2A.2 are frozen; this roadmap does not reopen
-  them.
+- Phase 1 and Phase 2A.1 through Phase 2A.4 are frozen and approved; this
+  roadmap does not reopen them.
 - Every phase has independently testable deliverables, non-goals, acceptance
   evidence, rollback notes, and a formal review.
 - No exchange capability exists because it appears on a roadmap. Current
@@ -17,11 +17,10 @@
 - Telegram is a presentation/command channel, never a financial authority.
 - Infrastructure is added only when the owning phase has measured need.
 
-The old Phase 2B–13 labels in `ACCEPTANCE_CRITERIA.md` describe the superseded
-roadmap and are retained as historical criteria because that file is outside
-this amendment's approved update list. For future work, the phase names and
-acceptance gates in this document are authoritative; the owning implementation
-phase must update the consolidated acceptance register before it can be frozen.
+The old Phase 2B–13 labels in `ACCEPTANCE_CRITERIA.md` are historical. The
+current Phase 2B decomposition in this roadmap,
+`PHASE_2B_SPREAD_ANALYTICS_PLAN.md`, and the consolidated current acceptance
+section are authoritative.
 
 ## 2. Approved sequence
 
@@ -153,9 +152,8 @@ Implementation evidence:
 
 ### Phase 2A.3 — Binance USDⓈ-M Futures public adapter
 
-Status: formal independent acceptance completed on 2026-08-02 with
-`PASS_WITH_WARNINGS`; freeze is recommended and awaits explicit product-owner
-approval. Phase 2A.4 has not started.
+Status: frozen and approved after formal independent acceptance completed on
+2026-08-02 with `PASS_WITH_WARNINGS`.
 
 Scope:
 
@@ -195,7 +193,8 @@ Implementation evidence:
 
 ### Phase 2A.4 — Bybit V5 `linear` public adapter
 
-Implementation status: **implemented; independent formal acceptance pending**.
+Status: frozen and approved after formal independent acceptance completed on
+2026-08-03 with `PASS_WITH_WARNINGS`.
 
 Scope:
 
@@ -238,15 +237,21 @@ Implementation evidence:
 
 ### Phase 2B — Spread Analytics Core
 
-Scope:
+Status: documentation decomposition complete; implementation is not approved.
 
-- canonical instrument matching with reviewed mapping provenance;
-- exact midpoint and executable spread calculations;
-- executable spread by configured size;
-- venue-native funding differential and separately named derived comparisons;
-- opportunity lifecycle;
-- anomaly detection;
-- spread history and ranking.
+The authoritative decomposition is
+[`PHASE_2B_SPREAD_ANALYTICS_PLAN.md`](PHASE_2B_SPREAD_ANALYTICS_PLAN.md), with
+the following independently testable and freezable sequence:
+
+| Order | Subphase                                              | Outcome                                                                                       |
+| ----: | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+|     1 | Phase 2B.1 — Canonical Instrument Matching Foundation | Versioned match, non-match, ambiguity, or conflict quarantine without ticker-derived identity |
+|     2 | Phase 2B.2 — Executable Spread Mathematics            | Exact direction-aware VWAP, entry/exit spread, depth, residual, fee, and slippage contracts   |
+|     3 | Phase 2B.3 — Funding Differential                     | Native semantic-preserving comparison and separately named normalized derivations             |
+|     4 | Phase 2B.4 — Opportunity Lifecycle                    | Deterministic qualification, degradation, suppression, expiry, and resolution                 |
+|     5 | Phase 2B.5 — Anomaly Detection                        | Deterministic rule-versioned market and data-quality anomalies; no ML/AI                      |
+|     6 | Phase 2B.6 — Spread History                           | Immutable observation, gap, replay, downsampling, and export contracts; no persistence        |
+|     7 | Phase 2B.7 — Ranking                                  | Eligibility-first, reproducible ranking from versioned complete inputs                        |
 
 Recommended opportunity lifecycle:
 
@@ -257,16 +262,20 @@ DISCOVERED -> QUALIFYING -> ACTIVE -> CONVERGING -> RESOLVED
 
 Deliverables:
 
-- versioned analytics contracts and formulas;
+- independently frozen matching, formula, lifecycle, anomaly, history, and
+  ranking contracts;
 - input revision, quality, provenance, and expiry on every result;
 - deterministic fixture/replay and property tests;
 - unknown-cost and insufficient-liquidity behavior;
-- bounded internal read models needed by later UI/alerts.
+- finite-cardinality observability and bounded hostile-input/resource behavior;
+- read-only contracts that later UI/alerts may consume.
 
 Non-goals:
 
 - accounts, personal positions, Telegram, authenticated exchange data, paper or
-  live execution.
+  live execution;
+- persistence, event bus, frontend UI, Risk Engine, Execution Engine, AI, and
+  billing.
 
 Acceptance:
 
@@ -275,8 +284,16 @@ Acceptance:
 - USDT/USDC and product groups never merge implicitly;
 - executable spread, funding differential, ranking, lifecycle, anomaly, and
   history reproduce from immutable inputs and formula versions;
-- storage, if separately authorized within the phase, uses migrations and an
-  approved retention/data-rights policy.
+- each subphase receives separate implementation approval, formal acceptance,
+  and freeze before a dependent subphase starts;
+- frozen public adapter packages remain unchanged;
+- history uses fixture-backed contracts only; persistence requires a separate
+  future approval.
+
+Blocking product decisions D-055 through D-064 define compatibility, requested
+size, formulas, costs, funding alignment, lifecycle, anomaly, history, ranking,
+freshness, and bounded-load policies. They must not be replaced by implementation
+defaults.
 
 ### Phase 2C — Alerts and Notification Foundation
 
@@ -499,7 +516,9 @@ Mocks fail closed and cannot resemble successful unsupported capabilities.
 - Phase 2A.3 requires accepted 2A.2 boundaries and current Binance evidence.
 - Phase 2A.4 requires accepted earlier adapter boundaries and current Bybit
   evidence.
-- Phase 2B requires all three pilot public adapters accepted.
+- Phase 2B.1 requires all three pilot public adapters accepted and D-055
+  approved. Each later 2B.x increment requires its earlier dependency frozen
+  plus the decisions named in `PHASE_2B_SPREAD_ANALYTICS_PLAN.md`.
 - Phase 2C requires versioned analytics events; personal activation waits for
   Phase 3.
 - Phase 3 requires identity/legal/provider/security decisions.

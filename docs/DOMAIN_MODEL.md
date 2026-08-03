@@ -260,53 +260,118 @@ index, funding, fee, or open-interest data.
 
 ## 7. Analytics context
 
-### 7.1 Market pair
+### 7.1 Canonical instrument match
 
-`MarketPair`
+`CanonicalInstrumentMatch`
 
-- leg A instrument
-- leg B instrument
-- comparison type: futures–futures, futures–spot, CEX–DEX
-- approved asset-equivalence mapping/version
-- quote-currency relationship
+- immutable match/version ID and effective interval
+- leg A and leg B canonical instrument identities
+- venue and product group for each leg
+- canonical base, quote, and settlement assets for each leg
+- market type, contract type, expiry, multiplier, contract-value unit, and
+  compatibility result
+- mapping evidence, provenance, proposer, independent reviewer, and policy
+  version
+- outcome: `MATCHED`, `NOT_MATCHED`, `AMBIGUOUS`, `QUARANTINED`, or
+  `UNAVAILABLE`
+- deterministic completeness class and finite reason codes
 
-Pairing does not imply fungibility. Conversion, chain, settlement, and depeg risk
-remain explicit.
+Matching does not alter either instrument identity and does not imply
+fungibility. Ticker-text equality cannot create a match. USDT and USDC remain
+distinct unless a later explicit conversion scenario is separately approved;
+Phase 2B matching never treats them as equal.
+
+`MarketPair` is a read-only reference to an accepted match version plus an
+explicit long/short direction. It is not an independently inferred identity.
 
 ### 7.2 Calculation snapshot
 
 `CalculationSnapshot`
 
-- calculation ID/version
-- requested size and unit
-- immutable input references/timestamps
-- buy/sell VWAPs
-- mid and executable spread
-- fee, funding, slippage, borrow, gas, and other cost components
-- missing/unknown components
-- residual delta and hedge ratio
-- data quality and expiry
+- calculation ID, formula version, and input-revision ID
+- canonical match version and explicit long/short direction
+- requested exposure and exact unit
+- immutable input references and exchange/receive/processing/calculation times
+- buy/sell depth consumption, exact VWAPs, and residual exposure
+- midpoint, entry spread, and exit spread as separately named values
+- explicit fee, funding, slippage, and other versioned cost inputs
+- missing, unknown, unsupported, unverified, and research-required components
+- quality, freshness-policy version, availability, and expiry
 
 If a required component is unknown, `expectedNet` is unavailable rather than
 optimistically treating the component as zero.
 
-### 7.3 Opportunity
+`AnalyticsUsability`
+
+- executable-market-input gate result for every required source input
+- valid-analytics gate result
+- displayable-analytics gate result and diagnostic limitations
+- comparable-analytics gate result and semantic/unit compatibility
+- actionable-analytics gate result and finite failed-gate reasons
+
+The gates are separate and monotonic. A valid or displayable result is not
+necessarily comparable or actionable, and actionability never grants trading
+authority. Partial depth, ambiguous identity, invalid/locked/crossed books, and
+stale/gapped/reconnecting/disabled/unsupported/unverified/research-required
+inputs cannot pass the actionable gate.
+
+### 7.3 Funding comparison
+
+`FundingDifferential`
+
+- match and input-revision IDs
+- long and short venue-native observations preserved independently
+- semantic compatibility: current, last, predicted, historical, unknown, or
+  not applicable
+- native intervals and next-settlement alignment
+- exact directional native differential when comparable
+- separately named/versioned normalized comparison when available
+- exact funding-basis notional/unit and directional cash-flow scenario when all
+  required inputs are known
+- formula version, provenance, quality, and typed unavailable reason
+
+No universal interval or predicted semantic is inferred.
+
+### 7.4 Opportunity
 
 `Opportunity`
 
 - ID and strategy type
 - proposed long and short legs
 - calculation snapshot
-- expected funding/convergence/cost/risk reserve
-- safe size
-- score components and policy/model versions
-- state: `CANDIDATE`, `WATCH`, `ACTIONABLE`, `NO_TRADE`, `EXPIRED`,
-  `DATA_UNRELIABLE`
-- reasons, risks, generated/expiry timestamps
+- expected funding/convergence/cost scenario components where known
+- full-depth requested exposure and residual exposure
+- ranking components, deterministic completeness, and policy/formula versions
+- state: `DISCOVERED`, `QUALIFYING`, `ACTIVE`, `CONVERGING`, `DEGRADED`,
+  `SUPPRESSED`, `EXPIRED`, or `RESOLVED`
+- immutable transition revision, idempotency key, reasons, generated time,
+  qualification window, and expiry
 
 An opportunity is an observation, not an order instruction.
 
-### 7.4 User analytics
+An `ACTIVE` or `CONVERGING` opportunity requires all policy-mandatory inputs to
+be supported, known, fresh, complete, and valid. A degraded input revokes
+actionability; recovery returns through qualification rather than directly to
+an active state.
+
+### 7.5 Anomaly, history, and ranking
+
+`AnomalyOccurrence` references a deterministic rule version, bounded baseline
+window, exact threshold evidence, input revisions, quality, severity, and
+availability. Market anomalies and source-quality anomalies are distinct. No
+ML or AI detector belongs to Phase 2B.
+
+`SpreadObservationRecord` is immutable and carries exact values/units, mapping
+and formula versions, ordered input revisions, all relevant timestamps,
+provenance, capability/knowledge/quality state, and explicit gap markers.
+History contracts do not imply persistence.
+
+`RankingResult` contains an eligibility decision, deterministic completeness,
+versioned components, total tie-break evidence, excluded candidates with finite
+reasons, and ordered eligible candidates. Eligibility precedes ranking; an
+unknown required cost or non-executable input cannot enter an actionable list.
+
+### 7.6 User analytics
 
 - `Favorite`: user plus canonical market pair/instrument, not raw ticker.
 - `CalculatorScenario`: versioned user inputs and optional source snapshot.

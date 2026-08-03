@@ -61,6 +61,10 @@ order, partial fill, restart, and reconciliation tests.
 
 ## 4. Phase gates
 
+The Phase 1A–13 labels in this section are retained as historical planning
+evidence. Where they conflict with `ROADMAP.md`, they authorize no current work.
+The current Phase 2B criteria are in section 5.
+
 ### Phase 0 — Official API discovery and decisions
 
 Accepted when:
@@ -158,7 +162,7 @@ Accepted when:
 - fixture/replay/fault harness is deterministic;
 - all real exchange ports remain mocked until capability verification.
 
-### Phase 2B — Public market-data pilot
+### Legacy Phase 2B — Public market-data pilot
 
 Accepted when:
 
@@ -352,7 +356,148 @@ Accepted when:
 - each infrastructure expansion meets its measured adoption trigger, capacity,
   cost, backup, security, and rollback criteria.
 
-## 5. Release evidence template
+## 5. Current-roadmap Phase 2B — Spread Analytics Core
+
+Phase 2B is decomposed and governed by
+[`PHASE_2B_SPREAD_ANALYTICS_PLAN.md`](PHASE_2B_SPREAD_ANALYTICS_PLAN.md). Every
+subphase must satisfy the global criteria, remain within ADR 0009, receive
+separate implementation approval, pass independent formal acceptance, and be
+frozen before its dependent subphase begins.
+
+### Phase 2B.1 — Canonical Instrument Matching Foundation
+
+Accepted when:
+
+- every result is a versioned `MATCHED`, `NOT_MATCHED`, `AMBIGUOUS`,
+  `QUARANTINED`, or `UNAVAILABLE` outcome with finite reason codes;
+- canonical venue, product group, official instrument ID, base, quote,
+  settlement, market/contract type, expiry, multiplier and unit inputs remain
+  explicit;
+- ticker text alone never creates identity and USDT/USDC never merge;
+- manual mapping provenance, effective time, immutable version, independent
+  proposer/reviewer, correction, and conflict quarantine are enforced;
+- unknown/inactive/incompatible metadata fails closed;
+- deterministic fixtures, unit/property/replay/fault/hostile-input/resource
+  tests pass and D-055 is approved;
+- frozen adapter-package diffs are empty.
+
+### Phase 2B.2 — Executable Spread Mathematics
+
+Accepted when:
+
+- D-056 through D-058 approve requested units, conversion, formulas, rounding,
+  fees, slippage and expected-result semantics;
+- long entry buys asks, short entry sells bids, long exit sells bids, and short
+  exit buys asks according to independently reviewed exact vectors;
+- midpoint, entry spread, exit spread, VWAP, filled/residual exposure, fees and
+  slippage are separately named, exact, unit-labelled and versioned;
+- insufficient or partial depth is non-actionable and never presented as a
+  full-size quote;
+- stale, gapped, invalid, locked, crossed, incompatible or excessive inputs
+  fail closed;
+- unknown required cost makes expected net unavailable;
+- monotonic-VWAP property, replay, fault, overflow, scale, rounding, skew,
+  resource-bound and finite-cardinality tests pass.
+
+Across 2B.1 and 2B.2, executable market input, valid analytics, displayable
+analytics, comparable analytics, and actionable analytics pass distinct typed
+gates. `PARTIAL_DEPTH`, `AMBIGUOUS`, `INVALID`, `LOCKED`, `CROSSED`, `STALE`,
+`GAPPED`, `RECONNECTING`, `DISABLED`, `UNSUPPORTED`, `UNVERIFIED`, and
+`RESEARCH_REQUIRED`, plus `DEGRADED`, cannot be actionable.
+
+### Phase 2B.3 — Funding Differential
+
+Accepted when:
+
+- D-059 approves semantic compatibility, direction, basis notional, settlement
+  alignment, scale and rounding;
+- venue-native rate, semantic, interval, next settlement, source and quality
+  are preserved independently;
+- `CURRENT`, `LAST`, `PREDICTED`, historical, unknown and not-applicable are
+  distinguishable and never silently relabelled;
+- normalized eight-hour comparison is separately named/versioned, has no
+  universal interval assumption, and is unavailable without a known interval;
+- delivery futures expose no fake funding and semantic/timing/currency mismatch
+  cannot produce expected cash flow;
+- exact sign, zero/unknown, interval, alignment, replay, property, fault and
+  resource-bound tests pass.
+
+### Phase 2B.4 — Opportunity Lifecycle
+
+Accepted when:
+
+- D-060 approves the complete state/event table, thresholds, durations, keys,
+  expiry, requalification and policy-migration rules;
+- `DISCOVERED`, `QUALIFYING`, `ACTIVE`, `CONVERGING`, `DEGRADED`,
+  `SUPPRESSED`, `EXPIRED`, and `RESOLVED` transitions are deterministic;
+- duplicates are idempotent and out-of-order/forbidden transitions fail closed;
+- actionability requires fresh supported inputs, valid mapping, complete depth,
+  known required costs and every policy-mandatory gate;
+- degradation revokes actionability and recovery re-enters qualification;
+- the structural transition table covers terminal states, suppression,
+  duplicate/out-of-order events, policy changes and every unlisted transition
+  rejects without mutation;
+- full transition, timer-boundary, replay, restart and fault tests pass.
+
+### Phase 2B.5 — Deterministic Anomaly Detection
+
+Accepted when:
+
+- D-061 approves a bounded, versioned rule/window/threshold/severity catalogue;
+- every anomaly has reproducible evidence and exact threshold evaluation;
+- market anomalies remain separate from stale/invalid/source-quality anomalies;
+- no ML, AI, future leakage, opaque adaptive threshold or action authority is
+  introduced;
+- insufficient/bad inputs cannot create an actionable market signal;
+- boundary, window, ordering, replay, property, fault, load and cardinality
+  tests pass.
+
+### Phase 2B.6 — Spread History Contracts
+
+Accepted when:
+
+- D-021 and D-062 approve record, gap, ordering, correction, downsampling,
+  export, schema-evolution and reproducibility meaning;
+- records are immutable, exact-decimal, versioned, provenance-bearing,
+  quality-aware and explicitly gap-preserving;
+- downsampling retains coverage/quality and never silently fills gaps;
+- live and replay outputs agree for identical input/formula/mapping versions;
+- bounded export and exact round-trip tests pass using in-memory fixtures only;
+- no database, migration, event bus, retention job or other persistence
+  implementation is introduced.
+
+### Phase 2B.7 — Deterministic Ranking
+
+Accepted when:
+
+- D-063/D-064 approve eligibility, required inputs/costs, ranking components or
+  tuple, normalization, tie-breaks, completeness, copy, and load bounds;
+- eligibility is evaluated before ranking and every exclusion has a finite
+  reason;
+- stale, gapped, invalid, incomplete-depth, ambiguous-mapping,
+  unsupported/unverified/research-required, or unknown-required-cost candidates
+  cannot rank as actionable;
+- all component, formula, input and policy versions reconstruct the exact
+  ordering;
+- ordering is permutation-independent with total deterministic tie-breaks;
+- no guaranteed-profit, probabilistic confidence, AI, personalization,
+  position, risk, or execution authority is introduced;
+- replay, property, tie, extreme-decimal, adversarial-size, cancellation and
+  finite-cardinality tests pass.
+
+Across all subphases, full formula, rule, policy, mapping and input versions are
+bounded structured-event fields rather than metric labels. Metrics use only
+allowlisted finite families/buckets, and provenance count/bytes are bounded.
+
+### Phase 2B aggregate freeze
+
+Accepted when all seven subphases are independently frozen, authoritative
+repository checks pass, frozen adapter packages remain unchanged, and the
+result authorizes read-only analytical contracts only. Persistence, public UI,
+notifications, positions, authenticated data, paper/live trading, Risk Engine,
+Execution Engine, AI and billing remain unapproved.
+
+## 6. Release evidence template
 
 Every phase report contains:
 
