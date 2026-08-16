@@ -541,14 +541,14 @@ decisions are approved.
 
 ### Design track
 
-| Track                                            | Scope                                                                             | Depends on                        | Acceptance gate                                                      |
-| ------------------------------------------------ | --------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
-| D1 — Brand and Semantic Design Tokens            | semantic colour, typography, spacing, radius, elevation, motion and status tokens | design docs accepted              | dark/light values, contrast and token governance pass                |
-| D2 — Foundational Component Library              | accessible controls, forms, feedback, dialogs and navigation                      | D1                                | keyboard, focus, screen-reader, disabled/loading/error matrices pass |
-| D3 — Public and Authenticated Application Shells | public IA and authenticated responsive shell                                      | D2; corresponding route contracts | deep links and planned/unavailable/entitlement states fail closed    |
-| D4 — Dark/Light Theme Completion                 | `SYSTEM`/`DARK`/`LIGHT`, account/device persistence and no-flash boot             | D1–D3; security/CSP review        | first-paint, hydration, corrupt-storage and preference tests pass    |
-| D5 — Financial Tables and Visualization          | exact-value grids, chart and order-book presentation                              | D2/D4; frozen domain contracts    | USDT/USDC, units, quality/gap and density remain explicit            |
-| D6 — Admin UI System                             | personal billing patterns and separate `/admin` presentation                      | D2/D4; C/I contracts accepted     | admin boundary, strong-action and audit UX pass                      |
+| Track                                            | Scope                                                                                                                                           | Depends on                             | Acceptance gate                                                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
+| D1 — Brand and Semantic Design Tokens            | canonical source/schema, dark/light semantic resolution, typography/scales, status/chart tokens, validation and bounded Phase 1 token migration | amendment frozen; D-079–D-088 approved | independent D1 acceptance passes; no unresolved BLOCKER/HIGH         |
+| D2 — Foundational Component Library              | accessible controls, forms, feedback, dialogs and navigation                                                                                    | D1                                     | keyboard, focus, screen-reader, disabled/loading/error matrices pass |
+| D3 — Public and Authenticated Application Shells | public IA and authenticated responsive shell                                                                                                    | D2; corresponding route contracts      | deep links and planned/unavailable/entitlement states fail closed    |
+| D4 — Dark/Light Theme Completion                 | `SYSTEM`/`DARK`/`LIGHT`, account/device persistence and no-flash boot                                                                           | D1–D3; security/CSP review             | first-paint, hydration, corrupt-storage and preference tests pass    |
+| D5 — Financial Tables and Visualization          | exact-value grids, chart and order-book presentation                                                                                            | D2/D4; frozen domain contracts         | USDT/USDC, units, quality/gap and density remain explicit            |
+| D6 — Admin UI System                             | personal billing patterns and separate `/admin` presentation                                                                                    | D2/D4; C/I contracts accepted          | admin boundary, strong-action and audit UX pass                      |
 
 ### Identity and administration track
 
@@ -589,3 +589,17 @@ decisions are approved.
   provider clients never grant entitlements directly.
 
 Every track requires a separate implementation prompt and formal acceptance.
+
+### D1 planning and approval gate
+
+D1 is decomposed in
+`D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md`; its independent review is defined in
+`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. ADR-0013 is proposed, not
+accepted, until D-079 through D-088 record exact owner-approved answers.
+
+D1 may change only the token source/schema, repository-native validation and
+generation boundary, committed deterministic token artifacts if approved, and
+the bounded Phase 1 token consumer bridge. It does not authorize a component or
+page redesign, a runtime theme picker, font installation, D2–D6, identity,
+commerce, admin runtime or Phase 2B work. D1 implementation and formal
+acceptance are separate tasks; passing either does not authorize D2.

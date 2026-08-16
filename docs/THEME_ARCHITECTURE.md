@@ -128,3 +128,19 @@ storage fallback, account/local conflict tests, cross-tab behavior, contrast,
 forced-colour and reduced-motion checks. Theme failure must degrade to a usable
 light or dark surface and must never block authentication, billing status,
 emergency operations or reconciliation.
+
+## 7. D1/D4 responsibility split
+
+D1 defines and validates the complete semantic token contract for two resolved
+sets, `DARK` and `LIGHT`. `SYSTEM` remains preference-selection policy and is
+never a third resolved token set. D1 also defines a reviewed safe resolved
+fallback, artifact/schema version metadata, parity checks and the static
+contract needed by server rendering and hydration. It does not implement the
+theme picker, authenticated/device preference synchronization, cross-tab
+behavior or the complete no-flash bootstrap; those remain D4 responsibilities.
+
+The D1 plan is `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md`. Its exact values, fallback
+and forced-colour split are blocked by D-079 through D-088. Both resolved themes
+must expose identical semantic IDs, status meaning and chart roles. Missing or
+unresolved theme values fail generation; the consumer may use only the approved
+safe complete artifact and may not synthesize a theme through inversion.

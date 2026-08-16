@@ -576,3 +576,28 @@ this architecture amendment.
 
 No contract returns secrets, full payment instruments, private keys, webhook
 signatures, raw provider payloads or unrestricted admin audit notes.
+
+## 21. D1 design-token artifact contracts
+
+D1 has no HTTP, WebSocket, persistence or user-preference API. Its public
+boundary is a deterministic build artifact contract consumed locally by later
+frontend work:
+
+- canonical token-set metadata declares schema/token-set versions, namespace
+  and artifact policy; ordered source records explicitly declare stable token
+  IDs, primitive/semantic kind, family, types, aliases, lifecycle and
+  independent DARK/LIGHT values;
+- generated CSS custom properties expose semantic names only to components;
+- generated typed metadata exposes token IDs, versions and roles but no runtime
+  authority;
+- a manifest exposes schema/token-set/generator versions, compatibility aliases
+  and artifact digests;
+- validation reports typed bounded findings without embedding arbitrary source
+  content in metrics or logs.
+
+Source and generated artifacts must change atomically, reproduce byte-for-byte
+under pinned tooling and pass compatibility, parity, contrast and raw-value
+gates. Consumer code cannot make primitives, plan names, financial meanings or
+theme preference authoritative through this boundary. Exact paths and committed
+artifact policy remain subject to D-079 and ADR-0013; D1 does not implement D4
+preference/session contracts.

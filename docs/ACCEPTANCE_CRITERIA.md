@@ -537,6 +537,38 @@ needs a separate approval, scoped plan, evidence report and formal freeze.
 | D5    | exact financial strings, units, provenance, USDT/USDC, stale/gapped/unknown/research-required and missing chart ranges remain explicit across responsive density modes                                |
 | D6    | billing and `/admin` use shared tokens but separate shells/authority; redirect cannot activate access and privileged actions present reason, scope, version, step-up/approval and audit state         |
 
+#### D1 — Brand and Semantic Design Tokens detailed gate
+
+D1 implementation and formal independent acceptance are separate stages defined
+by `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` and
+`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. Implementation is blocked
+until D-079 through D-088 contain exact approvals and ADR-0013 is accepted.
+
+D1 freezes only when:
+
+- one canonical source and versioned schema reject duplicates, unknown/circular
+  aliases, invalid values, incomplete themes and exceeded resource bounds;
+- DARK and LIGHT contain the same semantic contract; SYSTEM remains selection
+  policy, and generation plus the committed artifacts/manifest reproduce
+  byte-for-byte under the approved pinned toolchain;
+- typography, scale, financial/status/quality/capability and chart contracts are
+  complete, retain theme-independent meaning and require non-colour cues;
+- every allowed contrast pairing passes the approved matrix, with documented
+  exceptions only, and arbitrary unvalidated pairings fail;
+- raw-value scanning and exact expiring exceptions are enforced; semantic
+  compatibility and deprecation tests pass;
+- the Phase 1 bridge changes token foundations only, documents migration and
+  atomic rollback, installs no font/dependency and makes no page/component
+  redesign;
+- frozen adapters, accepted Phase 2B documents and brand references are
+  unchanged; documentation links, formatting, lint, type checking, default
+  tests and the D1 authoritative suite pass;
+- formal review reports zero BLOCKER and zero unresolved HIGH findings and no
+  scope outside D1.
+
+Passing D1 does not authorize D2, D4, component/chart work, identity, commerce,
+admin runtime or Phase 2B implementation.
+
 ### Identity and administration track
 
 | Track | Accepted when                                                                                                                                                           |

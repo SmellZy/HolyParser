@@ -250,3 +250,50 @@ provider-neutral C3 or mock-boundary C5 foundations. Critical financial
 corrections use new immutable facts and reconciliation; they never rewrite
 history. Acceptance of residual risk requires named
 Product/Security/Finance/Legal authority as applicable and an expiry/review date.
+
+## 8. D1 Brand and Semantic Design Tokens risks — 2026-08-16
+
+| ID    | Risk / impact                                                                 | Trigger                                                                      | Prevention                                                                                            | Detection                                                                     | Recovery                                                                                | Residual risk                                       | Owning phase |
+| ----- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------- | ------------ |
+| R-120 | Multiple token authorities or artifact drift produce inconsistent rendering   | hand-edited generated output, nondeterministic generation, bypassed manifest | one canonical source, deterministic generator, committed digest manifest and drift gate               | clean-regeneration diff and source/artifact digest test                       | restore canonical source and regenerate all artifacts atomically                        | platform CSS interpretation can still differ        | D1           |
+| R-121 | Invalid aliases or hostile token input break builds or create unsafe CSS      | circular/unknown alias, duplicate ID, excessive source, arbitrary CSS value  | data-only schema, bounded counts/lengths/depth, closed value grammar, cycle and duplicate rejection   | malformed-fixture, property and resource-bound tests                          | reject source, retain last accepted artifact set and correct through reviewed change    | validator defects remain possible                   | D1           |
+| R-122 | Dark/light contract divergence creates missing or misleading state            | token exists in one theme only, naïve inversion, unsafe fallback             | identical semantic-ID parity, independently reviewed resolved values and explicit safe default        | parity, missing-token, contrast and first-paint compatibility checks          | roll back token-set version and force approved safe resolved theme                      | OS/browser rendering variation remains              | D1/D4        |
+| R-123 | Raw-value exceptions become an unbounded second design system                 | broad exclusion, missing owner/expiry, copied one-off values                 | property-aware scan and exact exception record with owner, reason, issue, expiry and cleanup          | CI raw-value scan, expired/orphaned exception report and inventory trend      | expire exception, replace with approved token or revert offending change                | technical constants still require judgment          | D1–D6        |
+| R-124 | Semantic token meaning changes silently and misrepresents financial state     | informational token repurposed as positive, alias replacement changes role   | stable semantic definitions, independent schema/set versions and breaking-change classification       | semantic compatibility fixtures and reviewed manifest diff                    | roll back atomically, restore prior meaning and issue a versioned replacement           | consumers may cache an old artifact briefly         | D1–D6        |
+| R-125 | Invalid token pairing fails contrast or hides focus/status information        | arbitrary foreground/background pairing, alpha composite not evaluated       | approved pairing allowlist, explicit compositing background and WCAG-target matrix                    | automated contrast matrix plus keyboard/focus/forced-colour evidence          | withdraw token-set version and substitute approved accessible pairing                   | antialiasing and device differences remain          | D1–D6        |
+| R-126 | Chart series or critical states are indistinguishable                         | palette reuse, colour-only encoding, excessive simultaneous series           | finite chart-series maximum, colour plus marker/dash/pattern contracts and missing/gap encodings      | chart-token matrix completeness and simulated colour-vision/contrast review   | reduce/facet series, restore secondary encoding and supersede defective token version   | dense future charts need component-level review     | D1/D5        |
+| R-127 | Font fallback or numeric metrics make financial values unstable or misleading | remote font failure, proportional numerals, large metric shift               | local fallback stacks, tabular numerals, decimal alignment and no runtime-font correctness dependency | fallback screenshot, width-envelope and changing-value layout tests           | force reviewed system/data stack and roll back typography artifact                      | exact glyph metrics vary by installed system fonts  | D1/D2/D5     |
+| R-128 | Phase 1 token migration accidentally redesigns or breaks the existing shell   | global variable replacement alters geometry, focus, breakpoint or layout     | bounded alias-first migration, classified inventory, no TSX/DOM/route change and explicit exclusions  | source-scope diff, existing tests and approved route/view screenshot evidence | restore prior stylesheet/artifacts together and reapply migration in smaller increments | no broad visual-regression suite exists yet         | D1           |
+| R-129 | Token tooling or generated assets become a CSS injection or supply-chain path | remote loading, untrusted strings, new generator dependency, leaked content  | local deterministic tooling, closed grammar, CSP-compatible artifacts, no secrets or remote imports   | dependency/scope scan, hostile-source fixtures and generated-artifact scan    | reject artifact, restore trusted generator/source, rotate if any secret exposure occurs | compromised repository/build actor remains possible | D1           |
+| R-130 | Layer or motion tokens impair navigation, focus or reduced-motion safety      | arbitrary z-index, hidden focus, animation without reduced alternative       | finite semantic layers, focus layer invariant, bounded durations and reduced-motion contract          | layer-order, focus-visible and reduced-motion token/compatibility tests       | disable nonessential motion and restore reviewed semantic layer set                     | component composition can still misuse valid tokens | D1–D4        |
+
+D1 implementation cannot begin until D-079 through D-088 have exact approved
+answers. Acceptance of a D1 residual risk must name the Product, Design,
+Accessibility, Frontend Architecture, Security or QA authority applicable to
+the risk and include a review date; it cannot silently weaken the frozen
+financial, quality or capability meanings.
+
+### D1 risk ownership and acceptance matrix
+
+The table above names the phase; this matrix names accountable review authority
+and the checkpoint/evidence that must close each control. Owners may delegate
+work but not acceptance.
+
+| Risk  | Accountable owner(s)                  | Implementation checkpoint | Formal acceptance evidence                                                        |
+| ----- | ------------------------------------- | ------------------------- | --------------------------------------------------------------------------------- |
+| R-120 | Frontend Architecture + QA            | D1-I3                     | clean regeneration, stable ordering, source/artifact digest and atomic rollback   |
+| R-121 | Security + Frontend Architecture      | D1-I1/D1-I3               | hostile schema/alias/resource fixtures and bounded failure output                 |
+| R-122 | Design + Accessibility                | D1-I2/D1-I4               | DARK/LIGHT parity, safe fallback and both-theme contrast evidence                 |
+| R-123 | Frontend Architecture + Design        | D1-I3/D1-I4               | property-aware scan plus expired, orphaned, widened and unused exception failures |
+| R-124 | Product Owner + Design                | D1-I2/D1-I3               | semantic compatibility diff, required version change and rollback                 |
+| R-125 | Accessibility + Design                | D1-I2                     | legal-pair matrix, alpha compositing, focus and documented exceptions             |
+| R-126 | Design + Accessibility + Quant        | D1-I2                     | finite chart matrix, overflow behavior and redundant encodings                    |
+| R-127 | Design + Accessibility + QA           | D1-I2/D1-I4               | fallback stacks, tabular numerals, width envelope and approved shell evidence     |
+| R-128 | Frontend owner + QA                   | D1-I4                     | exact allowlist diff, no DOM/route redesign, bounded before/after and rollback    |
+| R-129 | Security + Frontend Architecture      | D1-I1/D1-I3               | no-network/dependency scan, hostile CSS/URL fixtures and artifact secret scan     |
+| R-130 | Accessibility + Frontend Architecture | D1-I2/D1-I4               | independently passing layer/focus and motion/reduced-motion controls              |
+
+R-130 contains two independently failing controls; success in layer ordering
+cannot compensate for a reduced-motion failure, or vice versa. A risk is closed
+for D1 only when its named formal-acceptance evidence passes; later component
+misuse remains the recorded residual risk for the owning D2–D6 phase.

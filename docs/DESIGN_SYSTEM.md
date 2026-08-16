@@ -182,3 +182,24 @@ supported breakpoints. Visual regression, keyboard-only, contrast, reduced
 motion, data-density and long-localized-copy checks are required before a design
 track freezes. Financial meaning, entitlement, authorization and quality state
 remain backend/domain facts; the design system only presents them.
+
+## 8. D1 token-foundation boundary
+
+`D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` is the implementation plan for this
+document's token foundation, and
+`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md` defines its later independent
+review. The reference palette and scale values above are design inputs, not an
+implemented canonical source and not permission to guess the expanded theme,
+status, chart or accessibility values.
+
+D1 is limited to a canonical data-only token source, validation, deterministic
+artifacts, semantic DARK/LIGHT resolution, typography/scales, status and chart
+presentation contracts, raw-value governance and a token-only Phase 1 migration
+bridge. Component behavior, page layout, chart rendering, full theme selection
+and font installation belong to later approved tracks. Semantic tokens are the
+only supported component-facing interface; primitives cannot become component
+API, and brand emphasis cannot substitute for a positive financial outcome.
+
+Exact values and policies remain blocked by D-079 through D-088. Until those
+decisions and ADR-0013 are approved, the existing Phase 1 stylesheet remains an
+implementation fact rather than the accepted D1 contract.

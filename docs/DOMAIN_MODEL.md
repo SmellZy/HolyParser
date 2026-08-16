@@ -721,3 +721,33 @@ Every admin mutation has actor, permission, assurance, reason, idempotency,
 expected version, request/correlation and before/after audit references. Audit
 contains no secrets or payment instruments. The Admin Console calls domain
 commands; it owns no commercial truth. See `ADMIN_CONSOLE.md`.
+
+## 22. Design-token build contract (D1 future foundation)
+
+Design tokens are repository build contracts, not persisted business entities
+or runtime authorization facts:
+
+- `TokenDefinition` has stable token ID, family, primitive/semantic kind,
+  value type, optional alias, documentation and lifecycle metadata;
+- `TokenSetSourceMetadata` is canonical input for schema/token-set versions,
+  namespace and artifact policy; the generated manifest cannot define its own
+  input version;
+- `ResolvedThemeToken` binds the same semantic token ID to one independently
+  approved `DARK` or `LIGHT` value; `SYSTEM` selects a resolved set and is not a
+  theme value;
+- `TokenSetManifest` records schema version, token-set version, generator
+  version, ordered artifact digests and compatibility metadata;
+- `ContrastPair` allows one reviewed foreground/background/state pairing with
+  applicable text/graphic/focus target and explicit exception evidence;
+- `StatusPresentation` binds a domain meaning to semantic colour plus required
+  label and icon/shape, and optional chart pattern;
+- `CompatibilityAlias` is one-way, version-bounded and points to a replacement
+  with identical meaning/type;
+- `RawValueException` is exact in file/property/pattern, owned, approved,
+  reasoned and expiring.
+
+Token IDs and meanings are immutable within a compatible version. Duplicate or
+unknown IDs, cycles, unresolved aliases, theme parity failure, semantic misuse,
+invalid values and exceeded resource bounds fail closed. These structures do
+not add a database, HTTP API, user preference, component, CSS implementation or
+financial authority. See `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` and ADR-0013.
