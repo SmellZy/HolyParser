@@ -495,3 +495,84 @@ as reductions below system/user risk limits, never as an authority increase.
 Position, alert, notification, Telegram identity, and financial-command contract
 changes require compatibility tests and the owning phase approval. A provider
 API change cannot weaken the internal command-security boundary.
+
+## 19. Future commerce and administration contracts
+
+The route names below are conceptual REST resources. Exact transport, paths and
+schemas require the owning implementation phase; listing them creates no current
+endpoint.
+
+### 19.1 Account commerce queries
+
+- `GET /api/v1/billing/summary` — subscription, payment and effective-access
+  summaries as separate objects;
+- `GET /api/v1/billing/entitlements` — effective value/limit, validity,
+  revision and safe provenance;
+- `GET /api/v1/billing/usage`;
+- `GET /api/v1/billing/invoices` and invoice detail;
+- `GET /api/v1/billing/payment-methods` — provider-safe references only;
+- `GET /api/v1/billing/crypto-invoices` and detail;
+- `GET /api/v1/billing/subscription-history`.
+
+### 19.2 Account commerce commands
+
+- prepare checkout and apply/reserve promotion;
+- request a plan change;
+- schedule cancellation and reactivate before the applicable boundary;
+- create/cancel a crypto invoice where its state permits;
+- request an allowed refund/review without implying provider completion.
+
+Every mutation requires authenticated account actor, entitlement/ownership
+authorization, idempotency key, expected catalog/resource revision and typed
+audit context. The server resolves price/account/currency and promotion; the
+client cannot supply authoritative amounts or grants.
+
+### 19.3 Provider ingress and reconciliation
+
+Webhook ingress is provider/environment specific, bounded before parse and
+verified over provider-required raw bytes. It returns no internal details.
+Provider event identity is unique and digest conflicts fail closed. Internal
+reconciliation commands are privileged, bounded and idempotent; there is no
+generic retry-payment or retry-refund command after unknown outcome.
+
+### 19.4 Admin queries and commands
+
+`/api/v1/admin/*` is a separate authorization namespace for account, catalog,
+subscription, entitlement, payment, crypto, promotion, provider-event,
+reconciliation, role, approval and audit resources. Route knowledge or an admin
+shell session is insufficient; each command declares its exact permission and
+authentication assurance.
+
+Admin mutations include actor, permission, reason, idempotency key, expected
+version, request/correlation IDs and optional approval/dry-run digest. Responses
+distinguish accepted, completed, pending, partially completed, provider outcome
+unknown, stale version, step-up required, approval required, forbidden,
+conflict, reconciliation required and temporarily unavailable.
+
+### 19.5 Contract envelopes and events
+
+Where applicable, outputs carry resource/catalog/policy versions, exact amount
+and currency or usage unit, provenance, created/effective/expiry timestamps and
+typed state/unavailability reason. Unknown values are absent with a reason, not
+zero.
+
+Events include catalog publication, subscription transitions, verified payment,
+invoice/refund/chargeback transitions, promotion reservation/redemption,
+entitlement grant/revocation/recalculation, crypto observation/finality/reorg,
+reconciliation result, admin approval and append-only audit. Event schemas are
+versioned, idempotent and bounded; event-bus infrastructure is not authorized by
+this architecture amendment.
+
+## 20. Authorization, idempotency and audit matrix
+
+| Contract family           | Authority                                                      | Idempotency             | Audit minimum                                          |
+| ------------------------- | -------------------------------------------------------------- | ----------------------- | ------------------------------------------------------ |
+| Effective access query    | account or exact admin read permission                         | query revision          | decision policy/revision, not secret source data       |
+| Checkout/promo command    | account owner/billing authority                                | required                | quote/catalog/promo revisions and outcome              |
+| Provider ingress          | verified provider evidence                                     | provider event identity | verification/result and safe provider reference        |
+| Refund/crypto exception   | exact admin/account policy plus step-up/approval as applicable | required                | amount/currency/route, reason, before/after, approvals |
+| Catalog/promotion publish | exact publish permission and step-up                           | required                | immutable version/digest and affected scope            |
+| Grant/revocation          | exact permission or verified system source                     | required                | provenance, validity, reason and effective revision    |
+
+No contract returns secrets, full payment instruments, private keys, webhook
+signatures, raw provider payloads or unrestricted admin audit notes.

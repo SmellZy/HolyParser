@@ -520,3 +520,62 @@ Approval requested for:
 ```
 
 Passing tests does not authorize the next phase or any live trading.
+
+## 7. Future Design, Identity/Admin, and Commerce track gates
+
+These gates are architecture acceptance targets only. Every implementation item
+needs a separate approval, scoped plan, evidence report and formal freeze.
+
+### Design track
+
+| Track | Accepted when                                                                                                                                                                                         |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1    | semantic tokens cover both independently designed themes; required status, typography, spacing, radius, elevation, borders, motion and chart tokens are versioned; contrast and raw-colour scans pass |
+| D2    | primitives cover keyboard/focus/loading/error/disabled/read-only behavior; WCAG 2.2 AA, zoom, screen-reader, forced-colour and reduced-motion evidence passes                                         |
+| D3    | public and authenticated route/status/dependency/entitlement matrices are implemented; deep links enforce backend authorization and planned routes fail closed                                        |
+| D4    | `SYSTEM`/`DARK`/`LIGHT` precedence, authenticated/device persistence and CSP-safe no-flash boot pass first-paint, corrupt-storage, hydration, cross-tab and system-change tests                       |
+| D5    | exact financial strings, units, provenance, USDT/USDC, stale/gapped/unknown/research-required and missing chart ranges remain explicit across responsive density modes                                |
+| D6    | billing and `/admin` use shared tokens but separate shells/authority; redirect cannot activate access and privileged actions present reason, scope, version, step-up/approval and audit state         |
+
+### Identity and administration track
+
+| Track | Accepted when                                                                                                                                                           |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I1    | approved account identity/ownership/recovery policy passes tenant, identity-conflict and recovery review; no commerce authority is implied                              |
+| I2    | verification and session policy passes abuse, enumeration, expiry, revocation, inventory and strong-auth tests                                                          |
+| I3    | independent permissions and expiring assignments replace `isAdmin`; deny-default, separation-of-duty, stale assignment and environment tests pass                       |
+| I4    | D-075/D-076 are approved; `/admin` route/session, step-up, reason, idempotency, version, approval, redacted append-only audit, break-glass and self-approval tests pass |
+
+### Commerce track
+
+| Track | Accepted when                                                                                                                                                                                                                                                                                                    |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1    | D-065/D-073/D-077 are approved as applicable; immutable catalog and grant contracts plus pure entitlement evaluator pass overlap, precedence, expiry, revocation, cache, usage concurrency, conflict and replay tests; no plan-name authorization exists                                                         |
+| C2    | D-070/D-071 are approved; every subscription state/transition, trial/grace/upgrade/downgrade/cancel/restore/review path is deterministic, idempotent and reconciled; safety operations remain independent                                                                                                        |
+| C3    | provider-neutral fiat ports, bounded ingress contracts, exact invoice values and synthetic verifier/reconciliation fixtures pass signature/replay, duplicate/reorder/missing, timeout/unknown, outage and redirect non-authority tests; no concrete provider, tax calculation or regional checkout is introduced |
+| C4    | D-072/D-074 are approved as applicable; exact benefits, eligibility, one-code/stacking policy, atomic TTL reservation, races, brute force, multi-account abuse, secret redaction, refund interaction and replay pass                                                                                             |
+| C5    | typed asset/network route contracts, policy-injected invoices, finality/reorg/expiry/exception states and mock custody boundary pass exact, duplicate, partial/over/under/late/wrong-route and deterministic reconciliation tests; no concrete processor, production route or key material is introduced         |
+| C6    | self-service views/commands separate plan, subscription, payment, grace, promotion and effective access; provider-safe flows, stale frontend, ownership, redirect non-authority and accessibility tests pass                                                                                                     |
+| C7    | I4 and relevant C commands are frozen; every admin operation passes exact permission, step-up/approval, idempotency, version, bulk preview, currency separation, unknown outcome and append-only audit tests                                                                                                     |
+| C8    | approved refund/chargeback/approval/retention policies pass bounded reconciliation, dead-letter recovery, reporting, dual-control threshold, exact currency, audit integrity/export, backup/restore and disaster exercises                                                                                       |
+
+### Aggregate architecture invariants
+
+- Plans are bundles; effective entitlements authorize access.
+- Frontends, redirects and provider adapters cannot grant access directly.
+- Historical PlanVersion, Price, invoice, grant, payment and audit facts are not
+  silently overwritten.
+- All monetary, crypto and percentage values are exact decimals with explicit
+  currency/unit and named rounding only at approved boundaries.
+- USDT, USDC and same-ticker cross-network assets remain distinct.
+- Unknown provider/payment/finality outcomes remain unknown or in review until
+  reconciliation; no blind financial retry exists.
+- Crypto keys/custody are outside the main application.
+- `/admin` is a separate deny-default permission boundary with stronger session
+  and append-only audit; visibility is not authority.
+- Money is not aggregated across currencies without explicit versioned
+  conversion provenance.
+- Commerce/admin outage cannot block emergency risk, safe position handling or
+  reconciliation.
+- No D/I/C gate authorizes Phase 2B implementation, persistence, frontend,
+  payment, identity or admin code by itself.

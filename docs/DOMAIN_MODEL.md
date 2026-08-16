@@ -648,3 +648,76 @@ serializes an order or credential into callback data.
 The public channel accepts only `PUBLIC_ANALYTICS`. Private bot/Mini App data is
 tenant-scoped. The Mini App is a client of platform contracts and cannot
 calculate or persist independent business truth.
+
+## 17. Commerce catalog and entitlement context (future)
+
+`Product`, `Plan`, immutable `PlanVersion`, immutable currency-specific `Price`,
+`BillingInterval`, `EntitlementDefinition`, `PlanEntitlement`, append-only
+`EntitlementGrant`, derived `EffectiveEntitlement`, `UsageLimit`,
+`UsageCounter`, `TrialPolicy`, `Subscription`, immutable `SubscriptionPeriod`,
+`GracePeriod` and currency-specific `AccountCredit` form the commercial-access
+model.
+
+Plans bundle rights but never authorize feature code directly. Grant sources are
+`SUBSCRIPTION`, `PROMOTION`, `TRIAL`, `ADMIN_GRANT`, `PARTNER`,
+`COMPENSATION` and `LIFETIME_PURCHASE`. Every grant has scope, provenance,
+validity, revocation, reason, policy version and audit. The evaluator returns a
+versioned allowed/value/limit result with winning sources and typed unavailability
+or conflict reason.
+
+Subscription states are `INCOMPLETE`, `TRIALING`, `ACTIVE`, `PAST_DUE`,
+`GRACE_PERIOD`, `PAUSED`, `CANCEL_AT_PERIOD_END`, `CANCELLED`, `EXPIRED`,
+`PAYMENT_REVIEW` and `CHARGEBACK_REVIEW`. Subscription, payment and effective
+access remain separate facts. See `SUBSCRIPTION_AND_ENTITLEMENTS.md`.
+
+## 18. Promotion context (future)
+
+`Promotion`, `PromoCode`, `Redemption`, `RedemptionReservation`,
+`PromotionBenefit`, `PromotionEligibility` and typed `PromotionConstraint`
+comprise the promotion
+domain. A reservation is atomic, idempotent and TTL-bound. A benefit decision
+does not activate a subscription; verified commerce processing creates the
+price adjustment or source-backed grant. Percentage/fixed discount, credit,
+trial extension, temporary limit and lifetime semantics remain exact and
+versioned. See `PROMOTION_ENGINE.md`.
+
+## 19. Payment context (future)
+
+Provider-neutral records are `PaymentCustomerReference`, `CheckoutSession`,
+`PaymentAttempt`, `Payment`, `Invoice`, `Refund`, `Chargeback`, `ProviderEvent`
+and `ReconciliationResult`. Amount always includes exact decimal and currency.
+Provider references are opaque; redirects and unverified client/provider data
+have no authority.
+
+The ports are `CheckoutProvider`, `PaymentProvider`,
+`SubscriptionBillingProvider`, `InvoiceProvider`, `RefundProvider`,
+`WebhookVerifier` and `ReconciliationProvider`. Duplicate, missing, reordered
+and unknown events are idempotent reconciliation cases. See
+`PAYMENT_ARCHITECTURE.md`.
+
+## 20. Crypto payment context (future)
+
+`CryptoInvoice` preserves billing currency/amount, quoted asset/network/token
+identity, exact crypto amount, quote/provenance/expiry, destination/memo,
+confirmation/finality policy, observed transactions, received amount, state and
+reconciliation/audit revisions.
+
+States are `CREATED`, `AWAITING_PAYMENT`, `PARTIALLY_PAID`, `PAID_UNCONFIRMED`,
+`CONFIRMED`, `UNDERPAID`, `OVERPAID`, `EXPIRED`, `CANCELLED`, `REFUND_REVIEW`,
+`REFUNDED`, `LATE_PAYMENT_REVIEW`, `WRONG_ASSET_REVIEW`,
+`WRONG_NETWORK_REVIEW`, `REORG_REVIEW`, `FAILED` and
+`RECONCILIATION_REQUIRED`. Private keys
+and custody remain outside the main application. See
+`CRYPTO_PAYMENT_ARCHITECTURE.md`.
+
+## 21. Administration context (future)
+
+`AdminRole` is a bundle of independent `AdminPermission` values, not an
+`isAdmin` flag. Time-bounded `RoleAssignment`, optional `ApprovalRequest` and
+`ApprovalDecision`, and append-only `AdminAuditEvent` support least privilege,
+step-up, separation of duties and reviewable commands.
+
+Every admin mutation has actor, permission, assurance, reason, idempotency,
+expected version, request/correlation and before/after audit references. Audit
+contains no secrets or payment instruments. The Admin Console calls domain
+commands; it owns no commercial truth. See `ADMIN_CONSOLE.md`.

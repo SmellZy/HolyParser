@@ -849,3 +849,196 @@ semantic or timing mismatch makes an expected cash-flow result unavailable.
 Matching and ranking confidence in Phase 2B describes deterministic evidence
 and required-field completeness only. It must not be presented as probability
 of profit, strategy success, or execution quality.
+
+## 10. Product design, commerce, and administration decisions — 2026-08-03
+
+The following decisions are intentionally unresolved. They do not block this
+architecture amendment, but each blocks the named implementation track. The
+Product Owner coordinates the listed approval authority and records exact values,
+effective date and evidence; implementers must not choose defaults.
+
+The `When` field is the implementation gate and remains blocking through
+production unless the decision is superseded by an approved version. Where an
+external pilot may start before production, its separate production gate is
+stated explicitly.
+
+### D-065 — Product catalog and entitlement policy
+
+- **When:** before C1 or public pricing implementation
+- **Status:** `BLOCKING PRODUCT/FINANCE/SECURITY DECISION`
+- **Authority:** Product Owner + Finance + Legal + Security
+- **Question:** What products, plan names, immutable PlanVersions, monthly/annual
+  prices, supported billing currencies and annual discount apply by region; and
+  what per-entitlement source precedence, overlap/merge, suspension scope,
+  temporary-upgrade, grace and limit semantics apply?
+- **Recommendation:** start with the smallest catalog and currency set; new
+  amounts create new Price records and never rewrite invoice history. Treat
+  security/legal account restriction as a separately audited deny overlay for
+  scoped commercial access while preserving safety operations.
+
+### D-066 — Tax and invoicing model
+
+- **When:** before any tax-calculating or provider-specific invoice/checkout
+  implementation after C3; the provider-neutral invoice contract may precede it
+- **Status:** `BLOCKING LEGAL/FINANCE DECISION`
+- **Authority:** Legal/Tax + Finance + Product Owner
+- **Question:** Merchant-of-record or seller model, tax-inclusive/exclusive
+  display, accounting/recognition boundary, location evidence, invoice fields,
+  exemptions and supported regions?
+- **Recommendation:** do not implement tax calculation without qualified advice
+  and provider-specific official evidence.
+
+### D-067 — Fiat payment provider
+
+- **When:** before any concrete fiat provider work after the C3 boundary
+- **Status:** `BLOCKING PRODUCT/SECURITY/FINANCE DECISION`
+- **Authority:** Product Owner + Finance + Security + Legal
+- **Question:** Which provider, countries, currencies, payment methods,
+  subscription/refund/chargeback capabilities, webhook semantics and data scope?
+- **Recommendation:** select only after current official capability, pricing,
+  compliance, outage and migration research; architecture selects none.
+- **Production gate:** provider-specific implementation, security/compliance
+  review, reconciliation/outage evidence and regional approval are frozen.
+
+### D-068 — Crypto processor, custody and payment routes
+
+- **When:** before any concrete processor/custody work after the provider-neutral
+  C5 invoice/mock-custody boundary
+- **Status:** `BLOCKING SECURITY/LEGAL/FINANCE DECISION`
+- **Authority:** Security + Finance + Legal + Product Owner
+- **Question:** Which processor/custodian, key ownership, approved assets,
+  networks/contracts, destination model, regional restrictions and recovery?
+- **Recommendation:** keep keys outside the main application and begin with a
+  minimal allowlisted route set; ticker text is never route identity.
+- **Production gate:** processor/custody integration, key-recovery controls,
+  incident exercises and approved routes are independently accepted.
+
+### D-069 — Crypto quote, finality and exception policy
+
+- **When:** before a configured route-specific C5 pilot or production use; the
+  policy-injected generic state machine and synthetic fixtures may precede it
+- **Status:** `BLOCKING PRODUCT/FINANCE/SECURITY DECISION`
+- **Authority:** Product Owner + Finance + Security
+- **Question:** Quote source/validity/spread/rounding, confirmations/finality by
+  route and amount, volatile assets, partial/over/under/late payment, network
+  fees, reorgs and refund treatment?
+- **Recommendation:** explicit versioned per-route policies; unresolved cases go
+  to review and never become paid automatically.
+- **Production gate:** approved route policies, official processor/network
+  evidence and external reconciliation/finality tests are frozen.
+
+### D-070 — Trial, grace and subscription-change policy
+
+- **When:** before C2
+- **Status:** `BLOCKING PRODUCT/FINANCE DECISION`
+- **Authority:** Product Owner + Finance + Support
+- **Question:** Trial eligibility/duration, grace duration/access, pause/resume,
+  upgrade/downgrade effective time, proration and cancellation/reactivation?
+- **Recommendation:** period-end downgrade, explicit temporary grace and no
+  hidden proration until approved.
+
+### D-071 — Refund and chargeback policy
+
+- **When:** before refund/chargeback behavior in C3, C5, C7 or C8
+- **Status:** `BLOCKING LEGAL/FINANCE/SECURITY DECISION`
+- **Authority:** Legal + Finance + Security + Product Owner
+- **Question:** Eligibility/windows, partial refund, promo/credit restoration,
+  access impact, crypto refund destination/fees, chargeback review and appeal?
+- **Recommendation:** never infer access revocation from a dispute without the
+  approved safety/legal policy; every outbound value transfer is separate.
+
+### D-072 — Promotion stacking and evaluation order
+
+- **When:** before C4
+- **Status:** `BLOCKING PRODUCT/FINANCE DECISION`
+- **Authority:** Product Owner + Finance
+- **Question:** May promotions stack, in what order relative to proration,
+  account credit and tax, what caps/rounding apply, and is one code per checkout
+  the permanent rule?
+- **Recommendation:** one code per checkout and no stacking until explicitly
+  approved with versioned exact formulas.
+
+### D-073 — Lifetime purchase and grant meaning
+
+- **When:** before offering any lifetime benefit
+- **Status:** `BLOCKING PRODUCT/LEGAL/FINANCE DECISION`
+- **Authority:** Product Owner + Legal + Finance
+- **Question:** Lifetime of account, product, version or company; transferable,
+  refundable, revocable, successor features and termination obligations?
+- **Recommendation:** do not market or issue `LIFETIME_PURCHASE` until defined in
+  customer terms and entitlement policy.
+
+### D-074 — Affiliate and referral policy
+
+- **When:** before partner/referral campaign implementation
+- **Status:** `BLOCKING PRODUCT/LEGAL/FINANCE DECISION`
+- **Authority:** Product Owner + Legal + Finance
+- **Question:** Attribution window, self-referral/fraud, payout basis, reversals,
+  disclosure, tax, privacy and regional eligibility?
+- **Recommendation:** keep `PARTNER` grant provenance available but implement no
+  payout or attribution system without a dedicated phase.
+
+### D-075 — Admin session and authentication strength
+
+- **When:** before I2 strong-auth policy is frozen and before I4 admin sessions
+- **Status:** `BLOCKING SECURITY DECISION`
+- **Authority:** Security + Identity owner + Product Owner
+- **Question:** Absolute/idle TTL, passkey/MFA requirement, recent-auth window,
+  trusted-device policy, origin topology, revocation and break-glass procedure?
+- **Recommendation:** shorter than user sessions, phishing-resistant step-up and
+  no privilege elevation inside a pre-existing low-assurance session.
+
+### D-076 — Dual approval and refund thresholds
+
+- **When:** before I4/C8
+- **Status:** `BLOCKING SECURITY/FINANCE DECISION`
+- **Authority:** Security + Finance + Product Owner
+- **Question:** Which grant, role, catalog, promotion, refund, crypto and bulk
+  actions require a distinct approver, and at what amount/currency/scope?
+- **Recommendation:** bind approval to an immutable command digest; requester can
+  never approve; compare amounts only within currency unless converted explicitly.
+
+### D-077 — Commerce, audit and provider-data retention
+
+- **When:** before persistent C1, I4 audit, or any provider integration
+- **Status:** `BLOCKING LEGAL/SECURITY/DATA DECISION`
+- **Authority:** Legal/Privacy + Security + Data owner
+- **Question:** Retention, deletion/anonymization, legal hold, audit integrity,
+  provider payload minimization, invoice/transaction history and subject rights?
+- **Recommendation:** class-based schedules with minimum raw provider payload and
+  separately protected append-only audit.
+
+### D-078 — Commercial legal and regional availability
+
+- **When:** before public pricing/checkout in a region
+- **Status:** `BLOCKING LEGAL/PRODUCT DECISION`
+- **Authority:** Legal + Product Owner + Security/Compliance
+- **Question:** Terms, privacy disclosures, refund/cancellation language,
+  consumer rights, sanctions, age/business eligibility, crypto availability and
+  financial-analytics wording by jurisdiction?
+- **Recommendation:** deny unsupported regions server-side and avoid guaranteed-
+  profit or investment-advice language.
+
+### C-033 — Legacy billing phase is not implementation authority
+
+Legacy Phase 13 and billing skeleton references describe historical intent. The
+current D/I/C tracks and their decisions govern. No service, database, provider
+or route is authorized merely because an older master-spec section names it.
+
+### C-034 — Plan state, payment state and effective access differ
+
+An active-looking checkout, paid invoice or named plan does not by itself prove
+effective access. Subscription, payment, grants and evaluated entitlements are
+separate versioned facts and may temporarily differ during reconciliation.
+
+### C-035 — Crypto ticker is not a payment route
+
+An asset ticker without network and token/native identity cannot identify a
+destination, confirmation policy or obligation. Same-ticker cross-network
+payments remain distinct and wrong-route funds are never auto-credited.
+
+### C-036 — Admin visibility is not admin authority
+
+Rendering `/admin`, assigning a role label or hiding a menu does not authorize a
+command. Every read and mutation requires its exact server-side permission,
+session assurance and tenant/environment scope.

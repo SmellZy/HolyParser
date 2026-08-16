@@ -1984,3 +1984,42 @@ The implementation sequence after frozen Phase 2A.1 is:
 
 `ROADMAP.md` contains the phase deliverables, non-goals, dependencies, and
 acceptance criteria. Passing one phase never authorizes the next.
+
+## 31. Product design, commerce, and administration amendment
+
+This amendment is architecture-only. It does not authorize application,
+database, provider, identity, payment, admin or UI implementation and does not
+change the frozen Phase 2A or Phase 2B architecture boundaries.
+
+Authoritative future-design documents are:
+
+- `DESIGN_SYSTEM.md` and `THEME_ARCHITECTURE.md` for HolyParser visual language,
+  accessibility, responsive behavior and `SYSTEM`/`DARK`/`LIGHT` preference;
+- `PRODUCT_INFORMATION_ARCHITECTURE.md` for public, authenticated, personal
+  billing and separate `/admin` surfaces;
+- `SUBSCRIPTION_AND_ENTITLEMENTS.md` for entitlement-first access and the
+  provider-neutral subscription lifecycle;
+- `PROMOTION_ENGINE.md`, `PAYMENT_ARCHITECTURE.md` and
+  `CRYPTO_PAYMENT_ARCHITECTURE.md` for server-authoritative commerce;
+- `ADMIN_CONSOLE.md` for permission-based privileged operations, step-up,
+  optional dual control and append-only audit;
+- ADR-0010 through ADR-0012 for the binding access, provider and admin
+  boundaries.
+
+Plans are commercial bundles and never feature-authorization strings. Effective
+entitlements are derived from source-backed grants with provenance, validity,
+revocation and audit. Neither a browser nor a payment redirect grants access.
+Fiat and crypto providers supply verified evidence through isolated ports;
+reconciliation handles missing, duplicate, reordered and unknown outcomes.
+Crypto asset/network identity is explicit and custody/private keys remain
+outside the main application.
+
+The `/admin` surface is a separate control plane. There is no global `isAdmin`
+shortcut: independent permissions, stronger sessions, reasoned/idempotent
+commands and append-only audit are mandatory. Financial totals remain separated
+by currency unless an explicit versioned conversion is present.
+
+The roadmap introduces future Design (D1–D6), Identity/Admin (I1–I4) and
+Commerce (C1–C8) tracks. They require separate product-owner approval, may run
+only according to their recorded dependencies, and do not add commerce to Phase
+2B Spread Analytics Core.

@@ -1,0 +1,130 @@
+# Theme Architecture
+
+Status: future UI architecture; documentation only.
+
+## 1. Theme model
+
+The supported preference is exactly `SYSTEM`, `DARK` or `LIGHT`.
+
+- An authenticated account stores the preference server-side and applies it to
+  every signed-in client.
+- An unauthenticated client stores preference only on that device.
+- A first visit defaults to `SYSTEM`.
+- `SYSTEM` follows `prefers-color-scheme` and reacts to operating-system changes
+  until the user chooses `DARK` or `LIGHT`.
+- Account preference wins after authenticated bootstrap; a newer explicit local
+  unauthenticated choice may be offered for adoption but is never silently
+  written to the account.
+
+Theme is presentation preference, not security state, tenant authorization or
+financial configuration.
+
+## 2. Semantic resolution
+
+Light is designed for bright analytical work and is not a mathematical inversion
+of dark. Initial token set `theme.holyparser.v1`:
+
+| Semantic token             | Light     | Dark      |
+| -------------------------- | --------- | --------- |
+| `background.base`          | `#F6F8FC` | `#060B18` |
+| `background.surface`       | `#FFFFFF` | `#0A1324` |
+| `background.elevated`      | `#FFFFFF` | `#101C31` |
+| `background.subtle`        | `#F1F5F9` | `#0D1728` |
+| `border.default`           | `#E5E7EB` | `#24334A` |
+| `border.emphasis`          | `#7B8494` | `#536A8A` |
+| `text.primary`             | `#111827` | `#F7FAFF` |
+| `text.secondary`           | `#374151` | `#C3CEDD` |
+| `text.muted`               | `#6B7280` | `#8291A8` |
+| `text.disabled`            | `#9CA3AF` | `#526178` |
+| `action.primary`           | `#126BFF` | `#3384FF` |
+| `action.secondary`         | `#6B5CFF` | `#8A7CFF` |
+| `focus`                    | `#006EE6` | `#00D4FF` |
+| `status.positive`          | `#087A55` | `#38D39F` |
+| `status.negative`          | `#B4233C` | `#FF718A` |
+| `status.warning`           | `#985B00` | `#F5B942` |
+| `status.critical`          | `#A61B1B` | `#FF5B5B` |
+| `status.informational`     | `#0A5CD6` | `#66A3FF` |
+| `status.unknown`           | `#5F6B7A` | `#A6B2C2` |
+| `status.stale`             | `#8A5A00` | `#E9A928` |
+| `status.gapped`            | `#A33252` | `#FF7AA2` |
+| `status.research-required` | `#5948D6` | `#A99CFF` |
+| `status.disabled`          | `#7D8795` | `#68768A` |
+
+Hover, active and contrast variants are derived in the token build from reviewed
+explicit values, not runtime colour arithmetic. Raw hex values never appear in
+feature components.
+
+`border.emphasis` is the minimum boundary token for controls or graphics whose
+boundary is required to identify the component; it is at least 3:1 against the
+adjacent surface in both themes. `border.default` is decorative separation only
+and must not be the sole visible boundary of an essential control. Disabled-text
+tokens use the WCAG inactive-control exception and must not render required
+instructions, denial reasons or financial state.
+
+Chart tokens resolve independently from outcome/status tokens:
+
+| Chart token               | Light     | Dark      |
+| ------------------------- | --------- | --------- |
+| `chart.canvas`            | `#FFFFFF` | `#0A1324` |
+| `chart.grid`              | `#E5E7EB` | `#24334A` |
+| `chart.axis`              | `#6B7280` | `#8291A8` |
+| `chart.label`             | `#374151` | `#C3CEDD` |
+| `chart.crosshair`         | `#126BFF` | `#00D4FF` |
+| `chart.selection`         | `#DCEAFF` | `#18365F` |
+| `chart.series.primary`    | `#126BFF` | `#3384FF` |
+| `chart.series.comparison` | `#5948D6` | `#A99CFF` |
+| `chart.gap`               | `#A33252` | `#FF7AA2` |
+| `chart.uncertainty`       | `#7D8795` | `#68768A` |
+| `chart.invalid`           | `#A61B1B` | `#FF5B5B` |
+
+Series, selection, uncertainty, gap and invalid states also use labels,
+dash/pattern/marker or explicit missing-range geometry. Colour contrast between
+two series is not accepted as their only distinction. Axis/label text follows
+the same 4.5:1 normal-text rule as other required copy.
+
+## 3. Boot and no-flash protocol
+
+1. The HTML response declares supported colour schemes and uses a neutral
+   theme-safe canvas.
+2. A small, nonce/hash-authorized pre-render bootstrap reads the validated local
+   enum and system preference before first paint; it performs no network call.
+3. The root receives `data-theme="light|dark"` before styles render.
+4. After session bootstrap, the validated account preference may replace the
+   provisional theme in one controlled transition with motion suppressed.
+5. SSR-capable surfaces should emit the known authenticated preference directly.
+
+Invalid or unknown stored values fall back to `SYSTEM`. No user-supplied string
+is interpolated into CSS. Content Security Policy must explicitly account for
+the bootstrap mechanism; unsafe inline script is not an acceptable shortcut.
+
+## 4. Persistence and synchronization
+
+The account record stores preference plus revision and update time. Updates use
+optimistic concurrency and audit only actor, old/new enum and timestamp—not
+device fingerprints. Cross-tab/device changes use the platform settings contract;
+local storage events are presentation hints, not authority.
+
+Unauthenticated preference is local and environment-scoped. Production,
+staging, public site, app and admin contexts must not leak storage keys across
+origins. Logout retains device preference only if privacy policy approves it;
+account identity is never stored with that key.
+
+## 5. Surfaces and special cases
+
+- Public site, app, billing portal and admin console use the same semantic token
+  contract.
+- Admin defaults may be denser but cannot force a different user preference.
+- Email, exported files and public Telegram messages use their own static,
+  accessibility-reviewed rendering; they do not read browser theme state.
+- Embedded charts receive a resolved token snapshot and theme version so canvas
+  and DOM remain consistent.
+- Browser-native controls declare matching `color-scheme`.
+
+## 6. Verification
+
+Acceptance requires first-paint screenshots for all three preferences in light
+and dark system modes, CSP validation, hydration mismatch tests, corrupted
+storage fallback, account/local conflict tests, cross-tab behavior, contrast,
+forced-colour and reduced-motion checks. Theme failure must degrade to a usable
+light or dark surface and must never block authentication, billing status,
+emergency operations or reconciliation.

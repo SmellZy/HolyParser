@@ -532,3 +532,60 @@ Mocks fail closed and cannot resemble successful unsupported capabilities.
 - Phase 8 requires controlled live evidence and a new explicit approval.
 
 Passing a phase does not authorize the next one.
+
+## 10. Future cross-cutting product tracks — architecture only
+
+These tracks refine future work without authorizing it or altering Phase 2B.
+Each item is independently implementable, testable and freezable after its
+decisions are approved.
+
+### Design track
+
+| Track                                            | Scope                                                                             | Depends on                        | Acceptance gate                                                      |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| D1 — Brand and Semantic Design Tokens            | semantic colour, typography, spacing, radius, elevation, motion and status tokens | design docs accepted              | dark/light values, contrast and token governance pass                |
+| D2 — Foundational Component Library              | accessible controls, forms, feedback, dialogs and navigation                      | D1                                | keyboard, focus, screen-reader, disabled/loading/error matrices pass |
+| D3 — Public and Authenticated Application Shells | public IA and authenticated responsive shell                                      | D2; corresponding route contracts | deep links and planned/unavailable/entitlement states fail closed    |
+| D4 — Dark/Light Theme Completion                 | `SYSTEM`/`DARK`/`LIGHT`, account/device persistence and no-flash boot             | D1–D3; security/CSP review        | first-paint, hydration, corrupt-storage and preference tests pass    |
+| D5 — Financial Tables and Visualization          | exact-value grids, chart and order-book presentation                              | D2/D4; frozen domain contracts    | USDT/USDC, units, quality/gap and density remain explicit            |
+| D6 — Admin UI System                             | personal billing patterns and separate `/admin` presentation                      | D2/D4; C/I contracts accepted     | admin boundary, strong-action and audit UX pass                      |
+
+### Identity and administration track
+
+| Track                                                   | Scope                                                                           | Depends on                                   | Acceptance gate                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
+| I1 — Account and Identity Foundation                    | account identity, tenant ownership and recovery foundation                      | Phase 1 foundation; identity/legal decisions | account isolation, recovery and ownership review passes                 |
+| I2 — Email Verification and Session Security            | verification, session inventory/revocation and strong-auth foundation           | I1                                           | abuse, enumeration, expiry, revocation and session-security tests pass  |
+| I3 — RBAC Permission Model                              | independent permissions and time-bounded role assignments                       | I2; ADR-0012                                 | deny-default matrix, separation of duties and assignment tests pass     |
+| I4 — Administrative Authentication and Audit Foundation | `/admin` sessions, step-up, reason, idempotency, approval and append-only audit | I3; admin policy decisions                   | direct-route, self-approval, replay, stale-version and audit tests pass |
+
+### Commerce track
+
+| Track                                      | Scope                                                                                                            | Depends on                                         | Acceptance gate                                                                          |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| C1 — Product Catalog and Entitlements      | Product/Plan/PlanVersion/Price, definitions, grants and pure evaluator                                           | decisions on catalog/precedence; ADR-0010          | deterministic overlap/expiry/revocation/usage tests pass                                 |
+| C2 — Subscription State Machine            | provider-neutral subscriptions, periods, trial, grace and plan-change commands                                   | C1; identity ownership from I1; lifecycle policies | complete transition, idempotency and reconciliation tests pass                           |
+| C3 — Fiat Payment Provider Boundary        | provider-neutral ports, verified event inbox, attempts/invoices and reconciliation harness; no concrete provider | C1–C2; ADR-0011; generic security contracts        | synthetic signature, duplicate, reorder, unknown-outcome, outage and redirect tests pass |
+| C4 — Promotion and Promo-Code Engine       | promotion/code/reservation/redemption and benefit decisions                                                      | C1–C2; promo policies                              | exact arithmetic, race, multi-account abuse and secret-redaction tests pass              |
+| C5 — Crypto Invoice and Settlement         | route identity, policy-driven invoice/finality/reorg and mock custody boundary; no concrete processor            | C1–C2; ADR-0011; generic custody boundary          | synthetic asset/network, finality, reorg, exception and reconciliation tests pass        |
+| C6 — Billing Self-Service Portal           | plan/access/usage/invoice/payment/crypto/promo/history and safe commands                                         | C2–C5 as relevant; D2/D4; I1                       | portal separates subscription, payment, grace, promotion and effective access            |
+| C7 — Admin Commerce Console                | authorized catalog/subscription/payment/crypto/promo/reconciliation operations                                   | I4; corresponding C1–C5 commands; D6               | permission, step-up/approval, currency separation and audit tests pass                   |
+| C8 — Reconciliation, Refunds and Reporting | refunds/chargebacks, dead letters, reporting, SLO/runbooks                                                       | C3/C5 as applicable; C7                            | dual-control policy, exact currency, restore, audit and disaster exercises pass          |
+
+### Dependency and parallelism rules
+
+- D1 → D2 → D3 is sequential; D4 follows the shell/token foundation. D5 waits
+  for D2/D4 and frozen financial contracts. D6 waits for D2/D4 and I/C contracts.
+- I1 → I2 → I3 → I4 is sequential. Identity ownership precedes billing ownership;
+  RBAC and audit precede every admin mutation.
+- C1 → C2 is sequential. C3, C4 and C5 may then proceed in parallel after their
+  contract-level decisions; provider/custody selection is not a prerequisite for
+  the provider-neutral C3 or mock-boundary C5 foundations. Those boundaries must
+  freeze before any separately approved concrete integration.
+  C6 waits for the relevant read/command contracts. C7 waits for I4 and domain
+  commands. C8 waits for the payment rails and C7 operations boundary.
+- Phase 2B remains read-only analytics and has no dependency on commerce.
+- Design components never become a second source of authorization; admin and
+  provider clients never grant entitlements directly.
+
+Every track requires a separate implementation prompt and formal acceptance.

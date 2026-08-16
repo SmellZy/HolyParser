@@ -497,3 +497,89 @@ Before any Phase 7 Telegram live control:
   revalidation, unknown outcome, partial hedge, kill switch, and outage drills
   pass;
 - live remains disabled by default.
+
+## 22. Commerce trust zones and entitlement authority
+
+Future commerce adds these sub-zones:
+
+- public/browser zone: untrusted plan, promotion and redirect presentation;
+- commerce application zone: catalog, subscription and promotion validation;
+- entitlement authority: append-only grant/revocation facts and deterministic
+  effective-access evaluation;
+- provider ingress/adapter zone: current provider verification and bounded
+  outbound calls;
+- crypto processor/custody zone: separately controlled addresses, finality and
+  keys, with no signing authority in the main application;
+- admin control zone: separate `/admin` session, permission and audit boundary.
+
+Network and process topology may evolve, but these trust boundaries may not be
+collapsed by shared DTOs or direct browser/provider writes. Only verified
+backend evidence and authorized internal commands can change subscription/grant
+facts. Effective entitlement—not plan text—is the access decision.
+
+Commerce degradation must fail closed for new paid access while preserving
+emergency risk handling, reconciliation and the ability to secure/close existing
+live exposure. Billing is never on the execution safety critical path.
+
+## 23. Payment and webhook controls
+
+- Provider origins, paths and redirects are allowlisted per environment; users
+  cannot create arbitrary URLs.
+- Webhook bodies are bounded before parse and verified using current official
+  signature/timestamp/replay rules over the required bytes.
+- Provider event IDs are unique; same ID/different digest is a security event.
+- Missing, duplicate, delayed, reordered and unknown events are reconciled and
+  never guessed.
+- Checkout/refund/payment calls are idempotent and have bounded timeout/retry;
+  timeout/5xx cannot trigger blind financial retry.
+- Hosted payment references are opaque. Secrets, full card/bank data and raw
+  provider payloads are excluded from logs, metrics and ordinary audit.
+- Redirects are presentation only and cannot activate subscription or access.
+
+PCI, privacy, tax, sanctions/regional and retention scope must be assessed after
+provider selection and before production.
+
+## 24. Crypto payment and custody controls
+
+Asset, network, token/native identity, destination/memo, amount, expiry and
+confirmation/finality policy are separately validated. Ticker text is never
+sufficient identity. Late, partial, over/under, wrong-route, reorg and unknown
+outcomes enter explicit review/reconciliation states.
+
+Private keys, seed phrases, address derivation and signing are prohibited in the
+main application. A separately approved processor/custodian requires least
+privilege, environment separation, HSM/MPC or equivalent custody review,
+rotation/revocation, backup/recovery, allowlists and incident exercises. Refunds
+are new strongly authorized actions and do not trust the inbound source address
+by default.
+
+## 25. Admin control security
+
+There is no `isAdmin` shortcut. Independent permissions, expiring role
+assignments, stronger sessions, recent-auth step-up, reasoned/idempotent commands,
+optimistic concurrency and append-only audit are mandatory. The admin shell does
+not expose database/provider direct access.
+
+Requester/approver separation applies to approved high-risk scopes. Command
+digests bind approvals; edits or expiry invalidate them. Break-glass access is
+time-bounded, cannot delete audit or weaken core invariants, and triggers review.
+
+Admin audit records safe actor/permission/assurance/action/target/reason/version/
+correlation/result fields. It excludes credentials, tokens, signatures, private
+keys, full payment instruments, raw payloads and unbounded notes. Admin outage
+cannot block financial safety or reconciliation.
+
+## 26. Commerce/admin verification gates
+
+Before Design implementation: accessibility, CSP-safe no-flash theming, storage
+privacy and status-not-colour-only review.
+
+Before C1/C2: entitlement precedence/merge, trial/grace/plan-change and safety
+exceptions are approved; deterministic/replay/concurrency tests are specified.
+
+Before provider pilots: official provider research, threat model, secret/custody,
+region/tax/privacy, signature/replay, SSRF, idempotency, unknown-outcome,
+reconciliation, outage and disaster-recovery tests pass.
+
+Before I2/I4: permission matrix, admin TTL/MFA, step-up, approval threshold,
+append-only audit, redaction, break-glass and access-review policies are approved.
