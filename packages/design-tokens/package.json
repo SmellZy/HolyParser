@@ -2,11 +2,23 @@
   "name": "@arbitrage/design-tokens",
   "version": "0.1.0",
   "private": true,
-  "style": "./tokens.css",
+  "type": "module",
+  "style": "./generated/tokens.css",
   "exports": {
-    "./tokens.css": "./tokens.css"
+    "./tokens.css": "./generated/tokens.css",
+    "./metadata": "./generated/tokens.generated.ts"
   },
   "files": [
-    "tokens.css"
-  ]
+    "generated"
+  ],
+  "scripts": {
+    "build": "node scripts/generate.mjs --check",
+    "generate": "node scripts/generate.mjs --write",
+    "lint": "node scripts/validate.mjs && node scripts/scan-raw-values.mjs",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "node scripts/generate.mjs --check"
+  },
+  "engines": {
+    "node": ">=24.18.0 <25"
+  }
 }

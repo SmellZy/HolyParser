@@ -1,0 +1,129 @@
+{
+  "pairs": [
+    {
+      "id": "pair.action.inverse",
+      "foregrounds": ["semantic.color.text.inverse"],
+      "backgrounds": [
+        "semantic.color.action.primary",
+        "semantic.color.action.primary.active",
+        "semantic.color.action.primary.hover",
+        "semantic.color.action.secondary"
+      ],
+      "usage": "normal-text",
+      "threshold": "4.5"
+    },
+    {
+      "id": "pair.border.emphasis",
+      "foregrounds": ["semantic.color.border.emphasis"],
+      "backgrounds": [
+        "semantic.color.background.elevated",
+        "semantic.color.background.surface"
+      ],
+      "usage": "essential-graphic",
+      "threshold": "3"
+    },
+    {
+      "id": "pair.focus.ring",
+      "foregrounds": ["semantic.color.focus.ring"],
+      "backgrounds": [
+        "semantic.color.background.elevated",
+        "semantic.color.background.surface"
+      ],
+      "usage": "focus-indicator",
+      "threshold": "3"
+    },
+    {
+      "id": "pair.state.foreground",
+      "foregrounds": [
+        "semantic.color.capability.research-required",
+        "semantic.color.capability.unsupported",
+        "semantic.color.capability.unverified",
+        "semantic.color.financial.negative",
+        "semantic.color.financial.neutral",
+        "semantic.color.financial.positive",
+        "semantic.color.quality.crossed",
+        "semantic.color.quality.gapped",
+        "semantic.color.quality.invalid",
+        "semantic.color.quality.locked",
+        "semantic.color.quality.reconnecting",
+        "semantic.color.quality.stale",
+        "semantic.color.status.active",
+        "semantic.color.status.critical",
+        "semantic.color.status.healthy",
+        "semantic.color.status.informational",
+        "semantic.color.status.unknown",
+        "semantic.color.status.warning",
+        "semantic.color.text.link"
+      ],
+      "backgrounds": [
+        "semantic.color.background.base",
+        "semantic.color.background.elevated",
+        "semantic.color.background.surface"
+      ],
+      "usage": "normal-text",
+      "threshold": "4.5"
+    },
+    {
+      "id": "pair.text.muted",
+      "foregrounds": ["semantic.color.text.muted"],
+      "backgrounds": [
+        "semantic.color.background.base",
+        "semantic.color.background.elevated",
+        "semantic.color.background.surface",
+        "semantic.color.surface.interactive"
+      ],
+      "usage": "normal-text",
+      "threshold": "4.5"
+    },
+    {
+      "id": "pair.text.primary-secondary",
+      "foregrounds": [
+        "semantic.color.text.primary",
+        "semantic.color.text.secondary"
+      ],
+      "backgrounds": [
+        "semantic.color.background.base",
+        "semantic.color.background.elevated",
+        "semantic.color.background.subtle",
+        "semantic.color.background.surface",
+        "semantic.color.surface.interactive",
+        "semantic.color.surface.selected"
+      ],
+      "usage": "normal-text",
+      "threshold": "4.5"
+    }
+  ],
+  "prohibitions": [
+    {
+      "id": "prohibition.arbitrary-pairing",
+      "rule": "Only expanded pairs are legal."
+    },
+    {
+      "id": "prohibition.border-default-essential",
+      "rule": "border.default is decorative only."
+    },
+    {
+      "id": "prohibition.disabled-required",
+      "rule": "Disabled colors cannot carry required information."
+    },
+    {
+      "id": "prohibition.scrim-text",
+      "rule": "Text cannot be placed directly on overlay.scrim."
+    }
+  ],
+  "scrimComposites": [
+    {
+      "id": "scrim.approved-surfaces",
+      "scrim": "semantic.color.overlay.scrim",
+      "backgrounds": [
+        "semantic.color.background.base",
+        "semantic.color.background.elevated",
+        "semantic.color.background.subtle",
+        "semantic.color.background.surface",
+        "semantic.color.surface.interactive",
+        "semantic.color.surface.selected"
+      ],
+      "contentSurface": "semantic.color.background.elevated"
+    }
+  ]
+}

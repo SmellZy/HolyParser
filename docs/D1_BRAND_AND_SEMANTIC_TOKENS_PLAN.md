@@ -4,7 +4,8 @@
 - Scope date: 2026-08-16
 - Depends on: frozen Product Design, Commerce and Administration Architecture
   Amendment and accepted Phase 1 foundation
-- Decision gate: D-079 through D-088
+- Decision gate: D-079 through D-088 approved on 2026-08-16; exact choices in
+  [`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md)
 
 ## 1. Purpose and authority
 
@@ -121,7 +122,7 @@ correct migration.
 
 ### 4.1 Format and location
 
-Subject to D-079 approval, use a data-only, ordered JSON source:
+Under approved D-079, use a data-only, ordered JSON source:
 
 ```text
 packages/design-tokens/
@@ -136,7 +137,7 @@ packages/design-tokens/
   generated/tokens.manifest.json
 ```
 
-`token-set.meta.json` is the proposed canonical input for `schemaVersion`,
+`token-set.meta.json` is the canonical input for `schemaVersion`,
 `tokenSetVersion`, namespace and artifact-policy identifiers; the generated
 manifest may report those values but cannot be their authority. The token
 source is an array of records sorted by token ID rather than an
@@ -144,9 +145,13 @@ object keyed by ID. Duplicate IDs are therefore detectable after ordinary JSON
 parsing. It is data, not executable TypeScript, and cannot run arbitrary code
 during generation.
 
-Together, the metadata file, ordered token source and four governed support
-sources form one atomic canonical source set. No recommendation in this section
-is approved until D-079 and D-085 are resolved.
+Together, the metadata file, ordered token source and three governed support
+sources form one atomic canonical source set. D-079 and D-085 approve the exact
+serialization, artifact and version policy in `D1_DESIGN_DECISIONS.md`.
+The generated manifest hashes the exact bytes of that source set plus generated
+CSS and TypeScript metadata using sorted repository-relative POSIX paths and
+lowercase hexadecimal SHA-256. It does not hash itself; its bytes are verified
+by clean deterministic regeneration.
 
 The implementation may use Node 24 standard-library scripts and existing test
 tooling. A new schema/generation dependency requires separate approval and is
@@ -182,7 +187,7 @@ Documentation-only example:
   },
   "description": "Primary required text",
   "accessibilityRole": "normal-text",
-  "sinceTokenSetVersion": "2.0.0",
+  "sinceTokenSetVersion": "1.0.0",
   "lifecycle": "ACTIVE"
 }
 ```
@@ -285,9 +290,9 @@ positive. `financial.positive` does not mean long or buy.
 - LIGHT values are explicitly reviewed; no inversion or runtime colour math is
   permitted.
 - Missing theme values, unresolved aliases or type mismatches fail generation.
-- Generated CSS provides a deterministic safe default plus explicit
+- Generated CSS provides the approved DARK safe default plus explicit
   `[data-theme="dark"]` and `[data-theme="light"]` scopes. The safe default is
-  selected by D-079/D-086 and must match the frozen Phase 1 rollback strategy.
+  selected by D-086 and matching the frozen Phase 1 rollback strategy.
 - A future D4 bootstrap selects the root attribute. D1 defines names and
   fallback only; it adds no preference storage or script.
 - The server and client consume the same token-set manifest/version. Hydration
@@ -296,14 +301,13 @@ positive. `financial.positive` does not mean long or buy.
   required text transparent or state indistinguishable.
 
 The accepted initial values and architectural shorthand names in
-`THEME_ARCHITECTURE.md` and `DESIGN_SYSTEM.md` are inputs to D-081/D-085, not
-permission to omit tokens or silently alias together meanings that the expanded
-D1 taxonomy separates. D-081 must confirm the expanded values/pairings; D-085
-must approve any one-way compatibility rename from an earlier shorthand.
+`THEME_ARCHITECTURE.md` and `DESIGN_SYSTEM.md` remain inputs. D-081 now approves
+the expanded values and pairings, and D-085 approves only direct, expiring,
+one-way compatibility aliases; neither permits meanings to merge.
 
 ## 7. Typography contract
 
-No font is installed or fetched in D1. Subject to D-080 approval, tokens define:
+No font is installed or fetched in D1. Under approved D-080, tokens define:
 
 - `font.family.heading`: Space Grotesk preference followed by an approved
   metric-tolerant sans-serif fallback stack;
@@ -321,9 +325,9 @@ No font is installed or fetched in D1. Subject to D-080 approval, tokens define:
 - bounded responsive roles using explicit clamp endpoints;
 - fallback evidence at 100%, 200% zoom and long localized strings.
 
-The already-installed Geist package is classified as a temporary Phase 1
-compatibility fallback. D1 installs nothing. Whether it remains or is removed
-is governed by D-080/D-086 and cannot be changed incidentally.
+The already-installed Geist package remains a temporary Phase 1 compatibility
+fallback under D-080/D-086. D1 installs or removes nothing and does not change
+`layout.tsx`.
 
 ## 8. Status and financial semantics
 
@@ -389,13 +393,17 @@ default.
 - Critical threshold/anomaly meaning uses shape/dash/label in addition to
   colour.
 - Tooltip and selected states use approved text/surface pairings.
+- Sequential/diverging stops are area/fill-only encodings with required legends
+  and value/bin labels; low-contrast stops and selection fills cannot be
+  standalone essential geometry or the only indication of meaning.
 
-D-082 approves exact series count, palette, marker sequence, dash sequence and
-reuse behavior.
+D-082 approves eight series and the exact palette, marker sequence, dash
+sequence and overflow behavior in `D1_DESIGN_DECISIONS.md`.
 
 ## 10. Contrast and accessibility matrix
 
-D1 uses the frozen WCAG 2.2 AA baseline unless D-081 approves a stricter target.
+D1 uses the D-081-approved WCAG 2.2 AA baseline and exact legal pairing
+allowlist.
 
 | Use                               |                                       Minimum | Required evidence                                               |
 | --------------------------------- | --------------------------------------------: | --------------------------------------------------------------- |
@@ -432,8 +440,8 @@ contrast is calculated.
   immediate state annunciation;
 - motion never carries the only indication of price or status change;
 - token metadata uses only approved `systemColor` roles for forced colours;
-  exact role/value mappings remain a D-087 decision, and rendered component
-  behavior is split by D-087 between D1 and D2/D4;
+  exact role/value mappings follow D-087, while rendered component behavior is
+  split between D1 and D2/D4/D5;
 - keyboard behavior is not implemented in D1, but D1 cannot define a token that
   suppresses focus or makes it transparent.
 
@@ -473,9 +481,9 @@ cleanup criterion. Broad directory or wildcard exemptions are prohibited.
 Expired, orphaned or widened exceptions fail CI. Product strings and user input
 cannot become exceptions.
 
-D-084 assigns the owner/approver and maximum lifetime. A repository-native
-bounded script is preferred over a custom lint plugin. Generated and fixture
-exclusions are exact path allowlists.
+D-084 assigns Frontend Architecture ownership, role-specific approval and a
+30-day maximum with one reviewed renewal. A repository-native bounded script
+is required; generated and fixture exclusions are exact path allowlists.
 
 ## 12. Versioning, compatibility and rollback
 
@@ -518,7 +526,11 @@ Tests compare the previous accepted manifest with the candidate and fail on:
 Rollback restores the prior source, generated artifacts, manifest, aliases and
 consumer bridge as one atomic revision. A generated artifact is never rolled
 back independently. The previous accepted token set remains buildable during
-the compatibility window. D-085 approves the window and removal policy.
+the D-085 window of at least two minor releases and 90 days, whichever is later.
+For the first D1 adoption, rollback removes the newly introduced canonical set
+and restores the accepted legacy `tokens.css`, package export and `globals.css`
+baseline; later rollbacks restore the complete preceding accepted canonical
+set.
 
 ## 13. Phase 1 migration plan
 
@@ -544,7 +556,7 @@ the compatibility window. D-085 approves the window and removal policy.
 
 | Legacy item                              | Classification                           | Planned treatment                                                       |
 | ---------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
-| `--color-canvas/surface/surface-raised`  | aliasable but value-conflicting          | map to semantic backgrounds; accepted theme values win after approval   |
+| `--color-canvas/surface/surface-raised`  | aliasable but value-conflicting          | map to D-081 semantic backgrounds; approved theme values win            |
 | `--color-surface-hover`                  | aliasable                                | map to reviewed interaction surface token                               |
 | `--color-border*`                        | aliasable                                | default/emphasis mappings with contrast constraints                     |
 | `--color-text*`                          | aliasable                                | map by meaning; disabled exception remains explicit                     |
@@ -569,8 +581,8 @@ Only a separately approved D1 implementation may change:
 - `packages/design-tokens/package.json` only for approved exports and D1-local
   scripts; no dependency may be added and `package-lock.json` remains unchanged;
 - `apps/web/src/app/globals.css` for the bounded token bridge/raw-value cleanup;
-- `apps/web/src/app/layout.tsx` only if D-080/D-086 explicitly approves a
-  minimal font compatibility change;
+- `apps/web/src/app/layout.tsx` is excluded by D-086; an unexpected need to
+  change it stops implementation for a new scope decision;
 - focused D1 validator/generator/contract tests and D1 documentation.
 
 Explicitly excluded are component/page TSX, routes, browser behavior, backend,
@@ -664,8 +676,8 @@ fixture fault injection and frozen-scope scans.
 - visual/contrast/rollback evidence.
 
 These are review checkpoints inside one D1 implementation phase, not authority
-to start them separately. The implementation remains one independently frozen
-foundation and cannot begin until the decision gate is approved.
+to start them separately. The decision gate is approved, but implementation
+still requires the separate Product Owner task described in section 20.
 
 ## 17. Observability and governance
 
@@ -703,9 +715,10 @@ D1 freezes only when:
 
 Passing D1 does not authorize D2 or D4.
 
-## 19. Decisions required before implementation
+## 19. Approved implementation decisions
 
-D-079 through D-088 in `DECISIONS_REQUIRED.md` are the complete D1 owner gate:
+D-079 through D-088 in `DECISIONS_REQUIRED.md` are approved. Their normative
+details are in `D1_DESIGN_DECISIONS.md`:
 
 - source/schema and generated-artifact policy;
 - exact typography stacks and Geist compatibility;
@@ -718,13 +731,13 @@ D-079 through D-088 in `DECISIONS_REQUIRED.md` are the complete D1 owner gate:
 - forced-colour ownership split;
 - rendered visual-regression scope.
 
-The plan is ready for product/design/security review. D1 implementation is not
-ready until these decisions are recorded as approved.
+The decision gate is closed and ADR-0013 is accepted. D1 is eligible for a
+separate implementation approval; this plan does not itself authorize work.
 
 ## 20. Exact recommended implementation prompt
 
-Use this prompt only after D-079 through D-088 have exact approved answers and
-ADR-0013 is accepted:
+Use this prompt only when the Product Owner separately approves D1
+implementation. D-079 through D-088 are approved and ADR-0013 is accepted:
 
 ```text
 Read AGENTS.md and all frozen architecture, design, theme, security, roadmap,
@@ -737,6 +750,7 @@ approved answers and ADR-0013 is Accepted. Stop without modifying files if any
 D1 decision remains unresolved or contradicts the frozen contracts.
 
 Implement D1 — Brand and Semantic Design Tokens only, following
+docs/D1_DESIGN_DECISIONS.md,
 docs/D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md and
 docs/D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md.
 

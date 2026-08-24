@@ -84,19 +84,22 @@ row is denser. Elevation communicates containment, not financial importance.
 Every token below must resolve in both themes. `THEME_ARCHITECTURE.md` owns the
 initial values and resolution rules.
 
-| Family            | Required tokens                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| Background        | `background.base`, `background.surface`, `background.elevated`, `background.subtle`               |
-| Border            | `border.default`, `border.emphasis`                                                               |
-| Text              | `text.primary`, `text.secondary`, `text.muted`, `text.disabled`                                   |
-| Action            | `action.primary`, `action.secondary`, `focus` (resolved as `focus.ring` for controls)             |
-| Outcome           | `status.positive`, `status.negative`, `status.warning`, `status.critical`, `status.informational` |
-| Knowledge/quality | `status.unknown`, `status.stale`, `status.gapped`, `status.research-required`, `status.disabled`  |
+| Family             | Required tokens                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Background/surface | `background.base`, `background.surface`, `background.elevated`, `background.subtle`, `surface.interactive`, `surface.selected`      |
+| Border             | `border.default`, `border.emphasis`                                                                                                 |
+| Text               | `text.primary`, `text.secondary`, `text.muted`, `text.disabled`, `text.inverse`, `text.link`                                        |
+| Action/focus       | `action.primary`, `action.primary.hover`, `action.primary.active`, `action.secondary`, `focus.ring`                                 |
+| Financial outcome  | `financial.positive`, `financial.negative`, `financial.neutral`                                                                     |
+| System status      | `status.healthy`, `status.active`, `status.warning`, `status.critical`, `status.informational`, `status.unknown`, `status.disabled` |
+| Data quality       | `quality.stale`, `quality.gapped`, `quality.reconnecting`, `quality.invalid`, `quality.locked`, `quality.crossed`                   |
+| Capability         | `capability.unsupported`, `capability.unverified`, `capability.research-required`                                                   |
 
 Each status also has icon, short label and accessible description tokens.
 `positive` and `negative` are not synonyms for buy and sell. `unknown`, `stale`,
-`gapped`, `research-required` and `disabled` are visually distinct and may not
-be rendered as zero, neutral success or an empty string.
+`gapped`, `research-required` and `disabled` remain distinct meanings even if a
+theme reuses a primitive value; none may be rendered as zero, neutral success or
+an empty string.
 
 ## 4. Components and interaction states
 
@@ -200,6 +203,8 @@ and font installation belong to later approved tracks. Semantic tokens are the
 only supported component-facing interface; primitives cannot become component
 API, and brand emphasis cannot substitute for a positive financial outcome.
 
-Exact values and policies remain blocked by D-079 through D-088. Until those
-decisions and ADR-0013 are approved, the existing Phase 1 stylesheet remains an
-implementation fact rather than the accepted D1 contract.
+Exact values, scales, bounds, chart encodings, governance and evidence are now
+approved in [`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md); D-079 through
+D-088 are closed and ADR-0013 is `Accepted`. The existing Phase 1 stylesheet
+remains an implementation fact until a separately approved D1 implementation
+creates and formally freezes the canonical contract.

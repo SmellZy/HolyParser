@@ -1,0 +1,1868 @@
+{
+  "tokens": [
+    {
+      "id": "primitive.color.brand.blue",
+      "kind": "primitive",
+      "family": "primitive",
+      "type": "color",
+      "description": "HolyParser electric-blue brand primitive.",
+      "accessibilityRole": "not-directly-consumable",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "#126BFF"
+    },
+    {
+      "id": "primitive.color.brand.cyan",
+      "kind": "primitive",
+      "family": "primitive",
+      "type": "color",
+      "description": "HolyParser cyan brand primitive.",
+      "accessibilityRole": "not-directly-consumable",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "#00D4FF"
+    },
+    {
+      "id": "primitive.color.brand.navy",
+      "kind": "primitive",
+      "family": "primitive",
+      "type": "color",
+      "description": "HolyParser deep-navy brand primitive.",
+      "accessibilityRole": "not-directly-consumable",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "#060B18"
+    },
+    {
+      "id": "primitive.color.brand.violet",
+      "kind": "primitive",
+      "family": "primitive",
+      "type": "color",
+      "description": "HolyParser violet brand primitive.",
+      "accessibilityRole": "not-directly-consumable",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "#5948D6"
+    },
+    {
+      "id": "semantic.color.action.primary",
+      "kind": "semantic",
+      "family": "action",
+      "type": "color",
+      "description": "Primary action surface.",
+      "accessibilityRole": "interactive-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#3384FF",
+      "light": "{primitive.color.brand.blue}"
+    },
+    {
+      "id": "semantic.color.action.primary.active",
+      "kind": "semantic",
+      "family": "action",
+      "type": "color",
+      "description": "Pressed primary action surface.",
+      "accessibilityRole": "interactive-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#7DB1FF",
+      "light": "#084CC2"
+    },
+    {
+      "id": "semantic.color.action.primary.hover",
+      "kind": "semantic",
+      "family": "action",
+      "type": "color",
+      "description": "Hovered primary action surface.",
+      "accessibilityRole": "interactive-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#5B9CFF",
+      "light": "#0B5DE6"
+    },
+    {
+      "id": "semantic.color.action.secondary",
+      "kind": "semantic",
+      "family": "action",
+      "type": "color",
+      "description": "Secondary action surface.",
+      "accessibilityRole": "interactive-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#A99CFF",
+      "light": "{primitive.color.brand.violet}"
+    },
+    {
+      "id": "semantic.color.background.base",
+      "kind": "semantic",
+      "family": "background",
+      "type": "color",
+      "description": "Application canvas.",
+      "accessibilityRole": "canvas",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "{primitive.color.brand.navy}",
+      "light": "#F6F8FC"
+    },
+    {
+      "id": "semantic.color.background.elevated",
+      "kind": "semantic",
+      "family": "background",
+      "type": "color",
+      "description": "Opaque elevated content surface.",
+      "accessibilityRole": "content-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#101C31",
+      "light": "#FFFFFF"
+    },
+    {
+      "id": "semantic.color.background.subtle",
+      "kind": "semantic",
+      "family": "background",
+      "type": "color",
+      "description": "Subtle grouping background.",
+      "accessibilityRole": "content-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#0D1728",
+      "light": "#F1F5F9"
+    },
+    {
+      "id": "semantic.color.background.surface",
+      "kind": "semantic",
+      "family": "background",
+      "type": "color",
+      "description": "Primary content surface.",
+      "accessibilityRole": "content-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#0A1324",
+      "light": "#FFFFFF"
+    },
+    {
+      "id": "semantic.color.border.default",
+      "kind": "semantic",
+      "family": "border",
+      "type": "color",
+      "description": "Decorative divider only.",
+      "accessibilityRole": "decorative-boundary",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#24334A",
+      "light": "#E5E7EB"
+    },
+    {
+      "id": "semantic.color.border.emphasis",
+      "kind": "semantic",
+      "family": "border",
+      "type": "color",
+      "description": "Essential boundary.",
+      "accessibilityRole": "essential-boundary",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#536A8A",
+      "light": "#7B8494"
+    },
+    {
+      "id": "semantic.color.capability.research-required",
+      "kind": "semantic",
+      "family": "capability",
+      "type": "color",
+      "description": "Capability requires research.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#A99CFF",
+      "light": "#5948D6"
+    },
+    {
+      "id": "semantic.color.capability.unsupported",
+      "kind": "semantic",
+      "family": "capability",
+      "type": "color",
+      "description": "Capability is unsupported.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#A6B2C2",
+      "light": "#5F6B7A"
+    },
+    {
+      "id": "semantic.color.capability.unverified",
+      "kind": "semantic",
+      "family": "capability",
+      "type": "color",
+      "description": "Capability is unverified.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#95A3B8",
+      "light": "#5E6472"
+    },
+    {
+      "id": "semantic.color.chart.axis",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Chart axis.",
+      "accessibilityRole": "chart-chrome",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#8291A8",
+      "light": "#6B7280"
+    },
+    {
+      "id": "semantic.color.chart.canvas",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Chart canvas.",
+      "accessibilityRole": "chart-canvas",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#0A1324",
+      "light": "#FFFFFF"
+    },
+    {
+      "id": "semantic.color.chart.crosshair",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Chart crosshair.",
+      "accessibilityRole": "essential-chart-line",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#00D4FF",
+      "light": "#126BFF"
+    },
+    {
+      "id": "semantic.color.chart.gap",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Chart gap marker.",
+      "accessibilityRole": "redundant-chart-state",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF7AA2",
+      "light": "#A33252"
+    },
+    {
+      "id": "semantic.color.chart.grid",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Decorative chart grid.",
+      "accessibilityRole": "decorative-chart-grid",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#24334A",
+      "light": "#E5E7EB"
+    },
+    {
+      "id": "semantic.color.chart.invalid",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Invalid chart data.",
+      "accessibilityRole": "redundant-chart-state",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF5B5B",
+      "light": "#A61B1B"
+    },
+    {
+      "id": "semantic.color.chart.label",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Chart label text.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#C3CEDD",
+      "light": "#374151"
+    },
+    {
+      "id": "semantic.color.chart.selection",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Fill-only chart selection.",
+      "accessibilityRole": "area-fill-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#18365F",
+      "light": "#DCEAFF"
+    },
+    {
+      "id": "semantic.color.chart.uncertainty",
+      "kind": "semantic",
+      "family": "chart",
+      "type": "color",
+      "description": "Uncertainty band.",
+      "accessibilityRole": "redundant-chart-state",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#68768A",
+      "light": "#7D8795"
+    },
+    {
+      "id": "semantic.color.financial.negative",
+      "kind": "semantic",
+      "family": "financial",
+      "type": "color",
+      "description": "Negative financial outcome.",
+      "accessibilityRole": "redundant-financial-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF718A",
+      "light": "#B4233C"
+    },
+    {
+      "id": "semantic.color.financial.neutral",
+      "kind": "semantic",
+      "family": "financial",
+      "type": "color",
+      "description": "Neutral financial outcome.",
+      "accessibilityRole": "redundant-financial-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#A6B2C2",
+      "light": "#5F6B7A"
+    },
+    {
+      "id": "semantic.color.financial.positive",
+      "kind": "semantic",
+      "family": "financial",
+      "type": "color",
+      "description": "Positive financial outcome; never brand blue.",
+      "accessibilityRole": "redundant-financial-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#38D39F",
+      "light": "#087A55"
+    },
+    {
+      "id": "semantic.color.focus.ring",
+      "kind": "semantic",
+      "family": "focus",
+      "type": "color",
+      "description": "Keyboard focus ring.",
+      "accessibilityRole": "focus-indicator",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#00D4FF",
+      "light": "#006EE6"
+    },
+    {
+      "id": "semantic.color.overlay.scrim",
+      "kind": "semantic",
+      "family": "surface",
+      "type": "color",
+      "description": "Alpha scrim; text is prohibited directly on it.",
+      "accessibilityRole": "overlay-scrim",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#000000A6",
+      "light": "#0F172A73"
+    },
+    {
+      "id": "semantic.color.quality.crossed",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Crossed market-data quality.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF718A",
+      "light": "#B4233C"
+    },
+    {
+      "id": "semantic.color.quality.gapped",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Gapped market-data quality.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF7AA2",
+      "light": "#A33252"
+    },
+    {
+      "id": "semantic.color.quality.invalid",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Invalid market-data quality.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF5B5B",
+      "light": "#A61B1B"
+    },
+    {
+      "id": "semantic.color.quality.locked",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Locked market-data quality.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#F2C14E",
+      "light": "#7C4D00"
+    },
+    {
+      "id": "semantic.color.quality.reconnecting",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Reconnecting market-data quality.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#4BD9F5",
+      "light": "#006B8F"
+    },
+    {
+      "id": "semantic.color.quality.stale",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Stale market-data quality.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#E9A928",
+      "light": "#8A5A00"
+    },
+    {
+      "id": "semantic.color.status.active",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Active system status.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#66A3FF",
+      "light": "#0A5CD6"
+    },
+    {
+      "id": "semantic.color.status.critical",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Critical system status.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#FF5B5B",
+      "light": "#A61B1B"
+    },
+    {
+      "id": "semantic.color.status.disabled",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Disabled decoration only; never required information.",
+      "accessibilityRole": "disabled-decoration",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#68768A",
+      "light": "#7D8795"
+    },
+    {
+      "id": "semantic.color.status.healthy",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Healthy system status.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#2DD4BF",
+      "light": "#0F766E"
+    },
+    {
+      "id": "semantic.color.status.informational",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Informational system status.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#66A3FF",
+      "light": "#0A5CD6"
+    },
+    {
+      "id": "semantic.color.status.unknown",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Unknown system status.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#A6B2C2",
+      "light": "#5F6B7A"
+    },
+    {
+      "id": "semantic.color.status.warning",
+      "kind": "semantic",
+      "family": "status",
+      "type": "color",
+      "description": "Warning system status.",
+      "accessibilityRole": "redundant-state-foreground",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#F5B942",
+      "light": "#985B00"
+    },
+    {
+      "id": "semantic.color.surface.interactive",
+      "kind": "semantic",
+      "family": "surface",
+      "type": "color",
+      "description": "Interactive surface.",
+      "accessibilityRole": "content-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#121F35",
+      "light": "#F8FAFC"
+    },
+    {
+      "id": "semantic.color.surface.selected",
+      "kind": "semantic",
+      "family": "surface",
+      "type": "color",
+      "description": "Selected surface.",
+      "accessibilityRole": "selected-surface",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#18365F",
+      "light": "#E8F1FF"
+    },
+    {
+      "id": "semantic.color.text.disabled",
+      "kind": "semantic",
+      "family": "text",
+      "type": "color",
+      "description": "Disabled decoration, never required information.",
+      "accessibilityRole": "disabled-decoration",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#526178",
+      "light": "#9CA3AF"
+    },
+    {
+      "id": "semantic.color.text.inverse",
+      "kind": "semantic",
+      "family": "text",
+      "type": "color",
+      "description": "Text on action surfaces.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#06101F",
+      "light": "#FFFFFF"
+    },
+    {
+      "id": "semantic.color.text.link",
+      "kind": "semantic",
+      "family": "text",
+      "type": "color",
+      "description": "Link foreground.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#66A3FF",
+      "light": "#0A5CD6"
+    },
+    {
+      "id": "semantic.color.text.muted",
+      "kind": "semantic",
+      "family": "text",
+      "type": "color",
+      "description": "Muted but readable text.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#8291A8",
+      "light": "#6B7280"
+    },
+    {
+      "id": "semantic.color.text.primary",
+      "kind": "semantic",
+      "family": "text",
+      "type": "color",
+      "description": "Primary text.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#F7FAFF",
+      "light": "#111827"
+    },
+    {
+      "id": "semantic.color.text.secondary",
+      "kind": "semantic",
+      "family": "text",
+      "type": "color",
+      "description": "Secondary text.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": "#C3CEDD",
+      "light": "#374151"
+    },
+    {
+      "id": "semantic.elevation.flat",
+      "kind": "semantic",
+      "family": "elevation",
+      "type": "shadow",
+      "description": "No elevation.",
+      "accessibilityRole": "decorative-elevation",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": [],
+      "light": []
+    },
+    {
+      "id": "semantic.elevation.overlay",
+      "kind": "semantic",
+      "family": "elevation",
+      "type": "shadow",
+      "description": "Overlay elevation.",
+      "accessibilityRole": "decorative-elevation",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": [
+        {
+          "x": 0,
+          "y": 12,
+          "blur": 32,
+          "spread": 0,
+          "color": "#00000080"
+        },
+        {
+          "x": 0,
+          "y": 32,
+          "blur": 80,
+          "spread": 0,
+          "color": "#00000073"
+        }
+      ],
+      "light": [
+        {
+          "x": 0,
+          "y": 8,
+          "blur": 24,
+          "spread": 0,
+          "color": "#0F172A1F"
+        },
+        {
+          "x": 0,
+          "y": 24,
+          "blur": 64,
+          "spread": 0,
+          "color": "#0F172A1A"
+        }
+      ]
+    },
+    {
+      "id": "semantic.elevation.raised",
+      "kind": "semantic",
+      "family": "elevation",
+      "type": "shadow",
+      "description": "Raised elevation.",
+      "accessibilityRole": "decorative-elevation",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "dark": [
+        {
+          "x": 0,
+          "y": 1,
+          "blur": 2,
+          "spread": 0,
+          "color": "#00000066"
+        },
+        {
+          "x": 0,
+          "y": 12,
+          "blur": 28,
+          "spread": 0,
+          "color": "#00000059"
+        }
+      ],
+      "light": [
+        {
+          "x": 0,
+          "y": 1,
+          "blur": 2,
+          "spread": 0,
+          "color": "#0F172A14"
+        },
+        {
+          "x": 0,
+          "y": 8,
+          "blur": 24,
+          "spread": 0,
+          "color": "#0F172A14"
+        }
+      ]
+    },
+    {
+      "id": "semantic.focus.offset",
+      "kind": "semantic",
+      "family": "focus",
+      "type": "dimension",
+      "description": "Neutral separation between a focus ring and the focused control.",
+      "accessibilityRole": "focus-indicator",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 2,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.layer.base",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Base layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 0
+    },
+    {
+      "id": "semantic.layer.dropdown",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Dropdown layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 30
+    },
+    {
+      "id": "semantic.layer.focus",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Focus layer.",
+      "accessibilityRole": "focus-indicator",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 80
+    },
+    {
+      "id": "semantic.layer.modal",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Modal layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 50
+    },
+    {
+      "id": "semantic.layer.overlay",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Overlay layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 40
+    },
+    {
+      "id": "semantic.layer.raised",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Raised layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 10
+    },
+    {
+      "id": "semantic.layer.sticky",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Sticky layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 20
+    },
+    {
+      "id": "semantic.layer.toast",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Toast layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 60
+    },
+    {
+      "id": "semantic.layer.tooltip",
+      "kind": "semantic",
+      "family": "layer",
+      "type": "integer",
+      "description": "Tooltip layer.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 70
+    },
+    {
+      "id": "semantic.motion.duration.emphasis",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "duration",
+      "description": "Emphasis transition.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "milliseconds": 200
+      }
+    },
+    {
+      "id": "semantic.motion.duration.fast",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "duration",
+      "description": "Fast transition.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "milliseconds": 120
+      }
+    },
+    {
+      "id": "semantic.motion.duration.instant",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "duration",
+      "description": "No transition.",
+      "accessibilityRole": "reduced-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "milliseconds": 0
+      }
+    },
+    {
+      "id": "semantic.motion.duration.panel",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "duration",
+      "description": "Panel transition.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "milliseconds": 280
+      }
+    },
+    {
+      "id": "semantic.motion.duration.standard",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "duration",
+      "description": "Standard transition.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "milliseconds": 160
+      }
+    },
+    {
+      "id": "semantic.motion.easing.enter",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "cubicBezier",
+      "description": "Enter easing.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "x1": "0",
+        "y1": "0",
+        "x2": "0.2",
+        "y2": "1"
+      }
+    },
+    {
+      "id": "semantic.motion.easing.exit",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "cubicBezier",
+      "description": "Exit easing.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "x1": "0.4",
+        "y1": "0",
+        "x2": "1",
+        "y2": "1"
+      }
+    },
+    {
+      "id": "semantic.motion.easing.standard",
+      "kind": "semantic",
+      "family": "motion",
+      "type": "cubicBezier",
+      "description": "Standard easing.",
+      "accessibilityRole": "nonessential-motion",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "x1": "0.2",
+        "y1": "0",
+        "x2": "0",
+        "y2": "1"
+      }
+    },
+    {
+      "id": "semantic.opacity.0",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Transparent.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0"
+    },
+    {
+      "id": "semantic.opacity.08",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Eight percent opacity.",
+      "accessibilityRole": "decorative-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.08"
+    },
+    {
+      "id": "semantic.opacity.1",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Opaque.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "1"
+    },
+    {
+      "id": "semantic.opacity.12",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Twelve percent opacity.",
+      "accessibilityRole": "decorative-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.12"
+    },
+    {
+      "id": "semantic.opacity.20",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Twenty percent opacity.",
+      "accessibilityRole": "decorative-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.20"
+    },
+    {
+      "id": "semantic.opacity.35",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Muted chart series opacity.",
+      "accessibilityRole": "redundant-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.35"
+    },
+    {
+      "id": "semantic.opacity.50",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Half opacity.",
+      "accessibilityRole": "redundant-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.50"
+    },
+    {
+      "id": "semantic.opacity.65",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Sixty-five percent opacity.",
+      "accessibilityRole": "redundant-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.65"
+    },
+    {
+      "id": "semantic.opacity.80",
+      "kind": "semantic",
+      "family": "opacity",
+      "type": "number",
+      "description": "Eighty percent opacity.",
+      "accessibilityRole": "redundant-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.80"
+    },
+    {
+      "id": "semantic.radius.lg",
+      "kind": "semantic",
+      "family": "radius",
+      "type": "dimension",
+      "description": "Large radius.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 12,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.radius.md",
+      "kind": "semantic",
+      "family": "radius",
+      "type": "dimension",
+      "description": "Medium radius.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 8,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.radius.none",
+      "kind": "semantic",
+      "family": "radius",
+      "type": "dimension",
+      "description": "No radius.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 0,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.radius.pill",
+      "kind": "semantic",
+      "family": "radius",
+      "type": "dimension",
+      "description": "Pill radius.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 9999,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.radius.sm",
+      "kind": "semantic",
+      "family": "radius",
+      "type": "dimension",
+      "description": "Small radius.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 4,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.radius.xl",
+      "kind": "semantic",
+      "family": "radius",
+      "type": "dimension",
+      "description": "Extra-large radius.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 16,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.border.0",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "No border.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 0,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.border.1",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Default border width.",
+      "accessibilityRole": "decorative-boundary",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 1,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.border.2",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Focus and critical boundary width.",
+      "accessibilityRole": "essential-boundary",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 2,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.control.32",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Compact visible control height.",
+      "accessibilityRole": "requires-44px-hit-target",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 32,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.control.40",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Standard visible control height.",
+      "accessibilityRole": "requires-44px-hit-target",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 40,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.control.48",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Large visible control height.",
+      "accessibilityRole": "meets-44px-hit-target",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 48,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.hit-target.minimum",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Minimum interactive hit-target in both dimensions.",
+      "accessibilityRole": "touch-target",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 44,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.icon.12",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Extra-small icon.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 12,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.icon.16",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Small icon.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 16,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.icon.20",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Medium icon.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 20,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.icon.24",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Large icon.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 24,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.sizing.icon.32",
+      "kind": "semantic",
+      "family": "sizing",
+      "type": "dimension",
+      "description": "Extra-large icon.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 32,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.0",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Zero spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 0,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.12",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Twelve-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 12,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.16",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Sixteen-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 16,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.2",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Two-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 2,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.20",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Twenty-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 20,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.24",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Twenty-four-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 24,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.32",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Thirty-two-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 32,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.4",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Four-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 4,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.40",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Forty-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 40,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.48",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Forty-eight-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 48,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.64",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Sixty-four-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 64,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.spacing.8",
+      "kind": "semantic",
+      "family": "spacing",
+      "type": "dimension",
+      "description": "Eight-pixel spacing.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 8,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.family.data",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontFamily",
+      "description": "Financial and data font preference stack.",
+      "accessibilityRole": "tabular-numerals-required",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": [
+        "Geist Mono",
+        "Geist Mono Fallback",
+        "SFMono-Regular",
+        "Consolas",
+        "Liberation Mono",
+        "Menlo",
+        "ui-monospace",
+        "monospace"
+      ]
+    },
+    {
+      "id": "semantic.typography.family.heading",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontFamily",
+      "description": "Brand heading font preference stack.",
+      "accessibilityRole": "valid-fallback-required",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": [
+        "Space Grotesk",
+        "Geist",
+        "Geist Fallback",
+        "Inter",
+        "ui-sans-serif",
+        "system-ui",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "sans-serif"
+      ]
+    },
+    {
+      "id": "semantic.typography.family.ui",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontFamily",
+      "description": "Application UI font preference stack.",
+      "accessibilityRole": "valid-fallback-required",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": [
+        "Inter",
+        "Geist",
+        "Geist Fallback",
+        "ui-sans-serif",
+        "system-ui",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "sans-serif"
+      ]
+    },
+    {
+      "id": "semantic.typography.feature.tabular",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "string",
+      "description": "Tabular numeral feature for changing financial values.",
+      "accessibilityRole": "financial-layout-stability",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "tabular-nums"
+    },
+    {
+      "id": "semantic.typography.line-height.2xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Two-extra-large line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 32,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.3xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Three-extra-large line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 36,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.4xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Four-extra-large line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 44,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.5xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Five-extra-large line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 56,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.lg",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Large line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 28,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.md",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Medium line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 24,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.sm",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Small line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 20,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Extra-large line height.",
+      "accessibilityRole": "text-line-height",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 28,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.line-height.xs",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Extra-small line height.",
+      "accessibilityRole": "dense-text-minimum",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 16,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.2xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Two-extra-large type.",
+      "accessibilityRole": "large-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 24,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.3xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Three-extra-large type.",
+      "accessibilityRole": "large-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 30,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.4xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Four-extra-large type.",
+      "accessibilityRole": "large-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 36,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.5xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Five-extra-large type.",
+      "accessibilityRole": "large-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 48,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.lg",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Large type.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 18,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.md",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Medium type.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 16,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.sm",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Small UI type.",
+      "accessibilityRole": "ordinary-text-minimum",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 14,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.xl",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Extra-large type.",
+      "accessibilityRole": "normal-text",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 20,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.size.xs",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "dimension",
+      "description": "Extra-small dense-data type.",
+      "accessibilityRole": "dense-text-minimum",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": {
+        "amount": 12,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "semantic.typography.tracking.compact",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "number",
+      "description": "Compact uppercase label tracking.",
+      "accessibilityRole": "not-financial-values",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0.08"
+    },
+    {
+      "id": "semantic.typography.tracking.heading",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "number",
+      "description": "Heading tracking in em units.",
+      "accessibilityRole": "heading-only",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "-0.02"
+    },
+    {
+      "id": "semantic.typography.tracking.normal",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "number",
+      "description": "Normal tracking in em units.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": "0"
+    },
+    {
+      "id": "semantic.typography.weight.400",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontWeight",
+      "description": "Regular weight.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 400
+    },
+    {
+      "id": "semantic.typography.weight.500",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontWeight",
+      "description": "Medium weight.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 500
+    },
+    {
+      "id": "semantic.typography.weight.600",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontWeight",
+      "description": "Semibold weight.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 600
+    },
+    {
+      "id": "semantic.typography.weight.700",
+      "kind": "semantic",
+      "family": "typography",
+      "type": "fontWeight",
+      "description": "Bold weight.",
+      "accessibilityRole": "none",
+      "lifecycle": "active",
+      "introducedIn": "1.0.0",
+      "value": 700
+    }
+  ]
+}

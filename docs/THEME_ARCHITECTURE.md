@@ -22,33 +22,50 @@ financial configuration.
 ## 2. Semantic resolution
 
 Light is designed for bright analytical work and is not a mathematical inversion
-of dark. Initial token set `theme.holyparser.v1`:
+of dark. D-081 approves the initial D1 values below; the full expanded palette
+and legal pairing allowlist are normative in
+[`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md).
 
-| Semantic token             | Light     | Dark      |
-| -------------------------- | --------- | --------- |
-| `background.base`          | `#F6F8FC` | `#060B18` |
-| `background.surface`       | `#FFFFFF` | `#0A1324` |
-| `background.elevated`      | `#FFFFFF` | `#101C31` |
-| `background.subtle`        | `#F1F5F9` | `#0D1728` |
-| `border.default`           | `#E5E7EB` | `#24334A` |
-| `border.emphasis`          | `#7B8494` | `#536A8A` |
-| `text.primary`             | `#111827` | `#F7FAFF` |
-| `text.secondary`           | `#374151` | `#C3CEDD` |
-| `text.muted`               | `#6B7280` | `#8291A8` |
-| `text.disabled`            | `#9CA3AF` | `#526178` |
-| `action.primary`           | `#126BFF` | `#3384FF` |
-| `action.secondary`         | `#6B5CFF` | `#8A7CFF` |
-| `focus`                    | `#006EE6` | `#00D4FF` |
-| `status.positive`          | `#087A55` | `#38D39F` |
-| `status.negative`          | `#B4233C` | `#FF718A` |
-| `status.warning`           | `#985B00` | `#F5B942` |
-| `status.critical`          | `#A61B1B` | `#FF5B5B` |
-| `status.informational`     | `#0A5CD6` | `#66A3FF` |
-| `status.unknown`           | `#5F6B7A` | `#A6B2C2` |
-| `status.stale`             | `#8A5A00` | `#E9A928` |
-| `status.gapped`            | `#A33252` | `#FF7AA2` |
-| `status.research-required` | `#5948D6` | `#A99CFF` |
-| `status.disabled`          | `#7D8795` | `#68768A` |
+| Semantic token                 | Light     | Dark      |
+| ------------------------------ | --------- | --------- |
+| `background.base`              | `#F6F8FC` | `#060B18` |
+| `background.surface`           | `#FFFFFF` | `#0A1324` |
+| `background.elevated`          | `#FFFFFF` | `#101C31` |
+| `background.subtle`            | `#F1F5F9` | `#0D1728` |
+| `surface.interactive`          | `#F8FAFC` | `#121F35` |
+| `surface.selected`             | `#E8F1FF` | `#18365F` |
+| `border.default`               | `#E5E7EB` | `#24334A` |
+| `border.emphasis`              | `#7B8494` | `#536A8A` |
+| `text.primary`                 | `#111827` | `#F7FAFF` |
+| `text.secondary`               | `#374151` | `#C3CEDD` |
+| `text.muted`                   | `#6B7280` | `#8291A8` |
+| `text.disabled`                | `#9CA3AF` | `#526178` |
+| `text.inverse`                 | `#FFFFFF` | `#06101F` |
+| `text.link`                    | `#0A5CD6` | `#66A3FF` |
+| `action.primary`               | `#126BFF` | `#3384FF` |
+| `action.primary.hover`         | `#0B5DE6` | `#5B9CFF` |
+| `action.primary.active`        | `#084CC2` | `#7DB1FF` |
+| `action.secondary`             | `#5948D6` | `#A99CFF` |
+| `focus.ring`                   | `#006EE6` | `#00D4FF` |
+| `financial.positive`           | `#087A55` | `#38D39F` |
+| `financial.negative`           | `#B4233C` | `#FF718A` |
+| `financial.neutral`            | `#5F6B7A` | `#A6B2C2` |
+| `status.healthy`               | `#0F766E` | `#2DD4BF` |
+| `status.active`                | `#0A5CD6` | `#66A3FF` |
+| `status.warning`               | `#985B00` | `#F5B942` |
+| `status.critical`              | `#A61B1B` | `#FF5B5B` |
+| `status.informational`         | `#0A5CD6` | `#66A3FF` |
+| `status.unknown`               | `#5F6B7A` | `#A6B2C2` |
+| `quality.stale`                | `#8A5A00` | `#E9A928` |
+| `quality.gapped`               | `#A33252` | `#FF7AA2` |
+| `quality.reconnecting`         | `#006B8F` | `#4BD9F5` |
+| `quality.invalid`              | `#A61B1B` | `#FF5B5B` |
+| `quality.locked`               | `#7C4D00` | `#F2C14E` |
+| `quality.crossed`              | `#B4233C` | `#FF718A` |
+| `capability.unsupported`       | `#5F6B7A` | `#A6B2C2` |
+| `capability.unverified`        | `#5E6472` | `#95A3B8` |
+| `capability.research-required` | `#5948D6` | `#A99CFF` |
+| `status.disabled`              | `#7D8795` | `#68768A` |
 
 Hover, active and contrast variants are derived in the token build from reviewed
 explicit values, not runtime colour arithmetic. Raw hex values never appear in
@@ -139,8 +156,11 @@ contract needed by server rendering and hydration. It does not implement the
 theme picker, authenticated/device preference synchronization, cross-tab
 behavior or the complete no-flash bootstrap; those remain D4 responsibilities.
 
-The D1 plan is `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md`. Its exact values, fallback
-and forced-colour split are blocked by D-079 through D-088. Both resolved themes
-must expose identical semantic IDs, status meaning and chart roles. Missing or
-unresolved theme values fail generation; the consumer may use only the approved
-safe complete artifact and may not synthesize a theme through inversion.
+The D1 plan is `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md`. D-079 through D-088 are
+approved in [`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md): DARK is the
+temporary Phase 1 safe fallback, LIGHT is independently authored, and D-087
+defines the static forced-colour split. Both resolved themes must expose
+identical semantic IDs, status meaning and chart roles. Missing or unresolved
+theme values fail generation; the consumer may use only the approved safe
+complete artifact and may not synthesize a theme through inversion. D4 still
+owns the section 3 runtime selection and no-flash protocol.

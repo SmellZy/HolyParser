@@ -1,0 +1,42 @@
+{
+  "namespace": "holyparser",
+  "schemaVersion": "1.0.0",
+  "tokenSetVersion": "1.0.0",
+  "generatorContractVersion": "1.0.0",
+  "algorithm": "SHA-256",
+  "selfHashExcluded": true,
+  "digests": [
+    {
+      "path": "packages/design-tokens/generated/tokens.css",
+      "sha256": "be350659e42dde66a96b00f4715865d100b16536e062f463da4b566c00650a43"
+    },
+    {
+      "path": "packages/design-tokens/generated/tokens.generated.ts",
+      "sha256": "a2a9ab120a6f9705612033f36f2c2c57ee2a94787229188e4ca6ca81a8287fae"
+    },
+    {
+      "path": "packages/design-tokens/schema/design-tokens.schema.json",
+      "sha256": "c974654317f86270262eafb941cc7edc010633dd5fd10abed41991e3af551a1e"
+    },
+    {
+      "path": "packages/design-tokens/src/chart-encodings.source.json",
+      "sha256": "a77835d877d118d3bd39d91adc8e200f2d81c2293212c6473fcc348babcf5fb4"
+    },
+    {
+      "path": "packages/design-tokens/src/contrast-pairs.source.json",
+      "sha256": "23f9797aff817ac61edcc9a6c5f0b93d88f3816dbfeba64fe50930b2f2b8a4f4"
+    },
+    {
+      "path": "packages/design-tokens/src/status-presentations.source.json",
+      "sha256": "a7fb99c3a034a0a42f0c3f1a70e60c4f25a9b2fab20f17244aacc823e0401679"
+    },
+    {
+      "path": "packages/design-tokens/src/token-set.meta.json",
+      "sha256": "32f5bcc86bae6bc5c75a4f05333588be7e0aa63c30f9aeea98085d7dc17165ea"
+    },
+    {
+      "path": "packages/design-tokens/src/tokens.source.json",
+      "sha256": "419bc9a93aff56c25f3d033255440cc760f517be560eaac877257827058de1f9"
+    }
+  ]
+}

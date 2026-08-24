@@ -40,6 +40,11 @@ admin runtime, analytics, exchange or trading work.
 
 ## 3. Prerequisite gate
 
+As of 2026-08-16, the decision prerequisites are complete:
+[`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md) records the exact approved
+D-079 through D-088 choices and ADR-0013 is `Accepted`. This closes the decision
+gate only; no implementation candidate exists or is authorized by this update.
+
 Before implementation can be accepted:
 
 - D-079 through D-088 are approved with owner, effective date and exact values;
@@ -92,7 +97,9 @@ Verify:
 - output has stable token ordering, UTF-8, newline and numeric serialization;
 - no timestamp, absolute path, hostname, environment-specific value or random ID
   appears;
-- manifest digests match source and artifacts;
+- manifest lowercase-hex digests match the exact bytes of every canonical
+  source plus generated CSS and TypeScript metadata, use sorted
+  repository-relative POSIX paths, and exclude the manifest itself;
 - generated files contain no secrets or untrusted payload excerpts;
 - generated artifacts cannot be edited without a drift failure;
 - generated CSS exposes only approved public/compatibility variables;
@@ -191,6 +198,12 @@ Required thresholds:
 - ordinary status/badge/tooltip/table text: at least 4.5:1;
 - chart geometry that communicates state: at least 3:1 plus redundant encoding.
 
+Sequential/diverging and selection fills that do not independently reach 3:1
+against adjacent canvas are accepted only as declared area/fill encodings with
+required legend/value labels and an approved boundary, stroke, marker or other
+non-colour indication where meaning depends on them. They may not become
+standalone essential lines, markers, text or the only selection/value signal.
+
 Verify default, hover, active, selected, focus, disabled, status, table, chart,
 tooltip, overlay/modal and alpha-composited pairings. Disabled exceptions cannot
 hide required instructions, denial reasons or financial state.
@@ -241,6 +254,10 @@ Compatibility fixtures prove:
 - replacement-chain bound;
 - rollback to the previous accepted set.
 
+They also prove that the two-minor/90-day minimum cannot be bypassed at day 180:
+the alias remains and a new token-set publication fails pending explicit
+extension approval or completed removal prerequisites.
+
 The diff engine must reject unchanged versions after meaningful output changes.
 No semantic token may silently change from informational to positive, from
 quality to outcome, or from capability to action.
@@ -263,7 +280,9 @@ The reviewer records a before/after inventory and verifies:
   preference completion;
 - selected reference routes/viewports have before/after screenshots and
   accessibility evidence under D-088;
-- rollback restores prior source/artifacts/bridge together;
+- rollback restores prior source/artifacts/bridge together, with the initial
+  adoption explicitly restoring the pre-D1 legacy CSS/export/bridge and
+  removing canonical files that had no predecessor;
 - alias removal criteria are explicit and not executed prematurely.
 
 The accepted visual change is limited to token resolution. A layout or product
@@ -375,6 +394,8 @@ record:
 - status: `PASS`, `PASS_WITH_WARNINGS` or `FAIL`;
 - accepted scope and explicit non-goals;
 - approved D-079 through D-088 values;
+- conformance to the exact normative values and policies in
+  `D1_DESIGN_DECISIONS.md`;
 - reviewed files and source/artifact digests;
 - source/schema/alias verdict;
 - deterministic-generation verdict;

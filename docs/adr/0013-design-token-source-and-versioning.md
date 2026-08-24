@@ -1,6 +1,6 @@
 # ADR-0013: Design-token source and versioning
 
-- Status: Proposed; D-079/D-085 approval required before implementation
+- Status: Accepted
 - Date: 2026-08-16
 - Owners: Design, Frontend Architecture, Accessibility, Security
 - Scope: D1 — Brand and Semantic Design Tokens
@@ -18,9 +18,10 @@ authenticated, billing and admin surfaces; cannot execute arbitrary build code;
 can detect duplicate IDs and alias errors; produces stable CSS and typed metadata;
 and preserves a controlled compatibility bridge for the accepted Phase 1 shell.
 
-## Decision proposal
+## Decision
 
-Subject to D-079 and D-085 approval:
+D-079 and D-085 were approved on 2026-08-16. Their exact normative values are
+recorded in [`D1_DESIGN_DECISIONS.md`](../D1_DESIGN_DECISIONS.md). Therefore:
 
 1. Use a data-only canonical source set: ordered token records at
    `packages/design-tokens/src/tokens.source.json`, canonical version/policy
@@ -40,6 +41,9 @@ Subject to D-079 and D-085 approval:
    - resolved CSS variables;
    - typed immutable token metadata;
    - a manifest containing schema version, token-set version and content digests.
+     The manifest hashes exact committed source/CSS/TypeScript bytes with sorted
+     repository-relative POSIX paths and lowercase hexadecimal SHA-256; it never
+     hashes itself. Clean regeneration protects the manifest's own bytes.
 8. Require clean generation to match committed artifacts byte-for-byte. Generated
    output has stable ordering/newlines and no timestamps or machine paths.
 9. Version the schema and token set independently. Meaning/type changes and
@@ -59,6 +63,8 @@ and artifact divergence.
 
 ## Version and compatibility rules
 
+- Both versions use SemVer 2.0.0 without a prefix or build metadata and begin at
+  `1.0.0` for D1.
 - `schemaVersion` changes when source/schema mechanics change.
 - `tokenSetVersion` changes when the public token contract or resolved values
   change.
@@ -69,8 +75,18 @@ and artifact divergence.
 - A reviewed value-only correction that preserves meaning requires a patch and
   reruns all contrast/visual/security gates.
 - Changed output with unchanged version fails CI.
+- Direct replacement aliases have maximum chain length one and remain for at
+  least two subsequent minor releases and 90 calendar days, whichever is later;
+  the normal maximum is 180 days without a new explicit approval.
+- The minimum release/time gate prevails over the 180-day governance checkpoint.
+  At day 180 an unmet minimum keeps the alias and blocks a new token-set
+  publication until extension approval or completed removal prerequisites.
+- The immediately previous accepted token set remains buildable throughout the
+  compatibility window.
 - Rollback restores source, generated artifacts, manifest and compatibility
-  aliases atomically.
+  aliases atomically. Initial adoption rollback removes the new canonical set
+  and restores the pre-D1 legacy CSS/export/bridge; later rollback restores the
+  complete preceding accepted set.
 
 ## Consequences
 
@@ -118,9 +134,10 @@ trust without a measured need. A future adoption requires a separate ADR.
 
 ## Approval and supersession
 
-This ADR records a recommendation, not approval. D-079 decides the source and
-artifact policy; D-085 decides version/deprecation compatibility. Exact palette
-and pairings, chart encodings, raw-value governance and forced-colour roles
-remain owned by D-081, D-082, D-084 and D-087 respectively; this ADR does not
-approve them. If any governing decision selects an incompatible approach, this
-ADR must be superseded before D1 implementation begins.
+Product Owner approval was recorded on 2026-08-16 after D-079 selected this
+source/artifact policy and D-085 selected the compatible independent-version,
+deprecation and rollback policy. Exact palette and pairings, chart encodings,
+raw-value governance and forced-colour roles remain governed by D-081, D-082,
+D-084 and D-087 in `D1_DESIGN_DECISIONS.md`; this ADR does not replace those
+decisions. Any later incompatible source or version choice must explicitly
+supersede this ADR before implementation.

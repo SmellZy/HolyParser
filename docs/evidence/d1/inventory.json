@@ -1,0 +1,12 @@
+{
+  "evidenceType": "D1 implementation visual inventory",
+  "formalAcceptance": false,
+  "retrievalDate": "2026-08-17",
+  "baselinePrimary": 12,
+  "resultPrimary": 24,
+  "totalPrimary": 36,
+  "additional": 34,
+  "baselineManifest": "baseline/manifest.json",
+  "resultManifest": "results/manifest.json",
+  "additionalManifest": "additional/manifest.json"
+}

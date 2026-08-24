@@ -267,8 +267,11 @@ Product/Security/Finance/Legal authority as applicable and an expiry/review date
 | R-129 | Token tooling or generated assets become a CSS injection or supply-chain path | remote loading, untrusted strings, new generator dependency, leaked content  | local deterministic tooling, closed grammar, CSP-compatible artifacts, no secrets or remote imports   | dependency/scope scan, hostile-source fixtures and generated-artifact scan    | reject artifact, restore trusted generator/source, rotate if any secret exposure occurs | compromised repository/build actor remains possible | D1           |
 | R-130 | Layer or motion tokens impair navigation, focus or reduced-motion safety      | arbitrary z-index, hidden focus, animation without reduced alternative       | finite semantic layers, focus layer invariant, bounded durations and reduced-motion contract          | layer-order, focus-visible and reduced-motion token/compatibility tests       | disable nonessential motion and restore reviewed semantic layer set                     | component composition can still misuse valid tokens | D1–D4        |
 
-D1 implementation cannot begin until D-079 through D-088 have exact approved
-answers. Acceptance of a D1 residual risk must name the Product, Design,
+D-079 through D-088 were approved on 2026-08-16 in
+`D1_DESIGN_DECISIONS.md`; their exact scales, bounds, exception lifetime,
+compatibility window, migration, forced-colour and visual-evidence controls now
+govern R-120 through R-130. D1 implementation still requires a separate
+approval. Acceptance of a D1 residual risk must name the Product, Design,
 Accessibility, Frontend Architecture, Security or QA authority applicable to
 the risk and include a review date; it cannot silently weaken the frozen
 financial, quality or capability meanings.

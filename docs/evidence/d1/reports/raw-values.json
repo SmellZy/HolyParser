@@ -1,0 +1,8 @@
+{
+  "tokenSetVersion": "1.0.0",
+  "governedFiles": [
+    "apps/web/src/app/globals.css"
+  ],
+  "activeExceptions": [],
+  "findings": []
+}

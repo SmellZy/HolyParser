@@ -1,0 +1,159 @@
+{
+  "evidenceKind": "D1_PRE_IMPLEMENTATION_BASELINE",
+  "captureDate": "2026-08-16",
+  "baseUrl": "http://127.0.0.1:3100",
+  "sourceBuildId": "zNRa1tJjst156hij4QvCl",
+  "rasterDeviceScaleFactor": 1,
+  "browserDevicePixelRatioNote": "The viewport renderer reported DPR 2 at 390x844 and DPR 1 at 1440x900; screenshot rasters are normalized to one output pixel per requested CSS pixel.",
+  "sourceDigests": {
+    "apps/web/src/app/globals.css": "665f918ed927ae9fbeb39bd40187f280622f2f8eea6e6083fe44c2e3a7039eee",
+    "apps/web/src/app/layout.tsx": "6d3f444c1e1310017c82a87d5c4951ffa9c60d8422b0d17727d9af9e9d1c4f4d",
+    "packages/design-tokens/tokens.css": "eab790ddab6fddef721f508247a79e53385e068d2abe56c98c3f46c5dd639355"
+  },
+  "captures": [
+    {
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserDevicePixelRatio": 2,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/home--mobile-390x844--dark-before.png",
+      "bytes": 31460,
+      "sha256": "2cc5c42fa6c1e0d3d29e2b6a2fb7179edf499f6c101b950cd518d9ee58a692a9"
+    },
+    {
+      "route": "/login",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserDevicePixelRatio": 2,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/login--mobile-390x844--dark-before.png",
+      "bytes": 26452,
+      "sha256": "e3405029f9519c01b06f02de7fe46347df524ed89af6aeab5b18c8b9c3e49871"
+    },
+    {
+      "route": "/register",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserDevicePixelRatio": 2,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/register--mobile-390x844--dark-before.png",
+      "bytes": 29592,
+      "sha256": "9770a5512855ab961bbc6a5519e76fcc87e164fd8a3b011d313ba29b48082f07"
+    },
+    {
+      "route": "/forgot-password",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserDevicePixelRatio": 2,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/forgot-password--mobile-390x844--dark-before.png",
+      "bytes": 22844,
+      "sha256": "df118c034fe71f5b00e4ce890e290dfa758934cdcb9ce9cfbe2f83fcd76cd2bb"
+    },
+    {
+      "route": "/verify-email",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserDevicePixelRatio": 2,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/verify-email--mobile-390x844--dark-before.png",
+      "bytes": 22492,
+      "sha256": "6dee917064d396e73905e926b6e1fe9a8c462c1f403241f5fcf65e4fac49c3a2"
+    },
+    {
+      "route": "/d1-missing-route",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "browserDevicePixelRatio": 2,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/missing-route--mobile-390x844--dark-before.png",
+      "bytes": 11204,
+      "sha256": "fce097dd4bbed5853bf590dcee800af863f54cc36d6b311cc43b5192d7560313"
+    },
+    {
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browserDevicePixelRatio": 1,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/home--desktop-1440x900--dark-before.png",
+      "bytes": 71934,
+      "sha256": "55b35cddb0b11dac2a807ae7e54c266f2fb6baa294994e2bffcf487f0c13ded6"
+    },
+    {
+      "route": "/login",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browserDevicePixelRatio": 1,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/login--desktop-1440x900--dark-before.png",
+      "bytes": 35921,
+      "sha256": "cf86c7a24109504e148f483c812af77edaf57d6cb1bcf5e83fb23f9180a6ddc1"
+    },
+    {
+      "route": "/register",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browserDevicePixelRatio": 1,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/register--desktop-1440x900--dark-before.png",
+      "bytes": 39927,
+      "sha256": "3de1191eb35353092b5545f4a676aa273d08a485530fa4ca8fc4fbf265cf94e5"
+    },
+    {
+      "route": "/forgot-password",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browserDevicePixelRatio": 1,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/forgot-password--desktop-1440x900--dark-before.png",
+      "bytes": 32109,
+      "sha256": "6a1279e6767993205fea1a6424cce563fdc922716cba05bdde129e7aa508107d"
+    },
+    {
+      "route": "/verify-email",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browserDevicePixelRatio": 1,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/verify-email--desktop-1440x900--dark-before.png",
+      "bytes": 31373,
+      "sha256": "9d06fe5e72879777d9c3a26b2a9e7fc4c820892413efe7061b9d26744d0f81ce"
+    },
+    {
+      "route": "/d1-missing-route",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "browserDevicePixelRatio": 1,
+      "resolvedTheme": "DARK",
+      "file": "docs/evidence/d1/baseline/missing-route--desktop-1440x900--dark-before.png",
+      "bytes": 19116,
+      "sha256": "5e1c1571cc1b8f879662a80038b2a46f8ccd3925e687307301fd5636b05f0564"
+    }
+  ]
+}

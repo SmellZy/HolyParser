@@ -1,0 +1,250 @@
+{
+  "fixtureSet": "D1_SYNTHETIC_LOCAL",
+  "source": "D-079 through D-088",
+  "networkRequired": false,
+  "cases": [
+    {
+      "id": "additive-version-change",
+      "origin": "synthetic",
+      "purpose": "compatible additive token classification"
+    },
+    {
+      "id": "alias-depth-overflow",
+      "origin": "synthetic",
+      "purpose": "bounded alias traversal"
+    },
+    {
+      "id": "alias-expiry",
+      "origin": "synthetic",
+      "purpose": "release-and-time removal gate"
+    },
+    {
+      "id": "alpha-compositing",
+      "origin": "synthetic",
+      "purpose": "approved actual-background contrast"
+    },
+    {
+      "id": "alternate-color-syntax",
+      "origin": "synthetic",
+      "purpose": "raw-value scanner bypass resistance"
+    },
+    {
+      "id": "artifact-drift",
+      "origin": "synthetic",
+      "purpose": "committed artifact integrity"
+    },
+    {
+      "id": "breaking-semantic-change",
+      "origin": "synthetic",
+      "purpose": "major version enforcement"
+    },
+    {
+      "id": "circular-alias",
+      "origin": "synthetic",
+      "purpose": "alias cycle rejection"
+    },
+    {
+      "id": "complete-valid-source",
+      "origin": "canonical-minimal-copy",
+      "purpose": "accepted source validation"
+    },
+    {
+      "id": "contrast-just-above",
+      "origin": "synthetic",
+      "purpose": "threshold boundary"
+    },
+    {
+      "id": "contrast-just-below",
+      "origin": "synthetic",
+      "purpose": "threshold boundary"
+    },
+    {
+      "id": "control-character",
+      "origin": "synthetic",
+      "purpose": "hostile string rejection"
+    },
+    {
+      "id": "cross-type-alias",
+      "origin": "synthetic",
+      "purpose": "type-safe aliases"
+    },
+    {
+      "id": "deterministic-generation",
+      "origin": "canonical-local",
+      "purpose": "byte-identical generation"
+    },
+    {
+      "id": "duplicate-id",
+      "origin": "synthetic",
+      "purpose": "duplicate identifier rejection"
+    },
+    {
+      "id": "eight-chart-series",
+      "origin": "approved-decision-copy",
+      "purpose": "categorical capacity"
+    },
+    {
+      "id": "expired-exception",
+      "origin": "synthetic",
+      "purpose": "exception lifecycle"
+    },
+    {
+      "id": "fill-only-chart-restriction",
+      "origin": "approved-decision-copy",
+      "purpose": "non-essential fill constraint"
+    },
+    {
+      "id": "forced-color-closure",
+      "origin": "approved-decision-copy",
+      "purpose": "systemColor allowlist"
+    },
+    {
+      "id": "hostile-css",
+      "origin": "synthetic",
+      "purpose": "arbitrary CSS rejection"
+    },
+    {
+      "id": "illegal-contrast-pair",
+      "origin": "synthetic",
+      "purpose": "pair allowlist closure"
+    },
+    {
+      "id": "initial-rollback",
+      "origin": "synthetic",
+      "purpose": "pre-canonical rollback bundle"
+    },
+    { "id": "invalid-color", "origin": "synthetic", "purpose": "hex grammar" },
+    {
+      "id": "invalid-dimension",
+      "origin": "synthetic",
+      "purpose": "dimension grammar"
+    },
+    {
+      "id": "invalid-easing",
+      "origin": "synthetic",
+      "purpose": "easing grammar"
+    },
+    {
+      "id": "invalid-number",
+      "origin": "synthetic",
+      "purpose": "exact numeric grammar"
+    },
+    {
+      "id": "invalid-shadow",
+      "origin": "synthetic",
+      "purpose": "structured shadow grammar"
+    },
+    {
+      "id": "later-rollback",
+      "origin": "synthetic",
+      "purpose": "atomic canonical rollback bundle"
+    },
+    {
+      "id": "legal-contrast",
+      "origin": "approved-decision-copy",
+      "purpose": "WCAG matrix"
+    },
+    {
+      "id": "malformed-json",
+      "origin": "synthetic",
+      "purpose": "JSON parser failure"
+    },
+    {
+      "id": "manifest-digest",
+      "origin": "canonical-local",
+      "purpose": "SHA-256 verification"
+    },
+    { "id": "missing-dark", "origin": "synthetic", "purpose": "theme parity" },
+    { "id": "missing-light", "origin": "synthetic", "purpose": "theme parity" },
+    {
+      "id": "ninth-chart-series",
+      "origin": "synthetic",
+      "purpose": "typed capacity error"
+    },
+    {
+      "id": "orphan-exception",
+      "origin": "synthetic",
+      "purpose": "exception exactness"
+    },
+    {
+      "id": "phase-1-compatibility-alias",
+      "origin": "synthetic",
+      "purpose": "legacy bridge"
+    },
+    {
+      "id": "raw-value-violation",
+      "origin": "synthetic",
+      "purpose": "property-aware governance"
+    },
+    {
+      "id": "replacement-chain-limit",
+      "origin": "synthetic",
+      "purpose": "one-hop replacement"
+    },
+    {
+      "id": "resource-bound-edge",
+      "origin": "synthetic",
+      "purpose": "inclusive limit"
+    },
+    {
+      "id": "resource-bound-overflow",
+      "origin": "synthetic",
+      "purpose": "fail-closed limit"
+    },
+    {
+      "id": "self-hash-exclusion",
+      "origin": "canonical-local",
+      "purpose": "non-recursive manifest"
+    },
+    {
+      "id": "semantic-misuse",
+      "origin": "synthetic",
+      "purpose": "brand/financial separation"
+    },
+    {
+      "id": "status-redundancy",
+      "origin": "approved-decision-copy",
+      "purpose": "non-color state encoding"
+    },
+    {
+      "id": "theme-parity",
+      "origin": "canonical-local",
+      "purpose": "DARK/LIGHT completeness"
+    },
+    {
+      "id": "unknown-alias",
+      "origin": "synthetic",
+      "purpose": "unresolved alias rejection"
+    },
+    {
+      "id": "unknown-field",
+      "origin": "synthetic",
+      "purpose": "closed schema"
+    },
+    {
+      "id": "unused-exception",
+      "origin": "synthetic",
+      "purpose": "exception cleanup"
+    },
+    {
+      "id": "unsorted-id",
+      "origin": "synthetic",
+      "purpose": "stable ordering"
+    },
+    {
+      "id": "url-import",
+      "origin": "synthetic",
+      "purpose": "network/CSS injection rejection"
+    },
+    {
+      "id": "valid-exception",
+      "origin": "synthetic",
+      "purpose": "exact temporary governance"
+    },
+    {
+      "id": "widened-exception",
+      "origin": "synthetic",
+      "purpose": "broad scope rejection"
+    }
+  ]
+}

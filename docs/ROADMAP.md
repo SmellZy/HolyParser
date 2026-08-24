@@ -594,8 +594,9 @@ Every track requires a separate implementation prompt and formal acceptance.
 
 D1 is decomposed in
 `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md`; its independent review is defined in
-`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. ADR-0013 is proposed, not
-accepted, until D-079 through D-088 record exact owner-approved answers.
+`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. D-079 through D-088 are
+approved in `D1_DESIGN_DECISIONS.md`, and ADR-0013 is `Accepted`. D1 is now
+eligible for a separate implementation approval but has not begun.
 
 D1 may change only the token source/schema, repository-native validation and
 generation boundary, committed deterministic token artifacts if approved, and

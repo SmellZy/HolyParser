@@ -1,0 +1,19 @@
+{
+  "tokenSetVersion": "1.0.0",
+  "capacity": 8,
+  "tupleCount": 8,
+  "ninthSeries": {
+    "ok": false,
+    "error": "CHART_SERIES_CAPACITY_EXCEEDED"
+  },
+  "sequentialConstraints": [
+    "AREA_FILL_ONLY",
+    "REQUIRES_LEGEND"
+  ],
+  "divergingConstraints": [
+    "AREA_FILL_ONLY",
+    "REQUIRES_LEGEND"
+  ],
+  "semanticEncodingCount": 15,
+  "statusPresentationCount": 18
+}

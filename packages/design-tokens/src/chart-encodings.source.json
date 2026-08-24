@@ -1,0 +1,202 @@
+{
+  "capacity": 8,
+  "overflowError": "CHART_SERIES_CAPACITY_EXCEEDED",
+  "categorical": [
+    {
+      "id": "chart.series.1",
+      "light": "#126BFF",
+      "dark": "#3384FF",
+      "marker": "circle",
+      "dash": "solid"
+    },
+    {
+      "id": "chart.series.2",
+      "light": "#5948D6",
+      "dark": "#A99CFF",
+      "marker": "square",
+      "dash": "6 3"
+    },
+    {
+      "id": "chart.series.3",
+      "light": "#007A99",
+      "dark": "#4BD9F5",
+      "marker": "triangle-up",
+      "dash": "2 2"
+    },
+    {
+      "id": "chart.series.4",
+      "light": "#9C2C75",
+      "dark": "#FF7AC8",
+      "marker": "diamond",
+      "dash": "10 3 2 3"
+    },
+    {
+      "id": "chart.series.5",
+      "light": "#985B00",
+      "dark": "#F5B942",
+      "marker": "triangle-down",
+      "dash": "1 3"
+    },
+    {
+      "id": "chart.series.6",
+      "light": "#087A55",
+      "dark": "#38D39F",
+      "marker": "hexagon",
+      "dash": "8 2"
+    },
+    {
+      "id": "chart.series.7",
+      "light": "#B4233C",
+      "dark": "#FF718A",
+      "marker": "cross",
+      "dash": "4 2 1 2"
+    },
+    {
+      "id": "chart.series.8",
+      "light": "#5F6B7A",
+      "dark": "#A6B2C2",
+      "marker": "star",
+      "dash": "12 3"
+    }
+  ],
+  "sequential": {
+    "id": "chart.scale.sequential",
+    "light": ["#E8F1FF", "#C5DAFF", "#91BBFF", "#4C8FFF", "#084CC2"],
+    "dark": ["#102A4C", "#164678", "#1D63A8", "#3384FF", "#B5D8FF"],
+    "constraints": ["AREA_FILL_ONLY", "REQUIRES_LEGEND"]
+  },
+  "diverging": {
+    "id": "chart.scale.diverging",
+    "order": ["negative", "zero-neutral", "positive"],
+    "light": ["#B4233C", "#F1F5F9", "#087A55"],
+    "dark": ["#FF718A", "#24334A", "#38D39F"],
+    "constraints": ["AREA_FILL_ONLY", "REQUIRES_LEGEND"]
+  },
+  "semantic": [
+    {
+      "id": "chart.semantic.anomaly",
+      "color": "semantic.color.status.critical",
+      "marker": "outlined-triangle-exclamation",
+      "dash": "solid",
+      "label": "ANOMALY"
+    },
+    {
+      "id": "chart.semantic.ask",
+      "color": "semantic.color.financial.negative",
+      "marker": "triangle-down",
+      "dash": "solid",
+      "label": "ASK"
+    },
+    {
+      "id": "chart.semantic.bid",
+      "color": "semantic.color.financial.positive",
+      "marker": "triangle-up",
+      "dash": "solid",
+      "label": "BID"
+    },
+    {
+      "id": "chart.semantic.critical-threshold",
+      "color": "semantic.color.status.critical",
+      "marker": "double-marker",
+      "dash": "2 2",
+      "label": "CRITICAL"
+    },
+    {
+      "id": "chart.semantic.gap",
+      "color": "semantic.color.quality.gapped",
+      "marker": "gap-brackets",
+      "dash": "no-connecting-line",
+      "label": "GAP"
+    },
+    {
+      "id": "chart.semantic.index-oracle",
+      "color": "chart.series.3",
+      "marker": "square",
+      "dash": "2 2",
+      "label": "INDEX_ORACLE"
+    },
+    {
+      "id": "chart.semantic.last",
+      "color": "chart.series.1",
+      "marker": "endpoint",
+      "dash": "solid-2px",
+      "label": "LAST"
+    },
+    {
+      "id": "chart.semantic.long",
+      "color": "chart.series.1",
+      "marker": "endpoint",
+      "dash": "solid",
+      "label": "LONG"
+    },
+    {
+      "id": "chart.semantic.mark",
+      "color": "chart.series.2",
+      "marker": "diamond",
+      "dash": "6 3",
+      "label": "MARK"
+    },
+    {
+      "id": "chart.semantic.missing-data",
+      "color": "transparent",
+      "marker": "missing-glyph",
+      "dash": "no-connecting-line",
+      "label": "MISSING"
+    },
+    {
+      "id": "chart.semantic.reference",
+      "color": "chart.series.8",
+      "marker": "labelled-endpoint",
+      "dash": "8 2",
+      "label": "REFERENCE"
+    },
+    {
+      "id": "chart.semantic.short",
+      "color": "chart.series.2",
+      "marker": "endpoint",
+      "dash": "6 3",
+      "label": "SHORT"
+    },
+    {
+      "id": "chart.semantic.stale-interval",
+      "color": "semantic.color.quality.stale",
+      "marker": "diagonal-hatch",
+      "dash": "bounded-interval",
+      "label": "STALE"
+    },
+    {
+      "id": "chart.semantic.uncertainty",
+      "color": "semantic.color.chart.uncertainty",
+      "marker": "pattern",
+      "dash": "dotted-band-boundary",
+      "label": "UNCERTAINTY"
+    },
+    {
+      "id": "chart.semantic.warning-threshold",
+      "color": "semantic.color.status.warning",
+      "marker": "labelled-endpoint",
+      "dash": "6 3",
+      "label": "WARNING"
+    }
+  ],
+  "emphasis": [
+    {
+      "id": "chart.emphasis.highlight",
+      "opacity": "1",
+      "strokeWidth": 2,
+      "marker": "endpoint"
+    },
+    {
+      "id": "chart.emphasis.muted",
+      "opacity": "0.35",
+      "strokeWidth": 1,
+      "marker": "preserve-series-marker"
+    },
+    {
+      "id": "chart.emphasis.selected",
+      "opacity": "1",
+      "strokeWidth": 3,
+      "marker": "preserve-series-marker-or-halo"
+    }
+  ]
+}

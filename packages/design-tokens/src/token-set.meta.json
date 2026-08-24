@@ -1,0 +1,217 @@
+{
+  "namespace": "holyparser",
+  "schemaVersion": "1.0.0",
+  "tokenSetVersion": "1.0.0",
+  "generatorContractVersion": "1.0.0",
+  "artifactPolicy": "COMMITTED_GENERATED",
+  "defaultTheme": "DARK",
+  "resolvedThemes": ["DARK", "LIGHT"],
+  "preferenceModes": ["SYSTEM", "DARK", "LIGHT"],
+  "canonicalSources": [
+    "packages/design-tokens/schema/design-tokens.schema.json",
+    "packages/design-tokens/src/chart-encodings.source.json",
+    "packages/design-tokens/src/contrast-pairs.source.json",
+    "packages/design-tokens/src/status-presentations.source.json",
+    "packages/design-tokens/src/token-set.meta.json",
+    "packages/design-tokens/src/tokens.source.json"
+  ],
+  "generatedArtifacts": [
+    "packages/design-tokens/generated/tokens.css",
+    "packages/design-tokens/generated/tokens.generated.ts"
+  ],
+  "bounds": {
+    "maxTokens": 2048,
+    "maxSupportRecords": 4096,
+    "maxJsonDepth": 16,
+    "maxJsonNodes": 50000,
+    "maxObjectKeys": 64,
+    "maxAliasDepth": 8,
+    "maxIdBytes": 128,
+    "maxStringBytes": 512,
+    "maxDescriptionBytes": 1024,
+    "maxFontFamilyEntries": 12,
+    "maxFontFamilyNameBytes": 64,
+    "maxFontFamilyStackBytes": 512,
+    "maxShadowLayers": 4,
+    "maxSourceFileBytes": 1048576,
+    "maxSourceAggregateBytes": 4194304,
+    "maxArtifactFileBytes": 2097152,
+    "maxArtifactAggregateBytes": 6291456,
+    "maxDiagnostics": 200
+  },
+  "compatibilityPolicy": {
+    "minimumSubsequentMinorReleases": 2,
+    "minimumDays": 90,
+    "normalGovernanceCheckpointDays": 180,
+    "maximumReplacementChain": 1,
+    "previousAcceptedSetBuildable": true,
+    "rollbackUnit": "SOURCE_ARTIFACT_MANIFEST_ALIAS_ATOMIC",
+    "initialAliasCohort": {
+      "introducedIn": "1.0.0",
+      "deprecatedIn": "1.0.0",
+      "createdDate": "2026-08-17",
+      "removeNotBeforeVersion": "2.0.0",
+      "removeNotBeforeDate": "2026-11-15",
+      "migrationNote": "Replace Phase 1 legacy CSS names with canonical --hp-* semantic properties before removal."
+    }
+  },
+  "compatibilityAliases": [
+    {
+      "cssName": "--color-border",
+      "target": "semantic.color.border.default"
+    },
+    {
+      "cssName": "--color-border-strong",
+      "target": "semantic.color.border.emphasis"
+    },
+    {
+      "cssName": "--color-canvas",
+      "target": "semantic.color.background.base"
+    },
+    {
+      "cssName": "--color-focus",
+      "target": "semantic.color.focus.ring"
+    },
+    {
+      "cssName": "--color-info",
+      "target": "semantic.color.status.informational"
+    },
+    {
+      "cssName": "--color-negative",
+      "target": "semantic.color.financial.negative"
+    },
+    {
+      "cssName": "--color-positive",
+      "target": "semantic.color.financial.positive"
+    },
+    {
+      "cssName": "--color-surface",
+      "target": "semantic.color.background.surface"
+    },
+    {
+      "cssName": "--color-surface-hover",
+      "target": "semantic.color.surface.interactive"
+    },
+    {
+      "cssName": "--color-surface-raised",
+      "target": "semantic.color.background.elevated"
+    },
+    {
+      "cssName": "--color-text",
+      "target": "semantic.color.text.primary"
+    },
+    {
+      "cssName": "--color-text-muted",
+      "target": "semantic.color.text.muted"
+    },
+    {
+      "cssName": "--color-warning",
+      "target": "semantic.color.status.warning"
+    },
+    {
+      "cssName": "--font-mono",
+      "target": "semantic.typography.family.data"
+    },
+    {
+      "cssName": "--font-sans",
+      "target": "semantic.typography.family.ui"
+    },
+    {
+      "cssName": "--font-size-lg",
+      "target": "semantic.typography.size.lg"
+    },
+    {
+      "cssName": "--font-size-md",
+      "target": "semantic.typography.size.md"
+    },
+    {
+      "cssName": "--font-size-sm",
+      "target": "semantic.typography.size.sm"
+    },
+    {
+      "cssName": "--font-size-xl",
+      "target": "semantic.typography.size.2xl"
+    },
+    {
+      "cssName": "--font-size-xs",
+      "target": "semantic.typography.size.xs"
+    },
+    {
+      "cssName": "--radius-lg",
+      "target": "semantic.radius.xl"
+    },
+    {
+      "cssName": "--radius-md",
+      "target": "semantic.radius.lg"
+    },
+    {
+      "cssName": "--radius-pill",
+      "target": "semantic.radius.pill"
+    },
+    {
+      "cssName": "--radius-sm",
+      "target": "semantic.radius.md"
+    },
+    {
+      "cssName": "--shadow-raised",
+      "target": "semantic.elevation.raised"
+    },
+    {
+      "cssName": "--space-1",
+      "target": "semantic.spacing.4"
+    },
+    {
+      "cssName": "--space-10",
+      "target": "semantic.spacing.40"
+    },
+    {
+      "cssName": "--space-12",
+      "target": "semantic.spacing.48"
+    },
+    {
+      "cssName": "--space-2",
+      "target": "semantic.spacing.8"
+    },
+    {
+      "cssName": "--space-3",
+      "target": "semantic.spacing.12"
+    },
+    {
+      "cssName": "--space-4",
+      "target": "semantic.spacing.16"
+    },
+    {
+      "cssName": "--space-5",
+      "target": "semantic.spacing.20"
+    },
+    {
+      "cssName": "--space-6",
+      "target": "semantic.spacing.24"
+    },
+    {
+      "cssName": "--space-8",
+      "target": "semantic.spacing.32"
+    },
+    {
+      "cssName": "--transition-base",
+      "target": "semantic.motion.duration.standard"
+    },
+    {
+      "cssName": "--transition-fast",
+      "target": "semantic.motion.duration.fast"
+    }
+  ],
+  "rawValueScanner": {
+    "scopes": ["apps/web/src/app/globals.css"],
+    "technicalExclusions": [
+      "content-specific-layout-dimension",
+      "grid-count",
+      "media-query-threshold",
+      "percentage",
+      "reduced-motion-0.01ms",
+      "svg-geometry",
+      "zero"
+    ],
+    "exceptions": []
+  }
+}

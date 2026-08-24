@@ -1045,20 +1045,24 @@ session assurance and tenant/environment scope.
 
 ## 11. D1 Brand and Semantic Design Tokens decisions — 2026-08-16
 
-Every authority named below must approve and the Product Owner records the exact
-answer, effective date and evidence before D1 implementation. An implementer may
-not convert a recommendation into an approved default.
+All ten decisions were approved on 2026-08-16 through the Product Owner's
+documentation-only decision task, using the frozen amendment and accepted D1
+planning package as the cross-functional recommendation. Exact values,
+rejected alternatives, accountable roles, implementation and production gates,
+acceptance evidence, ADR interaction and revisit triggers are normative in
+[`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md). Approval makes D1 eligible
+for a separate implementation request; it does not authorize implementation.
 
 ### D-079 — Canonical token source and generated-artifact policy
 
 - **When:** before any D1 implementation
-- **Status:** `BLOCKING PRODUCT/DESIGN/FRONTEND-ARCHITECTURE/SECURITY DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Product Owner + Design owner + Frontend Architecture + Security
 - **Question:** Is the canonical source the proposed ordered data-only JSON array;
   which exact schema/source/artifact paths and bounds apply; are generated CSS,
   typed metadata and manifest committed; and where are canonical schema/token-set
   versions recorded?
-- **Recommendation:** approve ADR-0013: validated ordered JSON records,
+- **Approved summary:** ADR-0013 is accepted: validated ordered JSON records,
   repository-native Node 24 validation/generation, committed deterministic
   artifacts with digests/drift checks, and no runtime remote loading. D-086,
   rather than D-079, owns the temporary safe-default selection.
@@ -1066,14 +1070,14 @@ not convert a recommendation into an approved default.
 ### D-080 — Typography stacks and existing Geist compatibility
 
 - **When:** before D1 typography artifact generation or Phase 1 font migration
-- **Status:** `BLOCKING PRODUCT/DESIGN/ACCESSIBILITY DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Design owner + Accessibility + Frontend Architecture + Product
   Owner
 - **Question:** What exact ordered heading, UI and data fallback stacks apply;
   how much metric shift is acceptable; and does the existing Geist package remain
   a temporary compatibility fallback or get removed in a separately approved
   change?
-- **Recommendation:** prefer Space Grotesk for headings and Inter for UI, followed
+- **Approved summary:** Space Grotesk for headings and Inter for UI, followed
   by reviewed system fallbacks; install/fetch neither in D1. Retain existing
   Geist only as an explicit temporary fallback unless removal is separately
   approved and its manifest/app changes are inside the D1 allowlist.
@@ -1081,12 +1085,12 @@ not convert a recommendation into an approved default.
 ### D-081 — Semantic palette, pairing allowlist and contrast target
 
 - **When:** before D1 theme source freeze
-- **Status:** `BLOCKING DESIGN/ACCESSIBILITY/PRODUCT DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Design owner + Accessibility + Product Owner
 - **Question:** Approve exact DARK/LIGHT values for every expanded semantic token,
   alpha-composite backgrounds, allowed foreground/background pairs and whether
   any target is stricter than WCAG 2.2 AA?
-- **Recommendation:** retain the frozen theme values where their role is unchanged;
+- **Approved summary:** retain the frozen theme values where their role is unchanged;
   resolve missing interaction, financial-neutral, quality, capability, scrim and
   chart values explicitly; enforce 4.5:1 normal text and 3:1 large text,
   essential graphics/boundaries and focus, with only documented WCAG exceptions.
@@ -1094,12 +1098,12 @@ not convert a recommendation into an approved default.
 ### D-082 — Chart palette, encodings and categorical-series maximum
 
 - **When:** before D1 chart token completion
-- **Status:** `BLOCKING PRODUCT/DESIGN/ACCESSIBILITY/QUANT-VISUALIZATION DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Design owner + Accessibility + Product Owner + Quant
 - **Question:** What exact categorical maximum, palette order, marker/dash order,
   sequential/diverging stops and reuse/faceting behavior apply; and which
   bid/ask, long/short, mark/index, threshold and anomaly encodings are approved?
-- **Recommendation:** approve a small finite categorical set with a unique
+- **Approved summary:** eight categorical series with a unique
   colour-plus-marker/dash tuple per series; beyond the maximum require selection,
   faceting or pagination rather than silent colour reuse. No chart-library choice
   is part of D1.
@@ -1107,12 +1111,12 @@ not convert a recommendation into an approved default.
 ### D-083 — Foundation scales, semantic layers and validation bounds
 
 - **When:** before D1 source/schema freeze
-- **Status:** `BLOCKING DESIGN/FRONTEND-ARCHITECTURE/ACCESSIBILITY DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Design owner + Frontend Architecture + Accessibility + Security
 - **Question:** What exact spacing, sizing, radius, border-width, elevation,
   opacity, motion/easing and semantic z-layer values apply; which component
   geometry remains D3-owned; and what token/alias/string/output bounds apply?
-- **Recommendation:** begin with the accepted DESIGN_SYSTEM scales, add only
+- **Approved summary:** use the accepted DESIGN_SYSTEM scales, add only
   missing named roles, use semantic layer names rather than arbitrary z-index,
   retain component-specific layout under bounded legacy rules, and use motion
   only for orientation/feedback with reduced-motion equivalents.
@@ -1120,12 +1124,12 @@ not convert a recommendation into an approved default.
 ### D-084 — Raw-value escape-hatch governance
 
 - **When:** before enabling the D1 raw-value quality gate
-- **Status:** `BLOCKING FRONTEND-ARCHITECTURE/SECURITY/DESIGN DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Frontend Architecture + Security + Design owner
 - **Question:** Who owns and approves exceptions, what maximum lifetime applies,
   which exact properties/paths are scanned, and which technical constants are
   allowed without becoming a broad bypass?
-- **Recommendation:** repository-native property-aware scan; exact
+- **Approved summary:** repository-native property-aware scan; exact
   file/property/pattern exceptions with reason, owner, approver, issue, expiry
   and cleanup criterion; expired/orphaned/widened exceptions fail CI; no broad
   directory exclusions.
@@ -1133,12 +1137,12 @@ not convert a recommendation into an approved default.
 ### D-085 — Token versioning, deprecation and compatibility window
 
 - **When:** before D1 public token contract or compatibility aliases
-- **Status:** `BLOCKING PRODUCT/DESIGN/FRONTEND-ARCHITECTURE DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Product Owner + Design owner + Frontend Architecture
 - **Question:** Approve schema/token-set version format, breaking/additive/value
   change classifications, compatibility window, deprecation duration,
   replacement-chain limit, removal authority and rollback support period.
-- **Recommendation:** independent semantic versions, one-way deprecation aliases,
+- **Approved summary:** independent SemVer versions, one-way deprecation aliases,
   no removal before every known consumer migrates and the approved window
   expires, semantic meaning/type changes as breaking majors, and atomic rollback
   of source plus all artifacts.
@@ -1146,13 +1150,13 @@ not convert a recommendation into an approved default.
 ### D-086 — Phase 1 migration and safe-default policy
 
 - **When:** before D1 switches the existing web consumer
-- **Status:** `BLOCKING PRODUCT/DESIGN/FRONTEND/QA DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Product Owner + Design owner + Frontend owner + QA
 - **Question:** Which legacy variables map/alias/deprecate, which raw values are
   fixed or temporarily exempted, which default theme is used before D4, what
   screenshot/viewports form the baseline, and what exact rollback/removal criteria
   apply?
-- **Recommendation:** source/artifacts first, one versioned alias layer, dark safe
+- **Approved summary:** source/artifacts first, one versioned alias layer, DARK safe
   default, token-only `globals.css` migration, no TSX/DOM/route redesign, retain
   D3-owned geometry temporarily, and remove aliases only after accepted consumer
   migration.
@@ -1160,34 +1164,33 @@ not convert a recommendation into an approved default.
 ### D-087 — Forced-colour responsibility split
 
 - **When:** before D1 accessibility scope freeze
-- **Status:** `BLOCKING ACCESSIBILITY/DESIGN/FRONTEND DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Accessibility + Design owner + Frontend Architecture
 - **Question:** Which forced-colour/system-colour tokens and static rules belong
   to D1, and which rendered control/chart behavior is deferred to D2/D4/D5?
-- **Recommendation:** D1 defines semantic forced-colour roles, prohibits invisible
+- **Approved summary:** D1 defines semantic forced-colour roles, prohibits invisible
   focus/status and tests the existing compatibility shell; D2/D4/D5 own complete
   rendered component, theme bootstrap and chart evidence.
 
 ### D-088 — Visual-regression evidence boundary
 
 - **When:** before D1 test-plan freeze
-- **Status:** `BLOCKING DESIGN/QA/FRONTEND DECISION`
+- **Status:** `APPROVED 2026-08-16`
 - **Authority:** Design owner + QA + Frontend owner
 - **Question:** Does D1 add rendered visual-regression tooling, or use deterministic
   token snapshots plus bounded manual/browser screenshots of the existing shell;
   which routes, viewports, themes, browsers and review thresholds apply?
-- **Recommendation:** do not add a new visual-regression dependency in D1. Require
+- **Approved summary:** do not add a new visual-regression dependency in D1. Require
   deterministic token/artifact snapshots and recorded existing-shell screenshots
   for approved routes/viewports; introduce broad component/page visual tooling in
   D2/D4 through a separate approval.
 
 ### D1 decision-review matrix
 
-This matrix makes the questions decision-ready without selecting an answer.
-`Implementation gate` means no D1 file may be changed until the named answer is
-approved. `Production gate` identifies later evidence that may remain outside
-D1. Every approval must record the chosen alternative, rejected alternatives,
-effective date and approval evidence.
+This matrix retains the alternatives reviewed and summarizes the accepted gate.
+The exact selected values and policies are in `D1_DESIGN_DECISIONS.md`.
+`Implementation gate` still requires a separate approved D1 task and conforming
+evidence. `Production gate` identifies later evidence outside D1.
 
 | ID    | Alternatives that must be considered                                                                                                                                            | Implementation gate                                                                            | Production gate                                                            | Acceptance evidence affected                                                         |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -1204,6 +1207,7 @@ effective date and approval evidence.
 
 D-079 owns representation and artifact authority; D-085 owns compatibility and
 version semantics. D-080 owns the target typography contract; D-086 owns only
-the timing, alias and rollback treatment of the existing Geist consumer. The
-accepted base palette is an input to D-081, not an implicit approval of missing
-expanded roles or of legacy `status.*` names that combine distinct meanings.
+the timing, alias and rollback treatment of the existing Geist consumer. D-081
+now approves every expanded role and legal pairing without merging legacy
+`status.*` meanings. There is no remaining D1 decision blocker, but D1 work may
+start only after a separate implementation approval.

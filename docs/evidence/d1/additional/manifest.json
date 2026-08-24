@@ -1,0 +1,533 @@
+{
+  "evidenceType": "D1 implementation-produced additional accessibility evidence",
+  "formalAcceptance": false,
+  "retrievalDate": "2026-08-17",
+  "limitations": [
+    "In-app Browser exposes viewport control but not page-zoom control; 720x450 captures are the deterministic reflow equivalent of 1440x900 at 200%.",
+    "OS forced-colors emulation is unavailable; screenshots use the exact static D-087 systemColor map. Rendered OS evidence remains D2/D4/D5 scope."
+  ],
+  "captures": [
+    {
+      "kind": "keyboard-focus",
+      "theme": "dark",
+      "route": "/forgot-password",
+      "file": "focus-dark-forgot-password-desktop-1440x900.png",
+      "sha256": "4e08058870772c30b9a6003fb61d11d9006917df7b40d3349c31c91497debd71",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 212, 255)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "dark",
+      "route": "/",
+      "file": "focus-dark-home-desktop-1440x900.png",
+      "sha256": "5871308ffda1da94bf86e118801dad6a0c7a817024e949db14e462787ccc4d0d",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 212, 255)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Dashboard",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "dark",
+      "route": "/login",
+      "file": "focus-dark-login-desktop-1440x900.png",
+      "sha256": "d6f1202353ab9749a097b4ccc220c2ce7da66581536cb882c43759545c8f9272",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 212, 255)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "dark",
+      "route": "/d1-missing-route",
+      "file": "focus-dark-missing-desktop-1440x900.png",
+      "sha256": "f5075142a9b498acc41485242e62e1102958dc56039b8f189841f343afca8de3",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 212, 255)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Return to overview",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "dark",
+      "route": "/register",
+      "file": "focus-dark-register-desktop-1440x900.png",
+      "sha256": "660608f3c842df72bcb586922318b27b3d706d65c92fe45565caa84a02dde3bf",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 212, 255)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "dark",
+      "route": "/verify-email",
+      "file": "focus-dark-verify-email-desktop-1440x900.png",
+      "sha256": "bab722fdd9e546bd15d711f930e9ba26368260c6804f85896e07621d9be3c68e",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 212, 255)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "light",
+      "route": "/forgot-password",
+      "file": "focus-light-forgot-password-desktop-1440x900.png",
+      "sha256": "ba1171fc308b9b051602a506a0e21842228316d329b8b10db3cf327539eef7db",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 110, 230)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "light",
+      "route": "/",
+      "file": "focus-light-home-desktop-1440x900.png",
+      "sha256": "abecaf6275aac9fe3f0d30b9882449b421081dd0610443c08b601ea7ef4e0427",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 110, 230)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Dashboard",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "light",
+      "route": "/login",
+      "file": "focus-light-login-desktop-1440x900.png",
+      "sha256": "6e8364da9c9f61535a98647d2d32a3bf8756092881148fdc40b575b7971e4c65",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 110, 230)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "light",
+      "route": "/d1-missing-route",
+      "file": "focus-light-missing-desktop-1440x900.png",
+      "sha256": "d86fb96a5d804e7bc2c477210aa0fed34446025d393bd6e7dc0b16dbcc28c751",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 110, 230)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Return to overview",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "light",
+      "route": "/register",
+      "file": "focus-light-register-desktop-1440x900.png",
+      "sha256": "8dd0fd9b2079fb23d7d9172fa72a641e6d2f420aea19f8751b7e54b2d7defa92",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 110, 230)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "keyboard-focus",
+      "theme": "light",
+      "route": "/verify-email",
+      "file": "focus-light-verify-email-desktop-1440x900.png",
+      "sha256": "d999473197047c92f49f7fbee73334f37344f2dc44e1635d256d8e6234f8668b",
+      "state": {
+        "boxShadow": "none",
+        "outlineColor": "rgb(0, 110, 230)",
+        "outlineOffset": "2px",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "tag": "A",
+        "text": "Arbitrage",
+        "visible": true
+      },
+      "note": "Keyboard event dispatched to an explicit visible tab-order control; computed :focus-visible evidence recorded from the final clean production build."
+    },
+    {
+      "kind": "preferred-font-unavailable",
+      "theme": "dark",
+      "route": "/",
+      "viewport": "desktop-1440x900",
+      "file": "font-fallback-dark-home-desktop-1440x900.png",
+      "sha256": "ba3cd32fb132bb829994eb0173b28aedb32d14a8d60054d3b9b131a1c8d201c7",
+      "state": {
+        "bodyFont": "ui-sans-serif, system-ui, sans-serif",
+        "headingFont": "ui-sans-serif, system-ui, sans-serif",
+        "horizontalOverflow": false
+      },
+      "note": "Non-shipping harness overrides only font-family tokens to local system fallbacks."
+    },
+    {
+      "kind": "preferred-font-unavailable",
+      "theme": "dark",
+      "route": "/",
+      "viewport": "mobile-390x844",
+      "file": "font-fallback-dark-home-mobile-390x844.png",
+      "sha256": "581252f89574509b0a1eb12febbe76a4659b419a2fd67cf76974acb71656431a",
+      "state": {
+        "bodyFont": "ui-sans-serif, system-ui, sans-serif",
+        "headingFont": "ui-sans-serif, system-ui, sans-serif",
+        "horizontalOverflow": false
+      },
+      "note": "Non-shipping harness overrides only font-family tokens to local system fallbacks."
+    },
+    {
+      "kind": "preferred-font-unavailable",
+      "theme": "dark",
+      "route": "/login",
+      "viewport": "desktop-1440x900",
+      "file": "font-fallback-dark-login-desktop-1440x900.png",
+      "sha256": "1829bcbdaa653c08cbc750dc82f543a96fa016bcbbd3203e6d2a07e9946f481c",
+      "state": {
+        "bodyFont": "ui-sans-serif, system-ui, sans-serif",
+        "headingFont": "ui-sans-serif, system-ui, sans-serif",
+        "horizontalOverflow": false
+      },
+      "note": "Non-shipping harness overrides only font-family tokens to local system fallbacks."
+    },
+    {
+      "kind": "preferred-font-unavailable",
+      "theme": "dark",
+      "route": "/login",
+      "viewport": "mobile-390x844",
+      "file": "font-fallback-dark-login-mobile-390x844.png",
+      "sha256": "cb1948b748204927b5f7f00ab625f9165a0331798d97db6c5e26b84998d1f69a",
+      "state": {
+        "bodyFont": "ui-sans-serif, system-ui, sans-serif",
+        "headingFont": "ui-sans-serif, system-ui, sans-serif",
+        "horizontalOverflow": false
+      },
+      "note": "Non-shipping harness overrides only font-family tokens to local system fallbacks."
+    },
+    {
+      "kind": "forced-colors-static-contract",
+      "theme": "system-colors",
+      "route": "/",
+      "viewport": "desktop-1440x900",
+      "file": "forced-colors-home-desktop-1440x900.png",
+      "sha256": "a9ba70bd7cb3855d7acdd59ce8fca63f0678d7bb4dc7928eb1294226541b8dcd",
+      "state": {
+        "background": "Canvas",
+        "focus": "Highlight",
+        "horizontalOverflow": false,
+        "text": "CanvasText"
+      },
+      "note": "Non-shipping harness applies the exact D-087 static systemColor map; actual OS forced-colors rendering remains D2/D4/D5 evidence."
+    },
+    {
+      "kind": "forced-colors-static-contract",
+      "theme": "system-colors",
+      "route": "/",
+      "viewport": "mobile-390x844",
+      "file": "forced-colors-home-mobile-390x844.png",
+      "sha256": "59a12c0a18d2fd454bcac421f287dcccf08cd6ffbda85c35232c27a3e25aa456",
+      "state": {
+        "background": "Canvas",
+        "focus": "Highlight",
+        "horizontalOverflow": false,
+        "text": "CanvasText"
+      },
+      "note": "Non-shipping harness applies the exact D-087 static systemColor map; actual OS forced-colors rendering remains D2/D4/D5 evidence."
+    },
+    {
+      "kind": "forced-colors-static-contract",
+      "theme": "system-colors",
+      "route": "/login",
+      "viewport": "desktop-1440x900",
+      "file": "forced-colors-login-desktop-1440x900.png",
+      "sha256": "72bbfbcd927895e6528ee1b62c6d3f9ca5794270328a37d7c37c352bdcf9fe0d",
+      "state": {
+        "background": "Canvas",
+        "focus": "Highlight",
+        "horizontalOverflow": false,
+        "text": "CanvasText"
+      },
+      "note": "Non-shipping harness applies the exact D-087 static systemColor map; actual OS forced-colors rendering remains D2/D4/D5 evidence."
+    },
+    {
+      "kind": "forced-colors-static-contract",
+      "theme": "system-colors",
+      "route": "/login",
+      "viewport": "mobile-390x844",
+      "file": "forced-colors-login-mobile-390x844.png",
+      "sha256": "cbf317885a47a00d8d437a4b311f326e902a94c120ebc174e35b3d3bd4106e9e",
+      "state": {
+        "background": "Canvas",
+        "focus": "Highlight",
+        "horizontalOverflow": false,
+        "text": "CanvasText"
+      },
+      "note": "Non-shipping harness applies the exact D-087 static systemColor map; actual OS forced-colors rendering remains D2/D4/D5 evidence."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "dark",
+      "route": "/login",
+      "viewport": "desktop-1440x900",
+      "file": "pseudo-dark-login-desktop-1440x900.png",
+      "sha256": "1fd3fa4c4a49c17b02136dd69f0a9dc6de6d887a56d61e108603c30baf383be5",
+      "state": {
+        "heading": "⟦Ŵëļçömë bäçķ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "dark",
+      "route": "/login",
+      "viewport": "mobile-390x844",
+      "file": "pseudo-dark-login-mobile-390x844.png",
+      "sha256": "12aa48545b9245156d1ce8dd7d959660efd9bcc29f14ebfa229bd043a68bbac3",
+      "state": {
+        "heading": "⟦Ŵëļçömë bäçķ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "dark",
+      "route": "/register",
+      "viewport": "desktop-1440x900",
+      "file": "pseudo-dark-register-desktop-1440x900.png",
+      "sha256": "1935335b9429747889c1ad260bafad569ddc6776d3f898f8c92fc3f664865e53",
+      "state": {
+        "heading": "⟦Çřëäţë ýöüř äççöüñţ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "dark",
+      "route": "/register",
+      "viewport": "mobile-390x844",
+      "file": "pseudo-dark-register-mobile-390x844.png",
+      "sha256": "d769fa809523c3425a4524e3a4dd04246b4a568e44c4dee0313497a9f62436cf",
+      "state": {
+        "heading": "⟦Çřëäţë ýöüř äççöüñţ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "light",
+      "route": "/login",
+      "viewport": "desktop-1440x900",
+      "file": "pseudo-light-login-desktop-1440x900.png",
+      "sha256": "c8c6e611bc9b04ea2c0f4fd1798482f4e89b2d58c0d97a34ec416d0535a76191",
+      "state": {
+        "heading": "⟦Ŵëļçömë bäçķ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "light",
+      "route": "/login",
+      "viewport": "mobile-390x844",
+      "file": "pseudo-light-login-mobile-390x844.png",
+      "sha256": "d62448ae3e9d15ce127362fe4f362f49b699f18e5c71fa4755f07f2a0e5b98c0",
+      "state": {
+        "heading": "⟦Ŵëļçömë bäçķ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "light",
+      "route": "/register",
+      "viewport": "desktop-1440x900",
+      "file": "pseudo-light-register-desktop-1440x900.png",
+      "sha256": "e7df134a5c9d16f3b1375c0a9463ad13847a3f987b0d9b55b5f44adc88649450",
+      "state": {
+        "heading": "⟦Çřëäţë ýöüř äççöüñţ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "pseudo-localization-30-percent",
+      "theme": "light",
+      "route": "/register",
+      "viewport": "mobile-390x844",
+      "file": "pseudo-light-register-mobile-390x844.png",
+      "sha256": "75529ac10d7851eec14ebec7ea4679a427046a180bfd76224ac4f83b29be8c80",
+      "state": {
+        "heading": "⟦Çřëäţë ýöüř äççöüñţ — ëẋţëñđëđ⟧",
+        "horizontalOverflow": false,
+        "scriptCount": 0
+      },
+      "note": "Non-shipping deterministic HTML transform; scripts removed to prevent hydration from replacing synthetic labels."
+    },
+    {
+      "kind": "zoom-200-reflow-equivalent",
+      "theme": "dark",
+      "route": "/",
+      "file": "zoom-200-equivalent-dark-home-720x450.png",
+      "sha256": "f120b72a7a5fbcda938c2df27eb905815d3176a2ba810af3483a05bc5e76db45",
+      "state": {
+        "height": 450,
+        "horizontalOverflow": false,
+        "width": 720
+      },
+      "note": "720x450 CSS viewport is the deterministic reflow equivalent of 1440x900 at 200%; the in-app browser exposes viewport, not page-zoom, control."
+    },
+    {
+      "kind": "zoom-200-reflow-equivalent",
+      "theme": "dark",
+      "route": "/login",
+      "file": "zoom-200-equivalent-dark-login-720x450.png",
+      "sha256": "e09f8918302329e1a2e9489c5d5ea9735ebe0c46339b474dc843da8426deca74",
+      "state": {
+        "height": 450,
+        "horizontalOverflow": false,
+        "width": 720
+      },
+      "note": "720x450 CSS viewport is the deterministic reflow equivalent of 1440x900 at 200%; the in-app browser exposes viewport, not page-zoom, control."
+    },
+    {
+      "kind": "zoom-200-reflow-equivalent",
+      "theme": "dark",
+      "route": "/register",
+      "file": "zoom-200-equivalent-dark-register-720x450.png",
+      "sha256": "4558484f39b6ae190b78b72f4a0e94b309e1b37838e52279dbbc7111789715d9",
+      "state": {
+        "height": 450,
+        "horizontalOverflow": false,
+        "width": 720
+      },
+      "note": "720x450 CSS viewport is the deterministic reflow equivalent of 1440x900 at 200%; the in-app browser exposes viewport, not page-zoom, control."
+    },
+    {
+      "kind": "zoom-200-reflow-equivalent",
+      "theme": "light",
+      "route": "/",
+      "file": "zoom-200-equivalent-light-home-720x450.png",
+      "sha256": "696f43f6054b110e786a4eda67f2a6ff2924c44945cb2de461d28752ee028b93",
+      "state": {
+        "height": 450,
+        "horizontalOverflow": false,
+        "width": 720
+      },
+      "note": "720x450 CSS viewport is the deterministic reflow equivalent of 1440x900 at 200%; the in-app browser exposes viewport, not page-zoom, control."
+    },
+    {
+      "kind": "zoom-200-reflow-equivalent",
+      "theme": "light",
+      "route": "/login",
+      "file": "zoom-200-equivalent-light-login-720x450.png",
+      "sha256": "31082c2bc7f1e50202286242dfd16ca3dd51f5499e4594e3b333805dbfacf0e1",
+      "state": {
+        "height": 450,
+        "horizontalOverflow": false,
+        "width": 720
+      },
+      "note": "720x450 CSS viewport is the deterministic reflow equivalent of 1440x900 at 200%; the in-app browser exposes viewport, not page-zoom, control."
+    },
+    {
+      "kind": "zoom-200-reflow-equivalent",
+      "theme": "light",
+      "route": "/register",
+      "file": "zoom-200-equivalent-light-register-720x450.png",
+      "sha256": "c0befb420ef01203c0dd0347864e11b7499190d08ad62540c24bf07d5b30541b",
+      "state": {
+        "height": 450,
+        "horizontalOverflow": false,
+        "width": 720
+      },
+      "note": "720x450 CSS viewport is the deterministic reflow equivalent of 1440x900 at 200%; the in-app browser exposes viewport, not page-zoom, control."
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://holyparser.local/schema/design-tokens",
+  "title": "HolyParser design-token source contract",
+  "description": "Normative structural documentation. Repository-owned Node 24 validation is authoritative for D1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tokens"],
+  "properties": {
+    "tokens": {
+      "type": "array",
+      "maxItems": 2048,
+      "items": {
+        "$ref": "#/$defs/token"
+      }
+    }
+  },
+  "$defs": {
+    "token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "family",
+        "type",
+        "description",
+        "accessibilityRole",
+        "lifecycle",
+        "introducedIn"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+          "maxLength": 128
+        },
+        "kind": {
+          "enum": ["primitive", "semantic"]
+        },
+        "family": {
+          "enum": [
+            "action",
+            "background",
+            "border",
+            "capability",
+            "chart",
+            "elevation",
+            "financial",
+            "focus",
+            "layer",
+            "motion",
+            "opacity",
+            "primitive",
+            "radius",
+            "sizing",
+            "spacing",
+            "status",
+            "surface",
+            "text",
+            "typography"
+          ]
+        },
+        "type": {
+          "enum": [
+            "color",
+            "cubicBezier",
+            "dimension",
+            "duration",
+            "fontFamily",
+            "fontWeight",
+            "integer",
+            "number",
+            "shadow",
+            "string"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "accessibilityRole": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "lifecycle": {
+          "enum": ["active", "deprecated"]
+        },
+        "introducedIn": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "deprecatedIn": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "replacement": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "removeAfterVersion": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "migrationNote": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "value": {},
+        "dark": {},
+        "light": {}
+      }
+    },
+    "systemColor": {
+      "type": "string",
+      "enum": [
+        "ButtonFace",
+        "ButtonText",
+        "Canvas",
+        "CanvasText",
+        "GrayText",
+        "Highlight",
+        "HighlightText",
+        "LinkText",
+        "Mark",
+        "MarkText"
+      ]
+    }
+  }
+}

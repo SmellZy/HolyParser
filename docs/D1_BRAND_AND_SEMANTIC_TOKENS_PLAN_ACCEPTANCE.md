@@ -20,6 +20,16 @@ been approved and ADR-0013 therefore cannot yet be accepted. The warnings are
 decision dependencies and deliberately deferred rendered-component evidence,
 not permission to choose defaults during implementation.
 
+### Post-acceptance decision update — 2026-08-16
+
+The statements above preserve the evidence state at the time of this independent
+planning review. A subsequent Product Owner decision task approved D-079 through
+D-088 in [`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md) and reconciled
+ADR-0013 to `Accepted`. This factual update does not alter the historical
+`PASS_WITH_WARNINGS` verdict or grant implementation authority. It closes the
+decision dependency and makes D1 eligible for a separate implementation
+approval.
+
 ## 2. Reviewed scope and evidence
 
 Reviewed completely:

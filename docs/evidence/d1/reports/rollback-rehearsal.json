@@ -1,0 +1,12 @@
+{
+  "rehearsal": "INITIAL_D1_ROLLBACK",
+  "source": "self-contained versioned rollback fixture restored into an independent temporary tree; Git history not required",
+  "restoredDigests": {
+    "packages/design-tokens/tokens.css": "eab790ddab6fddef721f508247a79e53385e068d2abe56c98c3f46c5dd639355",
+    "packages/design-tokens/package.json": "4a01d480351c771f094d3de4c2fd9bfec0dc89173e982fcae247bc0a501b98d0",
+    "apps/web/src/app/globals.css": "665f918ed927ae9fbeb39bd40187f280622f2f8eea6e6083fe44c2e3a7039eee"
+  },
+  "restoredPackageExport": "./tokens.css",
+  "canonicalSetRemoved": true,
+  "verification": "PASS"
+}

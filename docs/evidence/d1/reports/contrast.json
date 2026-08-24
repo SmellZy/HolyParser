@@ -1,0 +1,1472 @@
+{
+  "tokenSetVersion": "1.0.0",
+  "thresholds": {
+    "normalText": 4.5,
+    "largeText": 3,
+    "essentialGraphics": 3,
+    "focus": 3
+  },
+  "total": 162,
+  "passed": 162,
+  "minimumRatio": 3.08,
+  "results": [
+    {
+      "theme": "LIGHT",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.primary",
+      "threshold": 4.5,
+      "ratio": 4.592,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.primary.active",
+      "threshold": 4.5,
+      "ratio": 7.439,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.primary.hover",
+      "threshold": 4.5,
+      "ratio": 5.641,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.secondary",
+      "threshold": 4.5,
+      "ratio": 6.32,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.border.emphasis",
+      "foreground": "semantic.color.border.emphasis",
+      "background": "semantic.color.background.elevated",
+      "threshold": 3,
+      "ratio": 3.77,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.border.emphasis",
+      "foreground": "semantic.color.border.emphasis",
+      "background": "semantic.color.background.surface",
+      "threshold": 3,
+      "ratio": 3.77,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.focus.ring",
+      "foreground": "semantic.color.focus.ring",
+      "background": "semantic.color.background.elevated",
+      "threshold": 3,
+      "ratio": 4.802,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.focus.ring",
+      "foreground": "semantic.color.focus.ring",
+      "background": "semantic.color.background.surface",
+      "threshold": 3,
+      "ratio": 4.802,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.research-required",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.944,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.research-required",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.32,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.research-required",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6.32,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unsupported",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.103,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unsupported",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.425,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unsupported",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.425,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unverified",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.577,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unverified",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.929,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unverified",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.929,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.negative",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.084,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.negative",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.469,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.negative",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6.469,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.neutral",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.103,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.neutral",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.425,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.neutral",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.425,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.positive",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.032,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.positive",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.35,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.positive",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.35,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.crossed",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.084,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.crossed",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.469,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.crossed",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6.469,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.gapped",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.299,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.gapped",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.698,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.gapped",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6.698,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.invalid",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.069,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.invalid",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.516,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.invalid",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.516,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.locked",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.767,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.locked",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.195,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.locked",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.195,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.reconnecting",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.644,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.reconnecting",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.reconnecting",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.stale",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.575,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.stale",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.927,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.stale",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.927,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.active",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.619,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.active",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.975,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.active",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.975,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.critical",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.069,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.critical",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.516,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.critical",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.516,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.healthy",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.148,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.healthy",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.473,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.healthy",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.473,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.informational",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.619,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.informational",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.975,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.informational",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.975,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.unknown",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.103,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.unknown",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.425,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.unknown",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.425,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.warning",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.155,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.warning",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.481,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.warning",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.481,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.text.link",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 5.619,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.text.link",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.975,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.text.link",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.975,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 4.547,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 4.834,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 4.834,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.surface.interactive",
+      "threshold": 4.5,
+      "ratio": 4.621,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 16.685,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 17.74,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.subtle",
+      "threshold": 4.5,
+      "ratio": 16.193,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 17.74,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.surface.interactive",
+      "threshold": 4.5,
+      "ratio": 16.955,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.surface.selected",
+      "threshold": 4.5,
+      "ratio": 15.592,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 9.694,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 10.307,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.subtle",
+      "threshold": 4.5,
+      "ratio": 9.409,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 10.307,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.surface.interactive",
+      "threshold": 4.5,
+      "ratio": 9.851,
+      "pass": true
+    },
+    {
+      "theme": "LIGHT",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.surface.selected",
+      "threshold": 4.5,
+      "ratio": 9.059,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.primary",
+      "threshold": 4.5,
+      "ratio": 5.342,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.primary.active",
+      "threshold": 4.5,
+      "ratio": 8.719,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.primary.hover",
+      "threshold": 4.5,
+      "ratio": 6.939,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.action.inverse",
+      "foreground": "semantic.color.text.inverse",
+      "background": "semantic.color.action.secondary",
+      "threshold": 4.5,
+      "ratio": 8.066,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.border.emphasis",
+      "foreground": "semantic.color.border.emphasis",
+      "background": "semantic.color.background.elevated",
+      "threshold": 3,
+      "ratio": 3.08,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.border.emphasis",
+      "foreground": "semantic.color.border.emphasis",
+      "background": "semantic.color.background.surface",
+      "threshold": 3,
+      "ratio": 3.355,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.focus.ring",
+      "foreground": "semantic.color.focus.ring",
+      "background": "semantic.color.background.elevated",
+      "threshold": 3,
+      "ratio": 9.624,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.focus.ring",
+      "foreground": "semantic.color.focus.ring",
+      "background": "semantic.color.background.surface",
+      "threshold": 3,
+      "ratio": 10.483,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.research-required",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 8.314,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.research-required",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.21,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.research-required",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.853,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unsupported",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 9.14,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unsupported",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.926,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unsupported",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 8.633,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unverified",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.68,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unverified",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.66,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.capability.unverified",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.255,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.negative",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.467,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.negative",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.476,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.negative",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.053,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.neutral",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 9.14,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.neutral",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.926,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.neutral",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 8.633,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.positive",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 10.279,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.positive",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 8.914,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.financial.positive",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 9.709,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.crossed",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.467,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.crossed",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.476,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.crossed",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.053,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.gapped",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 8.007,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.gapped",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.943,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.gapped",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.563,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.invalid",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.455,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.invalid",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.598,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.invalid",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6.097,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.locked",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 11.708,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.locked",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 10.153,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.locked",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 11.059,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.reconnecting",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 11.735,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.reconnecting",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 10.177,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.reconnecting",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 11.085,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.stale",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 9.516,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.stale",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 8.252,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.quality.stale",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 8.988,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.active",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.717,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.active",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.692,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.active",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.289,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.critical",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.455,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.critical",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.598,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.critical",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 6.097,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.healthy",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 10.555,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.healthy",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 9.153,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.healthy",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 9.97,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.informational",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.717,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.informational",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.692,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.informational",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.289,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.unknown",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 9.14,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.unknown",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 7.926,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.unknown",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 8.633,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.warning",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 11.135,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.warning",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 9.656,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.status.warning",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 10.517,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.text.link",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 7.717,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.text.link",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 6.692,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.state.foreground",
+      "foreground": "semantic.color.text.link",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 7.289,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 6.142,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 5.326,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 5.802,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.muted",
+      "foreground": "semantic.color.text.muted",
+      "background": "semantic.color.surface.interactive",
+      "threshold": 4.5,
+      "ratio": 5.156,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 18.781,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 16.287,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.subtle",
+      "threshold": 4.5,
+      "ratio": 17.152,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 17.74,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.surface.interactive",
+      "threshold": 4.5,
+      "ratio": 15.767,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.primary",
+      "background": "semantic.color.surface.selected",
+      "threshold": 4.5,
+      "ratio": 11.591,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.base",
+      "threshold": 4.5,
+      "ratio": 12.344,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.elevated",
+      "threshold": 4.5,
+      "ratio": 10.704,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.subtle",
+      "threshold": 4.5,
+      "ratio": 11.273,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.background.surface",
+      "threshold": 4.5,
+      "ratio": 11.659,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.surface.interactive",
+      "threshold": 4.5,
+      "ratio": 10.363,
+      "pass": true
+    },
+    {
+      "theme": "DARK",
+      "pair": "pair.text.primary-secondary",
+      "foreground": "semantic.color.text.secondary",
+      "background": "semantic.color.surface.selected",
+      "threshold": 4.5,
+      "ratio": 7.618,
+      "pass": true
+    }
+  ]
+}

@@ -542,7 +542,9 @@ needs a separate approval, scoped plan, evidence report and formal freeze.
 D1 implementation and formal independent acceptance are separate stages defined
 by `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` and
 `D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. Implementation is blocked
-until D-079 through D-088 contain exact approvals and ADR-0013 is accepted.
+until a separate Product Owner implementation task is issued. The prerequisite
+decision gate is complete: D-079 through D-088 are exact and approved in
+`D1_DESIGN_DECISIONS.md`, and ADR-0013 is `Accepted`.
 
 D1 freezes only when:
 

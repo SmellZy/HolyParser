@@ -1,0 +1,258 @@
+{
+  "presentations": [
+    {
+      "id": "presentation.active",
+      "domainState": "ACTIVE",
+      "color": "semantic.color.status.active",
+      "labelKey": "status.active.label",
+      "icon": "pulse",
+      "marker": "circle",
+      "descriptionKey": "status.active.description",
+      "pattern": "solid"
+    },
+    {
+      "id": "presentation.capability.research-required",
+      "domainState": "RESEARCH_REQUIRED",
+      "color": "semantic.color.capability.research-required",
+      "labelKey": "capability.researchRequired.label",
+      "icon": "flask",
+      "marker": "diamond",
+      "descriptionKey": "capability.researchRequired.description",
+      "pattern": "6 3"
+    },
+    {
+      "id": "presentation.capability.unsupported",
+      "domainState": "UNSUPPORTED",
+      "color": "semantic.color.capability.unsupported",
+      "labelKey": "capability.unsupported.label",
+      "icon": "ban",
+      "marker": "cross",
+      "descriptionKey": "capability.unsupported.description",
+      "pattern": "4 2"
+    },
+    {
+      "id": "presentation.capability.unverified",
+      "domainState": "UNVERIFIED",
+      "color": "semantic.color.capability.unverified",
+      "labelKey": "capability.unverified.label",
+      "icon": "question",
+      "marker": "hexagon",
+      "descriptionKey": "capability.unverified.description",
+      "pattern": "2 2"
+    },
+    {
+      "id": "presentation.critical",
+      "domainState": "CRITICAL",
+      "color": "semantic.color.status.critical",
+      "labelKey": "status.critical.label",
+      "icon": "octagon-alert",
+      "marker": "double-marker",
+      "descriptionKey": "status.critical.description",
+      "pattern": "2 2"
+    },
+    {
+      "id": "presentation.disabled",
+      "domainState": "DISABLED",
+      "color": "semantic.color.status.disabled",
+      "labelKey": "status.disabled.label",
+      "icon": "pause",
+      "marker": "square",
+      "descriptionKey": "status.disabled.description",
+      "pattern": "4 4"
+    },
+    {
+      "id": "presentation.financial.negative",
+      "domainState": "negative",
+      "color": "semantic.color.financial.negative",
+      "labelKey": "financial.negative.label",
+      "icon": "trend-down",
+      "marker": "triangle-down",
+      "descriptionKey": "financial.negative.description",
+      "pattern": "4 2 1 2"
+    },
+    {
+      "id": "presentation.financial.positive",
+      "domainState": "positive",
+      "color": "semantic.color.financial.positive",
+      "labelKey": "financial.positive.label",
+      "icon": "trend-up",
+      "marker": "triangle-up",
+      "descriptionKey": "financial.positive.description",
+      "pattern": "solid"
+    },
+    {
+      "id": "presentation.healthy",
+      "domainState": "HEALTHY",
+      "color": "semantic.color.status.healthy",
+      "labelKey": "status.healthy.label",
+      "icon": "check-circle",
+      "marker": "circle",
+      "descriptionKey": "status.healthy.description",
+      "pattern": "solid"
+    },
+    {
+      "id": "presentation.informational",
+      "domainState": "INFORMATIONAL",
+      "color": "semantic.color.status.informational",
+      "labelKey": "status.informational.label",
+      "icon": "info",
+      "marker": "circle",
+      "descriptionKey": "status.informational.description",
+      "pattern": "2 2"
+    },
+    {
+      "id": "presentation.quality.crossed",
+      "domainState": "CROSSED",
+      "color": "semantic.color.quality.crossed",
+      "labelKey": "quality.crossed.label",
+      "icon": "arrows-crossed",
+      "marker": "cross",
+      "descriptionKey": "quality.crossed.description",
+      "pattern": "4 2 1 2"
+    },
+    {
+      "id": "presentation.quality.gapped",
+      "domainState": "GAPPED",
+      "color": "semantic.color.quality.gapped",
+      "labelKey": "quality.gapped.label",
+      "icon": "brackets",
+      "marker": "gap-brackets",
+      "descriptionKey": "quality.gapped.description",
+      "pattern": "no-connecting-line"
+    },
+    {
+      "id": "presentation.quality.invalid",
+      "domainState": "INVALID",
+      "color": "semantic.color.quality.invalid",
+      "labelKey": "quality.invalid.label",
+      "icon": "x-octagon",
+      "marker": "double-marker",
+      "descriptionKey": "quality.invalid.description",
+      "pattern": "2 2"
+    },
+    {
+      "id": "presentation.quality.locked",
+      "domainState": "LOCKED",
+      "color": "semantic.color.quality.locked",
+      "labelKey": "quality.locked.label",
+      "icon": "lock",
+      "marker": "square",
+      "descriptionKey": "quality.locked.description",
+      "pattern": "6 3"
+    },
+    {
+      "id": "presentation.quality.reconnecting",
+      "domainState": "RECONNECTING",
+      "color": "semantic.color.quality.reconnecting",
+      "labelKey": "quality.reconnecting.label",
+      "icon": "rotate",
+      "marker": "diamond",
+      "descriptionKey": "quality.reconnecting.description",
+      "pattern": "2 2"
+    },
+    {
+      "id": "presentation.quality.stale",
+      "domainState": "STALE",
+      "color": "semantic.color.quality.stale",
+      "labelKey": "quality.stale.label",
+      "icon": "clock-alert",
+      "marker": "triangle-down",
+      "descriptionKey": "quality.stale.description",
+      "pattern": "diagonal-hatch"
+    },
+    {
+      "id": "presentation.unknown",
+      "domainState": "UNKNOWN",
+      "color": "semantic.color.status.unknown",
+      "labelKey": "status.unknown.label",
+      "icon": "question",
+      "marker": "hexagon",
+      "descriptionKey": "status.unknown.description",
+      "pattern": "4 4"
+    },
+    {
+      "id": "presentation.warning",
+      "domainState": "WARNING",
+      "color": "semantic.color.status.warning",
+      "labelKey": "status.warning.label",
+      "icon": "triangle-alert",
+      "marker": "triangle-up",
+      "descriptionKey": "status.warning.description",
+      "pattern": "6 3"
+    }
+  ],
+  "forcedColors": [
+    {
+      "id": "forced.action",
+      "roles": ["action.surface", "action.text"],
+      "systemColors": ["ButtonFace", "ButtonText"],
+      "presentation": "button-semantics"
+    },
+    {
+      "id": "forced.base-surface",
+      "roles": ["background.base", "background.surface"],
+      "systemColors": ["Canvas"],
+      "presentation": "opaque-canvas"
+    },
+    {
+      "id": "forced.disabled",
+      "roles": ["status.disabled"],
+      "systemColors": ["GrayText"],
+      "presentation": "label-and-disabled-state"
+    },
+    {
+      "id": "forced.essential-boundary",
+      "roles": ["border.emphasis"],
+      "systemColors": ["ButtonText"],
+      "presentation": "2px-boundary"
+    },
+    {
+      "id": "forced.focus",
+      "roles": ["focus.ring"],
+      "systemColors": ["Highlight", "Canvas"],
+      "presentation": "2px-ring-plus-2px-offset"
+    },
+    {
+      "id": "forced.link",
+      "roles": ["text.link"],
+      "systemColors": ["LinkText"],
+      "presentation": "underline"
+    },
+    {
+      "id": "forced.quality-capability",
+      "roles": ["quality.*", "capability.*"],
+      "systemColors": ["CanvasText"],
+      "presentation": "distinct-label-icon-shape"
+    },
+    {
+      "id": "forced.selected",
+      "roles": ["surface.selected", "text.inverse"],
+      "systemColors": ["Highlight", "HighlightText"],
+      "presentation": "selected-pair"
+    },
+    {
+      "id": "forced.text",
+      "roles": ["text.primary", "text.secondary"],
+      "systemColors": ["CanvasText"],
+      "presentation": "ordinary-text"
+    },
+    {
+      "id": "forced.warning-critical",
+      "roles": ["status.warning", "status.critical"],
+      "systemColors": ["Mark", "MarkText"],
+      "presentation": "required-icon-and-label"
+    }
+  ],
+  "systemColorAllowlist": [
+    "ButtonFace",
+    "ButtonText",
+    "Canvas",
+    "CanvasText",
+    "GrayText",
+    "Highlight",
+    "HighlightText",
+    "LinkText",
+    "Mark",
+    "MarkText"
+  ]
+}
