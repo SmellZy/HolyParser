@@ -1209,5 +1209,246 @@ D-079 owns representation and artifact authority; D-085 owns compatibility and
 version semantics. D-080 owns the target typography contract; D-086 owns only
 the timing, alias and rollback treatment of the existing Geist consumer. D-081
 now approves every expanded role and legal pairing without merging legacy
-`status.*` meanings. There is no remaining D1 decision blocker, but D1 work may
-start only after a separate implementation approval.
+`status.*` meanings. D1 was subsequently implemented, formally accepted, and
+frozen. Its decisions remain normative for every D2 component.
+
+## 12. D2 Foundational Component Library decisions — 2026-08-25
+
+These decisions are unresolved normative gates. The D2 plan recommends an
+approach but does not approve it. Every named authority must approve the exact
+choice before the affected checkpoint; no current Phase 1 pattern or existing
+dependency is an implicit answer.
+
+### D-089 — Component implementation style and package boundary
+
+- **When:** before D2.1
+- **Status:** `BLOCKING FRONTEND-ARCHITECTURE/PRODUCT DECISION`
+- **Authority:** Frontend Architecture + Product Owner + Design
+- **Question:** Which repository path, export surface, CSS ownership,
+  native-first convention, server/client boundary, deterministic ID ownership,
+  ref policy, and public/internal component split apply?
+- **Recommendation:** one isolated workspace with explicit exports, native
+  semantic HTML first, styles consuming D1 semantic tokens, and client
+  components only when behavior requires them.
+- **Rejected unless separately justified:** components inside pages, always-
+  client components, or CSS copied into every consumer.
+- **Implementation gate:** exact source/test/evidence allowlist, deterministic
+  ID/SSR policy, and export/API convention approved.
+- **Production gate:** SSR/hydration, bundle, browser, and compatibility
+  evidence passes.
+
+### D-090 — Extension, polymorphism, composition, and URL API
+
+- **When:** before D2.1 implementation
+- **Status:** `BLOCKING FRONTEND-ARCHITECTURE/SECURITY/ACCESSIBILITY DECISION`
+- **Authority:** Frontend Architecture + Security + Accessibility
+- **Question:** Are `className`, `style`, `as`, `asChild`, slots, render props,
+  compound components, and public data attributes allowed, and under which
+  exact constraints; which Link URL schemes/origins, external-link protections,
+  and caller-controlled `href` forms are valid?
+- **Recommendation:** prohibit arbitrary `style`; keep `className` internal or
+  exact-audited; avoid unconstrained polymorphism; expose finite semantic state
+  hooks only.
+- **Rejected:** raw-token props, arbitrary CSS/portal targets, unrestricted
+  element substitution, and a universal escape hatch.
+- **Implementation gate:** exact extension and URL allow/deny matrices plus
+  misuse, unsafe-scheme, external-link, and type tests.
+- **Production gate:** consumer scan proves no bypass is the normal extension
+  path.
+
+### D-091 — Component evidence/workbench strategy
+
+- **When:** before D2.1 implementation
+- **Status:** `BLOCKING QA/FRONTEND-ARCHITECTURE/PRODUCT DECISION`
+- **Authority:** QA + Frontend Architecture + Product Owner
+- **Question:** Use a repository-native non-shipping harness, isolated evidence
+  routes, Storybook, or another workbench; which artifacts are committed and
+  how are deterministic screenshots/version metadata governed?
+- **Recommendation:** repository-native non-shipping harness and current browser
+  tooling first; add no dependency until measured evidence gaps justify one.
+- **Rejected for automatic adoption:** Storybook solely by popularity or a
+  shipping production evidence route.
+- **Implementation gate:** harness boundary, production exclusion, evidence
+  inventory, bounds, serialization, and rollback approved.
+- **Production gate:** deterministic clean generation and browser matrix pass.
+
+### D-092 — Accessibility tooling and browser/assistive-tech matrix
+
+- **When:** before D2.1
+- **Status:** `BLOCKING ACCESSIBILITY/QA/SECURITY DECISION`
+- **Authority:** Accessibility + QA + Security + Product Owner
+- **Question:** Which browsers, operating systems, screen readers, automated
+  checker, keyboard/touch inputs, forced-colour environment, zoom/text scaling,
+  and evidence frequency are authoritative?
+- **Recommendation:** a small current desktop/mobile matrix plus a documented
+  screen-reader pairing per platform family; automated semantics and manual
+  keyboard/AT/forced-colour evidence are both mandatory.
+- **Rejected:** automated lint alone, screenshots as screen-reader proof, or an
+  unbounded browser matrix.
+- **Implementation gate:** exact matrix/tooling and dependency policy approved.
+- **Production gate:** required manual and automated evidence passes.
+
+### D-093 — Overlay, portal, and SSR/hydration strategy
+
+- **When:** before D2.3
+- **Status:** `BLOCKING FRONTEND-ARCHITECTURE/ACCESSIBILITY DECISION`
+- **Authority:** Frontend Architecture + Accessibility + QA
+- **Question:** How are Dialog, Popover, Tooltip, and Menu state, portal root,
+  IDs, focus, inertness, outside interaction, scroll lock, collision, nesting,
+  SSR/hydration, and cleanup implemented?
+- **Recommendation:** one governed portal boundary, native primitives where the
+  approved browser matrix supports them, otherwise a reviewed headless strategy;
+  finite close reasons and nesting.
+- **Rejected:** page-owned focus traps, ad hoc body portals, CSS-only
+  accessibility, and undocumented client-only fallback.
+- **Implementation gate:** behavior table, failure policy, bounds, and browser
+  plan approved.
+- **Production gate:** overlay browser/AT/fault/cleanup tests pass.
+
+### D-094 — External headless dependency permission
+
+- **When:** before any D2 dependency or dependency-based D2.3 work
+- **Status:** `BLOCKING SECURITY/FRONTEND-ARCHITECTURE/PRODUCT DECISION`
+- **Authority:** Security + Frontend Architecture + Product Owner + Accessibility
+- **Question:** May D2 add a headless/accessibility dependency; if so which
+  package/version, license, provenance, maintenance owner, bundle budget, SSR
+  support, update policy, and replacement plan apply?
+- **Recommendation:** no new dependency for D2.1/D2.2; decide D2.3 after a
+  native/repository-owned feasibility spike.
+- **Rejected:** unreviewed transitive growth or dependency selection during
+  implementation.
+- **Implementation gate:** separate approval before manifest/lockfile change.
+- **Production gate:** supply-chain, license, bundle, SSR, accessibility, and
+  rollback evidence passes.
+
+### D-095 — Icon system and SVG boundary
+
+- **When:** before D2.1 IconButton/StatusBadge
+- **Status:** `BLOCKING DESIGN/ACCESSIBILITY/SECURITY DECISION`
+- **Authority:** Design + Accessibility + Security + Frontend Architecture
+- **Question:** Retain/extend the closed local registry, adopt a dependency, or
+  use another source; which sizes, accessible-name, directional, mirroring, and
+  arbitrary-SVG rules apply?
+- **Recommendation:** extend a reviewed local closed registry initially;
+  decorative icons are hidden, semantic icon-only controls require an accessible
+  name, and user SVG/markup is prohibited.
+- **Rejected:** remote icons, arbitrary SVG strings, or universal RTL mirroring.
+- **Implementation gate:** registry/API, provenance, bounds, and hostile-SVG
+  tests approved.
+- **Production gate:** rendered theme/forced-colour/RTL evidence passes.
+
+### D-096 — Initial component set and checkpoint freeze policy
+
+- **When:** before D2.1
+- **Status:** `BLOCKING PRODUCT/DESIGN/FRONTEND-ARCHITECTURE DECISION`
+- **Authority:** Product Owner + Design + Frontend Architecture + QA
+- **Question:** Which planned components enter D2.1–D2.5, may optional
+  components enter, and must each checkpoint freeze before the next?
+- **Recommendation:** accept the required set and five-checkpoint sequence in
+  `D2_FOUNDATIONAL_COMPONENT_LIBRARY_PLAN.md`; optional scope needs measured
+  use and new approval; every dependency checkpoint freezes first.
+- **Rejected:** one large library, every candidate, or silent optional additions.
+- **Implementation gate:** exact component/checkpoint matrix approved.
+- **Production gate:** aggregate D2 acceptance passes.
+
+### D-097 — Sizes, density, and state-combination policy
+
+- **When:** before D2.1/D2.2 implementation as applicable
+- **Status:** `BLOCKING DESIGN/ACCESSIBILITY/FRONTEND-ARCHITECTURE DECISION`
+- **Authority:** Design + Accessibility + Frontend Architecture
+- **Question:** Which size/density enums, control-height mapping, hit-area
+  exceptions, state precedence, and invalid combinations apply per family?
+- **Recommendation:** compact/default only where measured, finite family-specific
+  matrices, preserve 44x44 targets, and use the plan's precedence without hiding
+  simultaneous semantic state.
+- **Rejected:** Boolean-prop combinatorial growth, arbitrary pixels, or CSS order
+  as conflict resolution.
+- **Implementation gate:** exact matrices and golden fixtures approved.
+- **Production gate:** rendered keyboard/touch/zoom evidence passes.
+
+### D-098 — Localization, RTL, forced-colour, and visual evidence scope
+
+- **When:** before D2.1 implementation
+- **Status:** `BLOCKING PRODUCT/ACCESSIBILITY/QA DECISION`
+- **Authority:** Product Owner + Accessibility + QA + Design
+- **Question:** Which locales/scripts and RTL direction are supported, what
+  pseudo-localization expansion applies, which forced-colour browser proves D2,
+  which viewports/zoom states are captured, and is pixel-diff tooling required?
+- **Recommendation:** at least 30% deterministic expansion, Unicode and
+  bidirectional isolation tests, one approved RTL locale, native OS
+  forced-colour control evidence, and bounded screenshot/human comparison
+  without a new tool initially.
+- **Rejected:** English-only sizing, static CSS as complete forced-colour proof,
+  pixel identity, or universal icon mirroring.
+- **Implementation gate:** exact matrix and thresholds approved.
+- **Production gate:** matrix passes for every frozen family.
+
+### D-099 — Component content, DOM, interaction, and diagnostic bounds
+
+- **When:** before implementation of the affected checkpoint
+- **Status:** `BLOCKING SECURITY/FRONTEND-ARCHITECTURE/ACCESSIBILITY DECISION`
+- **Authority:** Security + Frontend Architecture + Accessibility + QA
+- **Question:** Exact maxima for children, content bytes, options, menu depth,
+  tabs, non-virtual table rows/cells, overlays/portals, listeners, timers,
+  animation, evidence cases, and diagnostics; and what safe failure occurs?
+- **Recommendation:** small measured finite limits, fail before unbounded DOM,
+  and an accessible typed fallback rather than silent truncation.
+- **Rejected:** unlimited children/options/nesting or diagnostics containing
+  user content.
+- **Implementation gate:** exact values, failure codes, boundary/overflow tests.
+- **Production gate:** load/memory/cleanup evidence at approved maxima.
+
+### D-100 — Table virtualization ownership
+
+- **When:** before D2.4 implementation and before any virtualized grid
+- **Status:** `BLOCKING PRODUCT/FRONTEND-ARCHITECTURE/ACCESSIBILITY DECISION`
+- **Authority:** Product Owner + Frontend Architecture + Accessibility + D5 owner
+- **Question:** Does virtualization belong to D5 or another measured phase; what
+  workload triggers it; and which semantic/keyboard/AT behavior must survive?
+- **Recommendation:** D2 supplies semantic table primitives only; D5 owns
+  virtualization after measured workload and accessibility evidence.
+- **Rejected:** virtualization hidden in D2 Table or enabled only because the
+  master specification names it.
+- **Implementation gate:** D2.4 explicitly excludes virtualization.
+- **Production gate:** future D5 performance/accessibility acceptance.
+
+### D-101 — Component API stability and deprecation
+
+- **When:** before D2.1 implementation
+- **Status:** `BLOCKING PRODUCT/FRONTEND-ARCHITECTURE DECISION`
+- **Authority:** Product Owner + Frontend Architecture + QA
+- **Question:** Version format, additive/breaking classification, experimental
+  exports, deprecation window, migration evidence, consumer compatibility, and
+  rollback policy?
+- **Recommendation:** SemVer package contract, explicit experimental namespace,
+  semantic/DOM/keyboard breaks as major, one accepted migration window, and
+  consumer contract tests.
+- **Rejected:** silent prop/DOM/state changes, indefinite aliases, or classifying
+  semantic CSS breakage as nonbreaking.
+- **Implementation gate:** exact policy and compatibility fixtures approved.
+- **Production gate:** governed consumers migrate and the previous accepted
+  export remains reproducible through the window.
+
+### C-037 — A component library is not product architecture
+
+D2 components present caller-supplied state. They do not own routes,
+navigation, data fetching, financial formatting, authorization, analytics, or
+commands. Reusing a component cannot make a planned feature implemented.
+
+### C-038 — Existing Phase 1 markup is evidence, not specification
+
+Current buttons, fields, cards, drawer, and icons identify migration candidates.
+They do not approve D2 APIs, overlay behavior, tooling, or migration. The
+sidebar/drawer remains D3 even when it later consumes D2 primitives.
+
+### C-039 — Dropdown is ambiguous
+
+“Dropdown” may mean an action Menu, a selection Listbox/Select, or a Popover.
+D2 rejects a generic Dropdown API; consumers choose the correct semantic
+contract.
+
+### C-040 — Component status is not domain inference
+
+StatusBadge may render an explicit D1 presentation record but cannot calculate
+market quality, capability, entitlement, payment, or financial outcome.
+Presentation is not domain truth or authorization.

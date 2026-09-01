@@ -528,23 +528,22 @@ needs a separate approval, scoped plan, evidence report and formal freeze.
 
 ### Design track
 
-| Track | Accepted when                                                                                                                                                                                         |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1    | semantic tokens cover both independently designed themes; required status, typography, spacing, radius, elevation, borders, motion and chart tokens are versioned; contrast and raw-colour scans pass |
-| D2    | primitives cover keyboard/focus/loading/error/disabled/read-only behavior; WCAG 2.2 AA, zoom, screen-reader, forced-colour and reduced-motion evidence passes                                         |
-| D3    | public and authenticated route/status/dependency/entitlement matrices are implemented; deep links enforce backend authorization and planned routes fail closed                                        |
-| D4    | `SYSTEM`/`DARK`/`LIGHT` precedence, authenticated/device persistence and CSP-safe no-flash boot pass first-paint, corrupt-storage, hydration, cross-tab and system-change tests                       |
-| D5    | exact financial strings, units, provenance, USDT/USDC, stale/gapped/unknown/research-required and missing chart ranges remain explicit across responsive density modes                                |
-| D6    | billing and `/admin` use shared tokens but separate shells/authority; redirect cannot activate access and privileged actions present reason, scope, version, step-up/approval and audit state         |
+| Track | Accepted when                                                                                                                                                                                 |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1    | frozen canonical tokens cover both independently designed themes; required semantic, scale, status/chart, contrast, governance, migration and rollback evidence has formally passed           |
+| D2    | selected D2.1–D2.5 primitives pass versioned API/state, keyboard/focus, screen-reader, forced-colour, localization, security/resource, migration and rollback gates                           |
+| D3    | public and authenticated route/status/dependency/entitlement matrices are implemented; deep links enforce backend authorization and planned routes fail closed                                |
+| D4    | `SYSTEM`/`DARK`/`LIGHT` precedence, authenticated/device persistence and CSP-safe no-flash boot pass first-paint, corrupt-storage, hydration, cross-tab and system-change tests               |
+| D5    | exact financial strings, units, provenance, USDT/USDC, stale/gapped/unknown/research-required and missing chart ranges remain explicit across responsive density modes                        |
+| D6    | billing and `/admin` use shared tokens but separate shells/authority; redirect cannot activate access and privileged actions present reason, scope, version, step-up/approval and audit state |
 
 #### D1 — Brand and Semantic Design Tokens detailed gate
 
-D1 implementation and formal independent acceptance are separate stages defined
-by `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` and
-`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. Implementation is blocked
-until a separate Product Owner implementation task is issued. The prerequisite
-decision gate is complete: D-079 through D-088 are exact and approved in
-`D1_DESIGN_DECISIONS.md`, and ADR-0013 is `Accepted`.
+D1 implementation and formal independent acceptance were completed under
+`D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` and
+`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md`. D-079 through D-088 are exact
+and approved, ADR-0013 is `Accepted`, and
+`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE.md` freezes the foundation.
 
 D1 freezes only when:
 
@@ -570,6 +569,57 @@ D1 freezes only when:
 
 Passing D1 does not authorize D2, D4, component/chart work, identity, commerce,
 admin runtime or Phase 2B implementation.
+
+#### D2 — Foundational Component Library detailed gate
+
+D2 planning and later review are governed by
+[`D2_FOUNDATIONAL_COMPONENT_LIBRARY_PLAN.md`](D2_FOUNDATIONAL_COMPONENT_LIBRARY_PLAN.md)
+and
+[`D2_FOUNDATIONAL_COMPONENT_LIBRARY_ACCEPTANCE_PLAN.md`](D2_FOUNDATIONAL_COMPONENT_LIBRARY_ACCEPTANCE_PLAN.md).
+Planning acceptance, product decisions, implementation, checkpoint acceptance,
+and aggregate acceptance are separate tasks.
+
+Every D2 component is accepted only when:
+
+- its purpose, semantic element/role, public versioned API, variants, sizes,
+  finite state matrix, precedence, composition, controlled/uncontrolled policy,
+  limits, and invalid-combination behavior are exact;
+- accessible names, labels/descriptions/errors, keyboard, focus-visible/return,
+  pointer/touch, disabled/read-only/invalid/loading/selection semantics, hit
+  areas, screen-reader behavior, zoom/reflow, and long-content evidence pass;
+- DARK/LIGHT, inherited SYSTEM boundary, forced colours, reduced motion,
+  localization/RTL, and non-colour status evidence pass to D-092/D-098;
+- styles consume frozen D1 semantic tokens, raw-value scan passes, and no public
+  raw colour/spacing/radius/shadow/layer API exists;
+- hostile text/HTML/URL/icon/style input, resource bounds, mount/unmount,
+  cleanup, deterministic evidence, and compatibility tests pass;
+- its implementation/report contains no unapproved dependency, page, shell,
+  route, business logic, financial formatter, or later-phase behavior.
+
+Checkpoint-specific gates:
+
+- **D2.1 core:** action/link semantics, names, status redundancy, feedback,
+  intrinsic composition, themes, hit areas, and hostile content pass; required
+  D-089–D-099/D-101 decisions are approved as applicable.
+- **D2.2 forms:** D2.1 is frozen; native labels/errors, autofill,
+  controlled/uncontrolled, keyboard, selection groups, read-only/disabled/
+  invalid states, and browser behavior pass; no auth/validation logic exists.
+- **D2.3 overlays:** dependencies and D-093/D-094 are approved; focus
+  containment/return, Escape/outside, inertness, portal, nesting, collision,
+  scroll lock, hydration, touch, cleanup, and browser/AT evidence pass.
+- **D2.4 data:** semantic table/sort intent/pagination, exact-value access,
+  zero/unknown, quality, overflow, density, and screen-reader evidence pass;
+  no formatting, ranking, fetching, virtualization, or D5 logic exists.
+- **D2.5 evidence/adoption:** selected earlier checkpoints are frozen; aggregate
+  deterministic/browser/AT evidence and only named migrations pass; route, DOM,
+  copy, navigation, responsive structure, and business behavior remain intact.
+
+Each checkpoint and aggregate D2 freeze requires BLOCKER = 0, unresolved HIGH =
+0, authoritative pinned Node/browser evidence, documented migration and atomic
+rollback, and unchanged D1, frozen Phase 2A, accepted Phase 2B,
+Product/Commerce/Admin, brand, dependency/lockfile, and infrastructure
+boundaries except an exact separately approved allowlist. Passing one checkpoint
+does not authorize the next or any D3–D6 work.
 
 ### Identity and administration track
 

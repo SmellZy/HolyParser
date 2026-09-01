@@ -599,5 +599,36 @@ Source and generated artifacts must change atomically, reproduce byte-for-byte
 under pinned tooling and pass compatibility, parity, contrast and raw-value
 gates. Consumer code cannot make primitives, plan names, financial meanings or
 theme preference authoritative through this boundary. Exact paths and committed
-artifact policy remain subject to D-079 and ADR-0013; D1 does not implement D4
-preference/session contracts.
+artifact policy are frozen by approved D-079 and Accepted ADR-0013; D1 does not
+implement D4 preference/session contracts.
+
+## 22. D2 component-library contracts
+
+D2 has no HTTP, WebSocket, persistence, provider, authentication, or business
+API. Its future public boundary is a versioned local component package plus
+non-shipping evidence contracts.
+
+Each exported component contract declares semantic element/role, finite
+intent/variant/size/density/state enums, accessible naming and relationships,
+keyboard/focus/pointer behavior, controlled/uncontrolled policy, composition
+and resource limits, DARK/LIGHT and forced-colour obligations, reduced-motion,
+localization/RTL, typed invalid-combination diagnostics, and compatibility
+version.
+
+Rules:
+
+- Button actions and Link navigation are distinct APIs;
+- Menu, Select, and Popover are distinct; no generic Dropdown contract exists;
+- StatusBadge accepts explicit presentation identity and never derives domain
+  state;
+- table primitives accept caller-formatted exact strings and explicit state but
+  own no formatting, sorting, fetching, virtualization, or analytics;
+- arbitrary raw tokens, colour/style values, HTML, SVG, URLs, layers, and portal
+  targets are not ordinary inputs;
+- evidence cases use synthetic local content and finite public reason codes;
+- component changes follow the D-101 compatibility policy once approved.
+
+The exact TypeScript/React shape, package export, polymorphism, extension hooks,
+overlay implementation, icon source, evidence tooling, and browser matrix remain
+decisions D-089 through D-101. Listing the conceptual boundary creates no source
+file, route, dependency, or implementation authority.

@@ -188,12 +188,11 @@ remain backend/domain facts; the design system only presents them.
 
 ## 8. D1 token-foundation boundary
 
-`D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` is the implementation plan for this
-document's token foundation, and
-`D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE_PLAN.md` defines its later independent
-review. The reference palette and scale values above are design inputs, not an
-implemented canonical source and not permission to guess the expanded theme,
-status, chart or accessibility values.
+`D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` defines this document's token foundation,
+and `D1_BRAND_AND_SEMANTIC_TOKENS_ACCEPTANCE.md` formally freezes its accepted
+implementation. The reference palette and scales are now represented by that
+canonical source; they remain no permission to create competing component
+values or reinterpret status/chart semantics.
 
 D1 is limited to a canonical data-only token source, validation, deterministic
 artifacts, semantic DARK/LIGHT resolution, typography/scales, status and chart
@@ -205,6 +204,26 @@ API, and brand emphasis cannot substitute for a positive financial outcome.
 
 Exact values, scales, bounds, chart encodings, governance and evidence are now
 approved in [`D1_DESIGN_DECISIONS.md`](D1_DESIGN_DECISIONS.md); D-079 through
-D-088 are closed and ADR-0013 is `Accepted`. The existing Phase 1 stylesheet
-remains an implementation fact until a separately approved D1 implementation
-creates and formally freezes the canonical contract.
+D-088 are closed, ADR-0013 is `Accepted`, and D1 is frozen.
+
+## 9. D2 component-foundation boundary
+
+[`D2_FOUNDATIONAL_COMPONENT_LIBRARY_PLAN.md`](D2_FOUNDATIONAL_COMPONENT_LIBRARY_PLAN.md)
+classifies the initial reusable layer and
+[`D2_FOUNDATIONAL_COMPONENT_LIBRARY_ACCEPTANCE_PLAN.md`](D2_FOUNDATIONAL_COMPONENT_LIBRARY_ACCEPTANCE_PLAN.md)
+defines its independent review. D2 consumes D1 semantic tokens and provides
+bounded presentation primitives only.
+
+D2 may define actions, links, fields, native selections, feedback, surfaces,
+simple intrinsic composition, overlays, tabs, and semantic table presentation.
+It does not own shells/sidebar/navigation, page composition, financial charts,
+virtualization, business/domain formatting, authorization, admin workflows, or
+product routes. A generic `Dropdown` is rejected in favor of the correct Menu,
+Select, or Popover semantic contract.
+
+Every component contract covers semantic HTML, accessible naming, keyboard and
+focus, finite state precedence, DARK/LIGHT, forced colours, reduced motion,
+localization/RTL, overflow, hostile content, resource bounds, tests, API
+compatibility, and rollback. No raw colour/spacing/radius/shadow/layer API or
+unapproved class/style escape may compete with D1. D-089 through D-101 remain
+blocking decisions; this planning package authorizes no component.

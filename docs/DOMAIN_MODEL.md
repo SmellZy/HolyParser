@@ -722,7 +722,7 @@ expected version, request/correlation and before/after audit references. Audit
 contains no secrets or payment instruments. The Admin Console calls domain
 commands; it owns no commercial truth. See `ADMIN_CONSOLE.md`.
 
-## 22. Design-token build contract (D1 future foundation)
+## 22. Design-token build contract (frozen D1 foundation)
 
 Design tokens are repository build contracts, not persisted business entities
 or runtime authorization facts:
@@ -751,3 +751,37 @@ unknown IDs, cycles, unresolved aliases, theme parity failure, semantic misuse,
 invalid values and exceeded resource bounds fail closed. These structures do
 not add a database, HTTP API, user preference, component, CSS implementation or
 financial authority. See `D1_BRAND_AND_SEMANTIC_TOKENS_PLAN.md` and ADR-0013.
+
+## 23. Component presentation contracts (D2 plan)
+
+D2 components are versioned presentation contracts, not business entities,
+persistence models, authorization decisions, or financial formatters.
+
+- `ComponentDefinition` names a stable component family, semantic element/role,
+  version, variants, sizes/densities, supported states, composition rules,
+  resource limits, and deprecation metadata.
+- `ComponentStateContract` records a finite set of applicable states,
+  precedence, valid/invalid combinations, DOM/ARIA output, input events, and
+  focus/keyboard behavior.
+- `ComponentAccessibilityContract` records accessible-name, label,
+  description/error, focus, hit-area, keyboard, screen-reader, forced-colour,
+  reduced-motion, zoom, localization, and RTL obligations.
+- `ComponentEvidenceCase` identifies one bounded component/version/state/theme/
+  viewport/locale/input scenario and expected public behavior; it contains no
+  user or financial production data.
+- `ComponentCompatibilityRecord` classifies an additive or breaking API,
+  semantic, DOM, keyboard, focus, or presentation change and names migration and
+  rollback evidence.
+- `PresentationUnavailableReason` is a finite component-level diagnostic, not a
+  domain availability or capability state.
+
+`StatusBadge` receives an explicit D1 status-presentation identity. It cannot
+infer or mutate market quality, capability, payment, entitlement, or financial
+outcome. Table primitives receive already formatted exact strings and explicit
+availability/quality presentation; they do not round, convert, sort, rank, or
+calculate.
+
+The planned D2 contracts add no HTTP API, route, component code, database,
+theme preference, analytics, or authority. Exact component style, extension,
+tooling, overlay, icon, browser, limit, and version policies remain blocked by
+D-089 through D-101.

@@ -601,8 +601,44 @@ exact, owned, approved and expiring. Future third-party token tooling requires a
 separate supply-chain threat model and approval and cannot become a runtime
 trust dependency.
 
-D1 must prove that its Phase 1 bridge does not introduce inline-script/style CSP
-exceptions, remote fetches or broadened source scope. Theme selection and
-no-flash code remain D4 work; D1 supplies only complete static artifacts and an
-approved safe fallback. Relevant risks are R-120 through R-130 and blocking
-decisions are D-079 through D-088.
+D1 formal acceptance proved that its Phase 1 bridge introduces no
+inline-script/style CSP exceptions, remote fetches, or broadened source scope.
+Theme selection and no-flash code remain D4 work; D1 supplies only complete
+static artifacts and an approved safe fallback. Relevant residual risks are
+R-120 through R-130; D-079 through D-088 are approved and frozen.
+
+## 28. D2 component-library trust boundary
+
+D2 is local presentation code consuming frozen D1 artifacts. It does not receive
+credentials, authorization authority, provider payloads, exchange commands, or
+raw financial domain objects by necessity. Component state supplied by a caller
+is untrusted presentation input and never becomes domain truth.
+
+Mandatory controls:
+
+- render text as text by default; no ordinary raw-HTML path;
+- closed icon/SVG and URL policies; no remote runtime component, icon, token, or
+  style loading;
+- no arbitrary user-controlled class, style, token, layer, portal target, or CSS
+  declaration;
+- finite children, text, option, nesting, table, overlay, portal, listener,
+  timer, animation, evidence, and diagnostic bounds under D-099;
+- deterministic IDs and SSR/hydration behavior; no environment/random value in
+  static evidence;
+- native semantics first, explicit keyboard/focus lifecycle, safe overlay
+  close/cleanup, and no accessibility denial through a focus trap;
+- D1 scanner and exact exception governance on all component styles;
+- dependency additions blocked by D-094 and a supply-chain review;
+- diagnostics/metrics use finite component/state/result/reason families and
+  never user labels, content, URLs, DOM, financial values, or free-form errors.
+
+Financial values enter presentation as already formatted exact strings with
+explicit units/availability supplied by the owning domain. D2 cannot round,
+truncate required precision, infer zero, calculate status, or authorize an
+action. Unsafe/excessive input fails through an accessible typed fallback rather
+than unbounded DOM or silent sampling.
+
+Relevant risks are R-131 through R-146. D-089 through D-101 gate the applicable
+implementation checkpoint. Overlay dependency, browser/assistive-tech, forced-
+colour, RTL, and resource policies must be approved before their evidence can be
+claimed.

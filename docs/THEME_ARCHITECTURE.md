@@ -164,3 +164,23 @@ identical semantic IDs, status meaning and chart roles. Missing or unresolved
 theme values fail generation; the consumer may use only the approved safe
 complete artifact and may not synthesize a theme through inversion. D4 still
 owns the section 3 runtime selection and no-flash protocol.
+
+## 8. D2 component responsibilities
+
+D2 inherits one already resolved D1 map. Components do not read or persist a
+theme preference, resolve `SYSTEM`, execute boot scripts, or perform runtime
+colour arithmetic. The same component API/state has the same meaning in DARK
+and LIGHT.
+
+D2 must prove rendered focus, disabled/read-only, loading, invalid, selected,
+status-redundancy, and overlay behavior in both resolved themes and under the
+approved forced-colour matrix. D1's `systemColor` contract is closed;
+components cannot add arbitrary system colours or use
+`forced-color-adjust:none` without an exact D-084 exception. Theme changes may
+alter presentation only, never financial, quality, capability, error, or
+authorization semantics.
+
+The evidence/browser matrix is governed by D-091, D-092, and D-098. Complete
+theme preference, first-paint, cross-tab, and hydration selection still belongs
+to D4; D2 tests only that component output remains deterministic when the
+resolved theme selector is supplied.
