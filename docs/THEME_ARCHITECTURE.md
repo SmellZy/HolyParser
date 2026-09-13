@@ -180,7 +180,8 @@ components cannot add arbitrary system colours or use
 alter presentation only, never financial, quality, capability, error, or
 authorization semantics.
 
-The evidence/browser matrix is governed by D-091, D-092, and D-098. Complete
-theme preference, first-paint, cross-tab, and hydration selection still belongs
-to D4; D2 tests only that component output remains deterministic when the
-resolved theme selector is supplied.
+The approved evidence/browser matrix is governed by D-091, D-092, and D-098 in
+`D2_COMPONENT_DECISIONS.md`, subject to formal independent decision acceptance.
+Complete theme preference, first-paint, cross-tab, and hydration selection still
+belongs to D4; D2 tests only that component output remains deterministic when
+the resolved theme selector is supplied.

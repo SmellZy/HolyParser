@@ -608,6 +608,12 @@ D2 has no HTTP, WebSocket, persistence, provider, authentication, or business
 API. Its future public boundary is a versioned local component package plus
 non-shipping evidence contracts.
 
+Approved D-089 names that future package `@arbitrage/ui` at `packages/ui`, with
+one controlled root, explicit component subpaths, and `@arbitrage/ui/styles.css`;
+internals and deep imports are not public. Approved D-090 exposes no ordinary
+public class/style/polymorphic escape and requires Link's presentation-safe URL
+validation without importing destination authorization into D2.
+
 Each exported component contract declares semantic element/role, finite
 intent/variant/size/density/state enums, accessible naming and relationships,
 keyboard/focus/pointer behavior, controlled/uncontrolled policy, composition
@@ -626,9 +632,11 @@ Rules:
 - arbitrary raw tokens, colour/style values, HTML, SVG, URLs, layers, and portal
   targets are not ordinary inputs;
 - evidence cases use synthetic local content and finite public reason codes;
-- component changes follow the D-101 compatibility policy once approved.
+- component changes follow the approved D-101 compatibility policy after formal
+  decision acceptance.
 
-The exact TypeScript/React shape, package export, polymorphism, extension hooks,
-overlay implementation, icon source, evidence tooling, and browser matrix remain
-decisions D-089 through D-101. Listing the conceptual boundary creates no source
-file, route, dependency, or implementation authority.
+The exact package/export, extension, URL, overlay, icon, evidence, browser,
+resource, and compatibility boundaries are approved in
+`D2_COMPONENT_DECISIONS.md`. Component-level TypeScript details remain future
+implementation work within those bounds. Listing or approving the conceptual
+boundary creates no source file, route, dependency, or implementation authority.

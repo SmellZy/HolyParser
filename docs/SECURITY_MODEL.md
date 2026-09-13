@@ -638,7 +638,10 @@ truncate required precision, infer zero, calculate status, or authorize an
 action. Unsafe/excessive input fails through an accessible typed fallback rather
 than unbounded DOM or silent sampling.
 
-Relevant risks are R-131 through R-146. D-089 through D-101 gate the applicable
-implementation checkpoint. Overlay dependency, browser/assistive-tech, forced-
-colour, RTL, and resource policies must be approved before their evidence can be
-claimed.
+Relevant risks are R-131 through R-146. Exact D-089 through D-101 controls are
+approved in `D2_COMPONENT_DECISIONS.md` but require formal independent decision
+acceptance before an applicable checkpoint. Link permits relative, `https`,
+`mailto`, and `tel` forms only under D-090; origin authorization remains outside
+D2. D-094 approves no package, and any D2.3 dependency still needs a separate
+package-specific supply-chain decision. Browser/assistive-tech, forced-colour,
+RTL, overlay, and resource evidence must pass before it can be claimed.

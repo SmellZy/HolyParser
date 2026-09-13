@@ -579,6 +579,13 @@ and
 Planning acceptance, product decisions, implementation, checkpoint acceptance,
 and aggregate acceptance are separate tasks.
 
+Exact product decisions are recorded in
+[`D2_COMPONENT_DECISIONS.md`](D2_COMPONENT_DECISIONS.md). They are normative
+author-produced inputs until a separate formal decision-acceptance report
+independently verifies their consistency, accessibility, security,
+determinism, and D1/frozen-boundary compatibility. D2.1 cannot begin before that
+review and separate implementation authorization.
+
 Every D2 component is accepted only when:
 
 - its purpose, semantic element/role, public versioned API, variants, sizes,
@@ -598,18 +605,19 @@ Every D2 component is accepted only when:
 
 Checkpoint-specific gates:
 
-- **D2.1 core:** action/link semantics, names, status redundancy, feedback,
-  intrinsic composition, themes, hit areas, and hostile content pass; required
-  D-089–D-099/D-101 decisions are approved as applicable.
+- **D2.1 core:** action/link semantics, names, status redundancy, intrinsic
+  composition, themes, hit areas, and hostile content pass; required
+  D-089–D-099/D-101 decisions are formally accepted as applicable.
 - **D2.2 forms:** D2.1 is frozen; native labels/errors, autofill,
   controlled/uncontrolled, keyboard, selection groups, read-only/disabled/
   invalid states, and browser behavior pass; no auth/validation logic exists.
 - **D2.3 overlays:** dependencies and D-093/D-094 are approved; focus
   containment/return, Escape/outside, inertness, portal, nesting, collision,
   scroll lock, hydration, touch, cleanup, and browser/AT evidence pass.
-- **D2.4 data:** semantic table/sort intent/pagination, exact-value access,
-  zero/unknown, quality, overflow, density, and screen-reader evidence pass;
-  no formatting, ranking, fetching, virtualization, or D5 logic exists.
+- **D2.4 data/feedback:** ProgressIndicator, Skeleton, EmptyState, semantic
+  table/sort intent/pagination, exact-value access, zero/unknown, quality,
+  overflow, density, and screen-reader evidence pass; no formatting, ranking,
+  fetching, virtualization, or D5 logic exists.
 - **D2.5 evidence/adoption:** selected earlier checkpoints are frozen; aggregate
   deterministic/browser/AT evidence and only named migrations pass; route, DOM,
   copy, navigation, responsive structure, and business behavior remain intact.

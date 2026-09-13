@@ -541,14 +541,14 @@ decisions are approved.
 
 ### Design track
 
-| Track                                            | Scope                                                                                                                                                  | Depends on                           | Acceptance gate                                                   |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------- |
-| D1 — Brand and Semantic Design Tokens            | frozen canonical source/schema, dark/light semantic resolution, typography/scales, status/chart tokens, validation and bounded Phase 1 token migration | frozen and formally accepted         | complete; accepted limitations remain assigned to D2/D4/D5        |
-| D2 — Foundational Component Library              | bounded accessible primitives, forms, overlays, table presentation and evidence/adoption; no shell or business logic                                   | frozen D1; D-089–D-101 as applicable | each D2.1–D2.5 checkpoint and aggregate formal acceptance pass    |
-| D3 — Public and Authenticated Application Shells | public IA and authenticated responsive shell                                                                                                           | D2; corresponding route contracts    | deep links and planned/unavailable/entitlement states fail closed |
-| D4 — Dark/Light Theme Completion                 | `SYSTEM`/`DARK`/`LIGHT`, account/device persistence and no-flash boot                                                                                  | D1–D3; security/CSP review           | first-paint, hydration, corrupt-storage and preference tests pass |
-| D5 — Financial Tables and Visualization          | exact-value grids, chart and order-book presentation                                                                                                   | D2/D4; frozen domain contracts       | USDT/USDC, units, quality/gap and density remain explicit         |
-| D6 — Admin UI System                             | personal billing patterns and separate `/admin` presentation                                                                                           | D2/D4; C/I contracts accepted        | admin boundary, strong-action and audit UX pass                   |
+| Track                                            | Scope                                                                                                                                                  | Depends on                                                          | Acceptance gate                                                   |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| D1 — Brand and Semantic Design Tokens            | frozen canonical source/schema, dark/light semantic resolution, typography/scales, status/chart tokens, validation and bounded Phase 1 token migration | frozen and formally accepted                                        | complete; accepted limitations remain assigned to D2/D4/D5        |
+| D2 — Foundational Component Library              | bounded accessible primitives, forms, overlays, table presentation and evidence/adoption; no shell or business logic                                   | frozen D1; D-089–D-101 approved, formal decision acceptance pending | each D2.1–D2.5 checkpoint and aggregate formal acceptance pass    |
+| D3 — Public and Authenticated Application Shells | public IA and authenticated responsive shell                                                                                                           | D2; corresponding route contracts                                   | deep links and planned/unavailable/entitlement states fail closed |
+| D4 — Dark/Light Theme Completion                 | `SYSTEM`/`DARK`/`LIGHT`, account/device persistence and no-flash boot                                                                                  | D1–D3; security/CSP review                                          | first-paint, hydration, corrupt-storage and preference tests pass |
+| D5 — Financial Tables and Visualization          | exact-value grids, chart and order-book presentation                                                                                                   | D2/D4; frozen domain contracts                                      | USDT/USDC, units, quality/gap and density remain explicit         |
+| D6 — Admin UI System                             | personal billing patterns and separate `/admin` presentation                                                                                           | D2/D4; C/I contracts accepted                                       | admin boundary, strong-action and audit UX pass                   |
 
 ### Identity and administration track
 
@@ -604,11 +604,13 @@ and reviewed under
 1. D2.1 — core non-overlay primitives;
 2. D2.2 — form and selection primitives;
 3. D2.3 — overlay and composite interaction primitives;
-4. D2.4 — data-presentation primitives;
+4. D2.4 — data/feedback-presentation primitives;
 5. D2.5 — evidence and bounded adoption completion.
 
-D2 planning authorizes no implementation. Each checkpoint requires its named
-D-089 through D-101 decisions, a separate implementation task, independent
-acceptance, and freeze before a dependent checkpoint. D2 cannot modify D1,
-redesign pages, own shells/navigation, implement financial visualization,
-admin workflows, theme runtime, identity, commerce, analytics, or another phase.
+D2 planning is frozen and accepted. Exact D-089 through D-101 choices are
+approved in [`D2_COMPONENT_DECISIONS.md`](D2_COMPONENT_DECISIONS.md) and await
+formal independent decision acceptance. Each checkpoint still requires a
+separate implementation task, independent acceptance, and freeze before a
+dependent checkpoint. D2 cannot modify D1, redesign pages, own
+shells/navigation, implement financial visualization, admin workflows, theme
+runtime, identity, commerce, analytics, or another phase.

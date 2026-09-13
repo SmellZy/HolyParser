@@ -783,5 +783,6 @@ calculate.
 
 The planned D2 contracts add no HTTP API, route, component code, database,
 theme preference, analytics, or authority. Exact component style, extension,
-tooling, overlay, icon, browser, limit, and version policies remain blocked by
-D-089 through D-101.
+tooling, overlay, icon, browser, limit, and version policies are approved in
+`D2_COMPONENT_DECISIONS.md` but remain implementation-blocked pending formal
+decision acceptance and separate checkpoint authorization.

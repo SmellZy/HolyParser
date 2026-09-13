@@ -1,6 +1,6 @@
 # D2 Foundational Component Library Acceptance Plan
 
-Status: **PLANNED — NOT FORMAL ACCEPTANCE**  
+Status: **PLANNING PACKAGE FROZEN — DECISION PACKAGE APPROVED BUT NOT FORMALLY ACCEPTED**
 Applies to: D2 planning review and later checkpoint/formal implementation reviews
 
 ## 1. Purpose
@@ -56,24 +56,33 @@ Planning acceptance creates a dedicated
 
 ## 4. Decision gate
 
-Before D2.1, the reviewer must confirm approved normative records exist for the
-applicable D-089 through D-101 decisions. At minimum D-089, D-090, D-091,
-D-092, D-095, D-096, D-097, D-098, D-099, and D-101 block any D2.1
-implementation. D-093/D-094 block D2.3; D-100 blocks D2.4 and fixes
+Approved normative records now exist in `D2_COMPONENT_DECISIONS.md`, but they
+are author-produced decision evidence until independently reviewed. Before
+D2.1, a formal decision-acceptance report must confirm D-089, D-090, D-091,
+D-092, D-095, D-096, D-097, D-098, D-099, and D-101 are internally consistent,
+implementable, accessible, secure, deterministic, and compatible with D1 and
+the frozen plan. D-093/D-094 additionally gate D2.3; D-100 gates D2.4 and fixes
 virtualization ownership without authorizing it.
+
+Decision acceptance must independently reproduce the URL/extension matrix,
+browser/AT/evidence matrix, overlay/SSR/ID contract, icon closure, checkpoint
+component inventory, state combinations, localization/RTL/forced-colour
+matrix, resource limits, virtualization exclusion, and SemVer classifications.
+It may fix documentation BLOCKER/HIGH defects only; it does not implement or
+authorize D2.1.
 
 An implementation convenience, existing package, current Phase 1 markup, or
 prior D1 tool is not an implicit decision.
 
 ## 5. Checkpoint acceptance matrix
 
-| Checkpoint             | Required review evidence                                                                                                                                    | Specific stop conditions                                                                                         |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| D2.1 core              | semantics, names, actions/links, status redundancy, hit areas, themes, forced colours, motion, localization, hostile content, bounds, deterministic harness | raw token/value API, unsafe icon/HTML/URL, inaccessible action, dependency or consumer migration not approved    |
-| D2.2 forms             | label/error relationships, native behavior, controlled/uncontrolled, autofill, keyboard, read-only/disabled/invalid, selection groups, touch, long content  | guessed validation/business behavior, unlabeled control, custom listbox hidden in native Select scope            |
-| D2.3 overlays          | modal/nonmodal semantics, focus lifecycle, Escape/outside, inertness, portal, nesting, collision, touch, hydration, cleanup, dependency evidence            | focus trap/loss, unbounded portals/listeners, SSR mismatch, unapproved headless dependency                       |
-| D2.4 data              | semantic table, sortable intent, exact-text access, zero/unknown, quality presentation, overflow, density, pagination, screen reader                        | formatting/calculation/domain sorting, financial truncation, virtualization or D5 behavior                       |
-| D2.5 evidence/adoption | complete catalog, compatibility, authoritative browser/AT matrix, named consumer migrations, rollback, frozen diffs                                         | site-wide migration, page/shell redesign, mixed legacy/component rollback, unexplained route/DOM/business change |
+| Checkpoint             | Required review evidence                                                                                                                                                          | Specific stop conditions                                                                                         |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| D2.1 core              | semantics, names, actions/links, status redundancy, surfaces/composition, hit areas, themes, forced colours, motion, localization, hostile content, bounds, deterministic harness | raw token/value API, unsafe icon/HTML/URL, inaccessible action, dependency or consumer migration not approved    |
+| D2.2 forms             | label/error relationships, native behavior, controlled/uncontrolled, autofill, keyboard, read-only/disabled/invalid, selection groups, touch, long content                        | guessed validation/business behavior, unlabeled control, custom listbox hidden in native Select scope            |
+| D2.3 overlays          | modal/nonmodal semantics, focus lifecycle, Escape/outside, inertness, portal, nesting, collision, touch, hydration, cleanup, dependency evidence                                  | focus trap/loss, unbounded portals/listeners, SSR mismatch, unapproved headless dependency                       |
+| D2.4 data/feedback     | progress/skeleton/empty-state behavior, semantic table, sortable intent, exact-text access, zero/unknown, quality presentation, overflow, density, pagination, screen reader      | formatting/calculation/domain sorting, financial truncation, virtualization or D5 behavior                       |
+| D2.5 evidence/adoption | complete catalog, compatibility, authoritative browser/AT matrix, named consumer migrations, rollback, frozen diffs                                                               | site-wide migration, page/shell redesign, mixed legacy/component rollback, unexplained route/DOM/business change |
 
 Every checkpoint is accepted and frozen separately. A later checkpoint may
 consume but not redefine a frozen earlier API or semantic meaning without an
@@ -292,9 +301,10 @@ Every checkpoint and aggregate report contains:
 
 ## 18. Planning-acceptance readiness
 
-This package is ready for a separate formal documentation acceptance review.
-It does not approve any D2 checkpoint, dependency, source file, component,
-harness, or consumer migration.
+The planning package has passed formal documentation acceptance and is frozen.
+The approved D-089 through D-101 decision package is ready for a separate formal
+independent decision-acceptance review. No D2 checkpoint, dependency, source
+file, component, harness, or consumer migration is authorized.
 
 ## 19. Exact recommended planning-acceptance task
 

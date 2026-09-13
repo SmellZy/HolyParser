@@ -1,7 +1,8 @@
 # D2 Foundational Component Library Plan
 
-Status: **PLANNING COMPLETE — FORMAL DOCUMENTATION ACCEPTANCE REQUIRED**  
-Implementation authority: **NONE**  
+Status: **FROZEN AND ACCEPTED — D-089 THROUGH D-101 APPROVED; FORMAL DECISION ACCEPTANCE REQUIRED**
+
+Implementation authority: **NONE**
 Planning date: 2026-08-25
 
 ## 1. Purpose and frozen boundaries
@@ -170,7 +171,8 @@ Preferred conceptual properties are `intent`, `variant`, `size`, `density`,
 Presentation-leaking names such as `blue`, `red`, `radius12`, `shadow3`, or
 `zIndex70` are prohibited.
 
-The following remain blocked by D-090:
+The following are governed by approved D-090 and remain implementation-blocked
+until formal decision acceptance:
 
 - whether `className` is prohibited, package-private, or an audited escape;
 - whether `style` is entirely prohibited or limited to typed CSS custom
@@ -345,10 +347,11 @@ Common requirements:
   where the approved modality contract requires it;
 - no user-controlled portal target, arbitrary layer, HTML, CSS, or URL.
 
-Implementation is blocked by D-093 and D-094. The plan does not select Radix,
-Floating UI, Headless UI, or a custom implementation. If safe implementation
-requires a dependency, that dependency must be approved before any manifest or
-lockfile change.
+Implementation is blocked pending formal acceptance of D-093 and the conditional
+D-094 policy. The plan does not select Radix, Floating UI, Headless UI, or a
+custom implementation. If feasibility evidence shows safe implementation needs
+a dependency, that package must receive separate approval before any manifest
+or lockfile change.
 
 ## 13. Evidence and tooling options
 
@@ -396,8 +399,8 @@ hook calls, or incidental DOM wrappers except where DOM shape is normative.
 
 ## 15. Security and resource limits
 
-All exact limits are blocked by D-099; implementation may not guess them.
-The approved decision must cover at least:
+All exact limits are approved in `D2_COMPONENT_DECISIONS.md`; implementation
+must use them and may not guess replacements. D-099 covers at least:
 
 - child/node count per evidence case and component subtree;
 - option count, menu depth, tab count, table rows/cells for non-virtual D2 use,
@@ -443,16 +446,17 @@ explicitly approved implementation allowlist; this plan alone grants none.
 
 ### D2.1 — Core non-overlay primitives
 
-Components: Button, IconButton, Link, Badge, StatusBadge, Separator,
-ProgressIndicator, Skeleton, Surface, Card, Stack, Inline, and EmptyState.
+Components: Button, IconButton, Link, Badge, StatusBadge, Separator, Surface,
+Card, Stack, and Inline.
 
 Non-goals: forms, selection, overlays, tables, app adoption, routes, or D1
 changes.
 
-Acceptance gate: approved D-089 through D-092, D-095 through D-099, and D-101
-as they apply; semantic/token/state tests; accessible names; hit targets; theme,
-forced-colour, motion, localization, hostile-input, resource-bound, deterministic
-evidence, and zero dependency/consumer change unless separately approved.
+Acceptance gate: formally accepted D-089 through D-092, D-095 through D-099,
+and D-101 as they apply; semantic/token/state tests; accessible names; hit
+targets; theme, forced-colour, motion, localization, hostile-input,
+resource-bound, deterministic evidence, and zero dependency/consumer change
+unless separately approved.
 
 Freeze gate: zero BLOCKER/unresolved HIGH; public APIs versioned; authoritative
 tests pass; no out-of-scope diff. Later checkpoints cannot redefine these
@@ -481,24 +485,25 @@ remains optional and needs its own approved scope.
 Non-goals: shell navigation, command palette, notifications, admin approval,
 route modal, or business action confirmation.
 
-Acceptance gate: D2.1–D2.2 frozen; overlay/dependency decision approved; focus,
-Escape, outside interaction, inertness, restoration, nesting, portal, hydration,
-collision, touch, reduced-motion, forced-colour, cleanup, and browser evidence
-pass.
+Acceptance gate: D2.1–D2.2 frozen; D-093/D-094 formally accepted and any
+package-specific dependency decision approved; focus, Escape, outside
+interaction, inertness, restoration, nesting, portal, hydration, collision,
+touch, reduced-motion, forced-colour, cleanup, and browser evidence pass.
 
 Freeze gate: no focus-trap, hydration, unbounded portal, or dependency-security
 HIGH remains.
 
 ### D2.4 — Data-presentation primitives
 
-Components: semantic Table primitives, SortableHeader presentation, table state
-presentations, and Pagination presentation.
+Components: ProgressIndicator, Skeleton, EmptyState, semantic Table primitives,
+SortableHeader presentation, table state presentations, and Pagination
+presentation.
 
 Non-goals: virtualization, fetching, ranking, financial formatting, live data,
 domain sorting, charts, or trading actions.
 
 Acceptance gate: D2.1 frozen, applicable D2.2/D2.3 primitives consumed, and
-D-100 approved; semantic table, keyboard/focus, overflow, exact text
+D-100 formally accepted; semantic table, keyboard/focus, overflow, exact text
 availability, unknown/zero, quality/status, localization, density, and
 screen-reader evidence pass.
 
@@ -523,9 +528,12 @@ The checkpoints are independently implementable and acceptable, but none is
 authorized by this plan. D2 remains one aggregate design foundation only after
 all selected checkpoints freeze.
 
-## 18. Decisions required before implementation
+## 18. Approved decisions and implementation gates
 
-Normative decision IDs and owners are in `DECISIONS_REQUIRED.md`:
+Normative decision IDs and owners are summarized in `DECISIONS_REQUIRED.md`;
+the exact approved choices are in `D2_COMPONENT_DECISIONS.md`. They remain
+subject to formal independent decision acceptance and do not authorize a
+checkpoint:
 
 | ID    | Decision                                                              | Primary owner(s)                                 | Gate                                         |
 | ----- | --------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
@@ -543,9 +551,9 @@ Normative decision IDs and owners are in `DECISIONS_REQUIRED.md`:
 | D-100 | table virtualization ownership and trigger                            | Frontend Architecture + Product + Accessibility  | before D2.4; implementation deferred to D5   |
 | D-101 | component API versioning/deprecation policy                           | Frontend Architecture + Product Owner            | before D2.1 implementation                   |
 
-No unresolved decision may be converted into a package default. A later
-decision may reduce the selected D2 component set; expanding it requires a new
-scope approval.
+No approved decision may be changed into a different package default. Expanding
+or moving the selected D2 component set requires a new scope and compatibility
+decision.
 
 ## 19. Risks and observability
 
@@ -609,7 +617,7 @@ Implementation reports are pre-acceptance evidence only.
 
 ## 22. Readiness verdict
 
-The decomposition is ready for formal documentation acceptance. D2
-implementation is **not** ready or authorized until this planning package is
-independently accepted and the decisions required by the first checkpoint are
-approved.
+The decomposition is frozen and accepted. D-089 through D-101 are approved and
+ready for formal independent decision acceptance. D2 implementation remains
+**not authorized** until that decision package is independently accepted and a
+separate Product Owner task approves the exact checkpoint allowlist.

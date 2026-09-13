@@ -225,5 +225,7 @@ Every component contract covers semantic HTML, accessible naming, keyboard and
 focus, finite state precedence, DARK/LIGHT, forced colours, reduced motion,
 localization/RTL, overflow, hostile content, resource bounds, tests, API
 compatibility, and rollback. No raw colour/spacing/radius/shadow/layer API or
-unapproved class/style escape may compete with D1. D-089 through D-101 remain
-blocking decisions; this planning package authorizes no component.
+unapproved class/style escape may compete with D1. Exact D-089 through D-101
+choices are approved in `D2_COMPONENT_DECISIONS.md` but require formal
+independent decision acceptance and a separate implementation task; no component
+is authorized.
