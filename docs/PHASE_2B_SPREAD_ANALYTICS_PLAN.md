@@ -286,6 +286,20 @@ opaque and are never parsed. Support reviewed manual mappings with provenance,
 effective time, immutable versioning, explicit supersession/correction links,
 conflict quarantine, and proposer/reviewer separation.
 
+The concrete pilot, evidence, governance and resource policy is recorded in
+[`PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md`](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md).
+It is a D-055-only decision supplement: the accepted decomposition, frozen
+market-data identity and later spread/funding formulas remain unchanged.
+Product scope is recorded. Authority completion dated 2026-09-14 is recorded
+in the separate [Quant](PHASE_2B_D055_QUANT_ATTESTATION.md),
+[Market Data](PHASE_2B_D055_MARKET_DATA_ATTESTATION.md) and matching-only
+[D-064](PHASE_2B_D064_MATCHING_APPROVAL.md) records: explicit APPROVE against
+D-055 `instrument-matching-pilot/v1`, exact complete snapshot SHA-256
+`60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931`;
+D-064 scope `instrument-matching-resources/v1`. The review snapshot remains
+byte-identical. Independent formal decision acceptance and separate Phase
+2B.1 implementation authorization remain gates, not presumed approvals.
+
 ### 6.2 Non-goals
 
 No ticker-only auto-match, probabilistic auto-approval, asset-price conversion,
@@ -329,8 +343,9 @@ Original official instrument IDs remain intact and opaque.
 
 Multiplier and contract-value comparisons use exact decimals and explicit
 units. Scale normalization must not imply economic equivalence. Any required
-division uses a named policy; unknown multiplier/unit yields `AMBIGUOUS` or
-`UNAVAILABLE` according to policy.
+division uses a named policy; the D-055 pilot requires no division for matching
+and unknown multiplier/unit yields `UNAVAILABLE`. Requested-size conversion,
+rounding and spread formulas remain D-056–D-058 responsibilities.
 
 ### 6.7 Data-quality and freshness gates
 
@@ -340,18 +355,22 @@ match. An expired mapping version is unavailable for new calculations.
 
 ### 6.8 Capability-state handling
 
-Unsupported market types return `NOT_MATCHED`; unverified or
-research-required identity components return `AMBIGUOUS` or `QUARANTINED` and
-cannot be promoted by display-symbol equality.
+Unsupported market types return `NOT_MATCHED`; unresolved asset identity is
+`AMBIGUOUS`, conflicting evidence is `QUARANTINED`, and required unverified or
+research-required economics is `UNAVAILABLE` under D-055. None can be promoted
+by display-symbol equality or manual approval of an unknown frozen field.
 
 ### 6.9 Deterministic fixtures
 
 Fixtures cover same-base USDT perpetuals, USDT versus USDC, different base
 assets sharing a ticker, linear versus inverse, perpetual versus delivery,
 same and different expiry, compatible/incompatible multiplier units, inactive
-instruments, manual alias with two-person review, expired mappings, and
+instruments, manual alias with independent Quant and Market Data reviewers
+distinct from the proposer, expired mappings, and
 conflicting mappings. Every fixture records source IDs and synthetic
-transformations.
+transformations. D-055 section 12 enumerates 29 cases with expected outcomes
+and finite reasons, including native-family veto, exact factor compatibility,
+historical correction and all-or-nothing bounds.
 
 ### 6.10 Unit and property tests
 
@@ -381,9 +400,16 @@ identity and four-eyes review; raw free text is not a metric label.
 
 ### 6.14 Risks and deferred decisions
 
-Expiry tolerance, compatible lifecycle/contract-type matrix,
-multiplier/unit/cardinality policy, mapping owner, confidence vocabulary, and
-correction/supersession/rollback policy require product-owner approval (D-055).
+D-055 records the exact pilot matrix, asset registry, multiplier/unit,
+cardinality, lifecycle, evidence time, governance and correction/rollback
+choices. Dated, inverse, spot and special native families are excluded; USDT
+and USDC never merge. No live cross-venue match is currently approved because
+frozen Binance/Bybit economics remain incomplete. Quant/Market Data and
+matching-only D-064 authority approvals are now explicitly recorded to the
+identical snapshot/version. Independent formal D-055 acceptance and separate
+implementation authorization remain required; later financial and production
+SRE decisions are not resolved here. Zero approved pairs is accepted by the
+independent reviewers as fail-closed behavior, not permission to widen rules.
 
 ### 6.15 Acceptance criteria
 

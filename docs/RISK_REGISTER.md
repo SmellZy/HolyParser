@@ -165,6 +165,32 @@ must be approved. R-080 through R-088 require adversarial, replay, property,
 resource-bound, and finite-cardinality tests. A mitigation that substitutes a
 default financial meaning is not acceptable.
 
+### D-055 scoped decision controls — 2026-09-14
+
+The [D-055 decision](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md) refines
+R-080/R-081/R-088 without changing later spread/funding formulas. R-080 requires
+direct curated bindings, native-family veto, independent Quant/Market Data
+review, command-digest approval, immutable valid/knowledge-time history and
+one active exposure identity per venue instrument. Detect self-review,
+overlapping intervals, rebrand/unit changes and corrected-history divergence
+through its documented fixtures; recover by quarantine/invalidation and a new
+reviewed version, never an in-place historical edit. Product/Market Data own
+this 2B.1 gate; reviewer error remains residual risk.
+
+R-081 additionally prevents a manual sidecar from promoting frozen Binance or
+Bybit `UNVERIFIED` multipliers, or Binance `RESEARCH_REQUIRED` value convention.
+Detect missing dimensions and inconsistent official evidence; recover by
+returning `UNAVAILABLE` until separately accepted economic research exists.
+Quant/Market Data own the gate. An empty actionable pilot remains a known
+limitation, not permission to infer a multiplier of one.
+
+R-088 applies the decision's exact per-operation bounds and deterministic
+all-or-nothing rejection, with finite diagnostics and cancellation work chunks.
+Detect count/byte/work overflow; reject the batch while preserving the prior
+accepted immutable state. Analytics/Security/SRE own the applicable D-064
+review. Legitimate larger inputs may still be unavailable; limits cannot be
+raised through a manual mapping or silently truncated candidate set.
+
 ## 6. Position, alert, notification, and Telegram additions — 2026-07-26
 
 | ID    | Risk                                                                               |   L |   I | Score | Earliest phase | Primary controls / mitigation                                                                                                      | Owner                    | Trigger or evidence                                                     |

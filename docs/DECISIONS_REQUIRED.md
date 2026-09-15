@@ -668,7 +668,7 @@ An unresolved item must not be converted into an implementation default.
 ### D-055 — Canonical instrument compatibility and mapping governance
 
 - **When:** before Phase 2B.1
-- **Status:** `BLOCKING PRODUCT/QUANT/MARKET-DATA DECISION`
+- **Status:** `APPROVED — AUTHORITY COMPLETE; INDEPENDENT FORMAL ACCEPTANCE AND SEPARATE IMPLEMENTATION AUTHORIZATION REQUIRED`
 - **Question:** Which market/contract types and lifecycle/status combinations,
   expiries, multiplier and contract-value units are compatible; what expiry
   tolerance and one-to-one/one-to-many cardinality rules apply; who owns
@@ -678,6 +678,37 @@ An unresolved item must not be converted into an implementation default.
   derivatives compatibility matrix; require exact canonical base/quote/
   settlement roles, compatible economic units, four-eyes review, immutable
   versions, conflict quarantine, and no probabilistic auto-approval.
+- **Recorded choice — 2026-09-14:**
+  [`PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md`](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md)
+  specifies the conservative cross-venue ordinary linear-perpetual pilot,
+  curated opaque asset identities, identical base/quote/settlement roles,
+  ACTIVE lifecycle, known exact contract economics, immutable effective-time
+  and knowledge-time history, independent Market Data and Quant mapping
+  reviewers, conflict quarantine, 29 acceptance fixtures and finite bounds.
+  Different positive native quantity factors may be compatible only with
+  proven identical base exposure and payoff; unknown factors never become one.
+- **Authority completion — 2026-09-14:** Product scope remains recorded.
+  Independent [Quant](PHASE_2B_D055_QUANT_ATTESTATION.md) and
+  [Market Data](PHASE_2B_D055_MARKET_DATA_ATTESTATION.md) reviewers explicitly
+  APPROVE `instrument-matching-pilot/v1`. Matching-only
+  [D-064](PHASE_2B_D064_MATCHING_APPROVAL.md), version
+  `instrument-matching-resources/v1`, has explicit Product, Market Data and SRE
+  APPROVE records. All target exact complete D-055 snapshot SHA-256
+  `60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931`;
+  no blocking approval condition remains. Reviewer identities are distinct
+  technical AI actors, not fabricated human signatures. Product D-064 approval
+  is the task owner's explicit reply, not inferred from the task request.
+  The decision snapshot is retained byte-for-byte; its initial pending ledger
+  is historical and superseded only for authority status by these dated
+  records. Policy, fixtures and technical semantics are unchanged.
+- **Implementation gate:** all named approvals, independent D-055 formal
+  acceptance, applicable D-064 approval and separate Phase 2B.1 authorization.
+  This record authorizes no implementation or production registry entries.
+- **Production gate / revisit:** current accepted economic evidence for each
+  instrument, operational and market-data-use approvals; revisit on a native
+  contract/unit change, identity incident, or proposed pilot expansion. Current
+  frozen Binance/Bybit multiplier gaps leave all three cross-venue pairings
+  unavailable. No adapter capability is upgraded by this decision.
 
 ### D-056 — Requested exposure and depth-completion policy
 
@@ -777,13 +808,34 @@ An unresolved item must not be converted into an implementation default.
 ### D-064 — Analytics freshness, skew, and bounded-load policies
 
 - **When:** before the affected Phase 2B.x subphase
-- **Status:** `BLOCKING PRODUCT/MARKET-DATA/SRE DECISION`
+- **Status:** `MATCHING-SCOPE APPROVED; BLOCKING PRODUCT/MARKET-DATA/SRE DECISIONS FOR LATER AFFECTED SUBPHASES`
 - **Question:** What venue/product/channel freshness, cross-leg receive-time
   skew, batch, book-level, window, replay/export, ranking-candidate, decimal,
   provenance-count/byte, processing-deadline, and cancellation limits apply?
 - **Recommendation:** version policies by input kind rather than use a global
   timeout; enforce explicit fail-closed resource bounds and finite-cardinality
   telemetry.
+- **Approved matching-only scope — 2026-09-14:**
+  [`instrument-matching-resources/v1`](PHASE_2B_D064_MATCHING_APPROVAL.md),
+  against D-055 `instrument-matching-pilot/v1`, exact complete snapshot SHA-256
+  `60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931`.
+  Explicit Product, Market Data and SRE APPROVE; no blocking scope condition.
+  Metadata age [0,60s], HEALTHY only; structural/registry review and mapping
+  validity at most 30 days; all D-055 section-13 limits unchanged. Processing
+  guard = 100,000 logical steps; cooperative cancellation polls at most 128
+  steps plus pre-publication checks, not a wall-clock abort/latency guarantee.
+- **Implementation gate:** matching resource/freshness authority is complete;
+  independent formal D-055 acceptance and separate Phase 2B.1 Product Owner
+  authorization still required. No implementation begins here.
+- **Production gate:** measured scheduling, wall-clock watchdog/latency policy
+  and operational ownership remain separate approvals before production use.
+- **Deferred scope:** 2B.2–2B.7 financial input freshness/receive-time skew,
+  depth, windows, history/replay/export, ranking and their workload/deadline
+  policies remain BLOCKING before affected implementation; accepted formulas
+  are unchanged. No global timeout or unmeasured millisecond SLO is approved.
+- **Revisit:** workload/budget exhaustion, larger universe/history, input/schema
+  or execution-model change, changed freshness needs or pilot expansion
+  requires a new scoped version with Product/Market Data/SRE review.
 
 ### C-023 — Alert foundation precedes user identity
 

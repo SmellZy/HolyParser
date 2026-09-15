@@ -645,3 +645,29 @@ acceptance before an applicable checkpoint. Link permits relative, `https`,
 D2. D-094 approves no package, and any D2.3 dependency still needs a separate
 package-specific supply-chain decision. Browser/assistive-tech, forced-colour,
 RTL, overlay, and resource evidence must pass before it can be claimed.
+
+## D-055 matching evidence and governance boundary
+
+The documentation-only
+[`D-055 decision`](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md) defines a
+data-only, offline matching boundary. Untrusted metadata and mapping references
+pass closed UTF-8/schema/byte/node/decimal/alias/count bounds before candidate
+construction. Oversized candidate/conflict sets fail the entire batch with a
+finite typed reason; no silent sample or partial actionable output is allowed.
+No URL dereference, external asset lookup, persistence, event delivery or
+credential path belongs to matching. Provenance references are bounded local
+references/digests, not executable or remotely fetched evidence.
+
+Manual review requires two independent Quant/Market Data reviewers distinct
+from the proposer, immutable command-digest approval, expected revision and
+idempotency. Actor identity and audit records are contracts only; this task
+implements no authentication/admin runtime. A review cannot override conflicting
+official metadata, expired evidence or an unverified frozen capability.
+Revocation/invalidation is fail-closed for new analytical use while historical
+evidence remains reconstructable with an explicit knowledge cutoff.
+
+Metrics use finite outcome/reason-family/pilot-venue/completeness labels only;
+symbols, IDs, mapping text, versions, URLs and payloads are not labels. Events
+carry bounded references, not hostile bodies. D-055 section 13 supplies exact
+matching limits; applicable D-064 authority, cancellation and SRE/production
+approval are not silently transferred to a manual mapping reviewer.

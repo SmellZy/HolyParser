@@ -310,6 +310,25 @@ persistence, or event bus.
 - typed `MATCHED`, `NOT_MATCHED`, `AMBIGUOUS`, `QUARANTINED`, and `UNAVAILABLE`
   results.
 
+The D-055 supplement is
+[`PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md`](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md).
+`CandidateMatch` is the descriptive alias of `InstrumentMatchCandidate`, not a
+second public model. `InstrumentCompatibilityEvidence`, versioned canonical
+asset bindings and `MappingVersion` are analytics-owned wrappers; they cannot
+rewrite frozen `InstrumentIdentity`, `Knowledge` or `ManualAssetMapping`.
+Pure ports accept explicit snapshot, registry, policy, review and evaluation/
+knowledge-cutoff revisions. Candidate generation is never approval. Historical
+queries distinguish `AS_KNOWN` from `CORRECTED`; corrections retain old evidence
+and return affected-version invalidations without implementing replay jobs.
+
+Proposal/review/invalidate/supersede commands identify actor, authority,
+reason, evidence digest, idempotency key and expected revision. Reusing a key
+with different command bytes is rejected. Review binds to an immutable command
+digest; proposer/self-review and conflicting intervals fail closed. Queries
+return the exact mapping/policy/source revisions, units, provenance, timestamps,
+quality/capability states and finite typed reasons. No HTTP route, persistence,
+identity service, authenticated API, event bus or execution port is authorized.
+
 ### 14.2 Phase 2B.2 spread contracts
 
 - requested exposure with an explicit approved unit;

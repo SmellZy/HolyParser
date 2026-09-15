@@ -786,3 +786,35 @@ theme preference, analytics, or authority. Exact component style, extension,
 tooling, overlay, icon, browser, limit, and version policies are approved in
 `D2_COMPONENT_DECISIONS.md` but remain implementation-blocked pending formal
 decision acceptance and separate checkpoint authorization.
+
+## 24. D-055 matching decision supplement
+
+[`PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md`](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md)
+separates frozen venue-instrument identity from analytical exposure identity.
+Venue/product/native ID/market type/settlement retain the frozen encoding.
+An exposure match requires approved opaque canonical base, quote and settlement
+IDs, ordinary derivative/perpetual/linear class and known `BASE_UNIT` economics.
+The registry-resolved `assessedCanonicalAssetId` is distinct from the retained
+`frozenAdapterAssetId`; alias assessment never rewrites the frozen observation
+or its InstrumentId. Each assessment needs digest-bound native asset evidence.
+Native quantity factors, lifecycle and evidence validity are eligibility facts
+outside the match key; display symbols never establish identity.
+
+`CanonicalAssetRegistryVersion`, `CanonicalAssetBinding`,
+`InstrumentCompatibilityEvidence`, `CandidateMatch` (the existing candidate
+model's alias), `MappingVersion`, `MappingApproval`, `MappingConflict` and
+`MappingInvalidation` are documentation-level analytics contracts. Bindings
+are direct and venue/product scoped; USDT, USDC, wrapped/bridged assets and
+ambiguous tickers are never implicitly merged. Unknown frozen economics cannot
+be upgraded by a wrapper or manual override.
+
+Mapping states are CANDIDATE, APPROVED, REJECTED, CONFLICT, QUARANTINED,
+SUPERSEDED and INVALIDATED. Completeness is deterministic, not probabilistic.
+Only an effective complete approved mapping may pass the compatibility gate;
+it does not itself establish executable depth, known costs or trading authority.
+Immutable effective intervals and recorded-time revisions permit `AS_KNOWN`
+historical replay and explicitly `CORRECTED` reconstruction. Corrections close
+projected intervals through new events, invalidate dependents and preserve all
+old evidence. Rollback is a newly reviewed revision, never deletion or revival
+of a known-invalid mapping. D-055 remains approval/acceptance-gated and adds no
+runtime registry or Phase 2B.1 implementation.

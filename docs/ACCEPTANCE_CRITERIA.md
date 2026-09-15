@@ -381,6 +381,20 @@ Accepted when:
   tests pass and D-055 is approved;
 - frozen adapter-package diffs are empty.
 
+D-055 decision acceptance precedes implementation approval. Independently
+review [`its decision record`](PHASE_2B_D055_INSTRUMENT_MATCHING_DECISION.md),
+including actual Product/Quant/Market Data approval evidence and applicable
+D-064 authority; documentation alone is not expert attestation. Later 2B.1
+acceptance must reproduce all 29 documented cases and their finite reasons,
+exact factor/unit compatibility, native-family veto, curated asset provenance,
+two reviewers distinct from proposer, digest-bound/idempotent review,
+closed effective intervals, `AS_KNOWN` versus `CORRECTED` history,
+invalidation/supersession/rollback and all-or-nothing resource failure.
+Unknown frozen economics must remain unavailable. Zero live approved matches
+is acceptable under current evidence; a fixture must not fabricate an adapter
+capability. No persistence, authentication, event delivery or later financial
+formula may be introduced to satisfy these matching criteria.
+
 ### Phase 2B.2 — Executable Spread Mathematics
 
 Accepted when:
@@ -671,3 +685,286 @@ does not authorize the next or any D3–D6 work.
   reconciliation.
 - No D/I/C gate authorizes Phase 2B implementation, persistence, frontend,
   payment, identity or admin code by itself.
+
+## D-055 verification-readiness record — 2026-09-14
+
+Historical outcome of the earlier incomplete attempt. Authority readiness is
+superseded only by the subsequent completion record below; the original Git
+failure and incomplete-review evidence remain preserved.
+
+This is a verification-only record, **not formal acceptance, a decision
+amendment, or an authority attestation**. D-055's decision document and D-064's
+authoritative register remain unchanged. The authority-completion task is
+**INCOMPLETE**: no completed independent Quant, Market Data or matching-only
+SRE approval was obtained. No implementation is authorized.
+
+### Healthy materialized baseline
+
+The original checkout failed `git fsck --full --no-reflogs` with exit 128,
+`fatal: mmap failed: Operation timed out`. A separate tracked-file read also
+timed out on two Kotlin test files. Three initial status/diff/index reads
+succeeded without reproducing SIGBUS; those successes do not establish
+repository health. No stale Git process or `index.lock` was found at the
+initial inspection. No Git objects, index or user changes were repaired,
+deleted or reset.
+
+All authoritative verification therefore used a fresh remote clone, not the
+unstable checkout:
+
+- Source: `git@github.com:SmellZy/HolyParser.git`.
+- Remote `HEAD` and `refs/heads/main`, independently retrieved: both
+  `3d06712b0cf2958d6920845940314a62fdc391b1`.
+- Materialized checkout: `/tmp/holyparser-d055-authority.qFRYME/repo`, detached
+  at that exact commit. This temporary path is evidence location, not a
+  reproducibility requirement; recreate with the same remote/commit.
+- Reapplied existing D-055 documentation only: the seven already-modified
+  registers/plan files and the untracked D-055 decision document. Their bytes
+  matched the source checkout before this readiness addition.
+- The old `package.json` diff predates this task. It prepends the existing D1
+  workspace to four aggregate scripts; it changes no dependency declaration.
+  It was neither modified nor reapplied to the clean verification clone.
+  `package-lock.json` is unchanged. D-055 does not depend on that script diff.
+- Five consecutive materialized-clone checks each passed full `git fsck`,
+  HEAD/status reads, `git diff --check` and targeted frozen-boundary diffs.
+  Each had the same status digest and decision digest; no SIGBUS occurred.
+- The original/clone `gradlew.bat` byte difference is checkout line-ending
+  normalization under pre-existing global `core.autocrlf=input`, not a task
+  edit. The clone has no application-source Git diff. The original checkout
+  is not the authoritative environment and is not certified healthy.
+
+### Immutable review target and missing authority
+
+Review target: policy `instrument-matching-pilot/v1`, decision dated
+2026-09-14; complete decision snapshot SHA-256:
+
+`60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931`
+
+Normative sections 2–14 SHA-256:
+
+`a5fdc8f92bb41d1fe996ef6e32498f665d8a8dd12a2225c6ac4e68809bc4fa4a`
+
+The latter hashes exact UTF-8 bytes from the start of `## 2.` up to, excluding,
+`## 15.`. It is a policy-content check, not a substitute for the required
+complete reviewed snapshot. No policy bytes were changed in this task.
+
+| Required authority            | Actual evidence                                                                                                                          | Status              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| Product                       | Scope approval already recorded in D-055; not a replacement for specialist review                                                        | Recorded scope only |
+| Quant                         | Independent technical reviewer `/root/d055_quant` began review but failed before final attestation because execution usage was exhausted | NOT ATTESTED        |
+| Market Data                   | Distinct reviewer `/root/d055_market_data` failed before final attestation for the same reason                                           | NOT ATTESTED        |
+| Applicable D-064 Security/SRE | Distinct reviewer `/root/d064_scope` supplied preliminary scope analysis but failed before final attestation                             | NOT APPROVED        |
+
+These were AI technical reviewer identities, not human professional signatures.
+Partial comments are not `APPROVE`. The proposer cannot finish their reviews
+by self-attestation. No attestation document or approval ledger was fabricated.
+D-055 remains **NOT APPROVED** and **not eligible for formal independent
+acceptance** until all required approvals bind to one identical version/digest
+and no implementation-blocking condition remains.
+
+### D-064 applicable scope — recommendation only
+
+The register requires Product, Market Data and SRE approval before the affected
+subphase is implemented. Matching-only review must decide the existing D-055
+metadata-age interval `[0, 60 seconds]`, structural/registry review age and
+mapping validity maximum of 30 days, plus every section-13 input, pair,
+provenance, byte, decimal and diagnostic bound. The existing maximum of
+100,000 logical work steps and cancellation polling at most every 128 steps
+is a proposed deterministic computation budget, **not an approved wall-clock
+deadline or latency guarantee**. SRE must explicitly accept that distinction
+or supply the missing matching-only deadline policy before the gate is removed.
+
+Book/price/funding cross-leg receive-time skew, book depth, anomaly/history
+windows, replay/export and ranking limits remain deferred and BLOCKING before
+their affected 2B.2–2B.7 implementation. Matching scope must not resolve them
+or alter accepted formulas. D-064 was not guessed or marked approved here.
+
+### Zero approved pairs — retained fail-closed evidence
+
+Frozen adapter code corroborates the following gaps. This factual inventory
+does not replace the required independent Market Data attestation.
+
+| Venue pair / ordinary linear perpetual family | Frozen identity evidence                                                                      | Missing economics / typed reason                                                                                 | Effect and future requirement                                                                |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| OKX ↔ Binance USDⓈ-M                          | Opaque `instId`/`symbol`; independently resolved native base, quote and settlement references | Binance multiplier UNVERIFIED: `MULTIPLIER_UNKNOWN`; convention RESEARCH_REQUIRED: `VALUE_CONVENTION_UNVERIFIED` | Approval UNAVAILABLE; require separately accepted exact units/payoff and capability evidence |
+| OKX ↔ Bybit Linear                            | Opaque `instId`/`symbol`; native contract/category and base/quote/settlement evidence         | Bybit multiplier UNVERIFIED: `MULTIPLIER_UNKNOWN`                                                                | Approval UNAVAILABLE; require separately accepted native quantity-to-base economics evidence |
+| Binance USDⓈ-M ↔ Bybit Linear                 | Opaque native IDs and independent asset-role references on both legs                          | Both multipliers UNVERIFIED; Binance convention RESEARCH_REQUIRED; same codes as above                           | Approval UNAVAILABLE; both legs need accepted complete economic evidence                     |
+
+All pairs additionally require approved curated asset bindings, reviewed native
+ordinary-product evidence, current ACTIVE metadata and complete independent
+mapping review. Ticker resemblance establishes none of those facts. Known
+identity may support an incomplete diagnostic candidate without unknown
+economics becoming approval; missing canonical asset bindings instead return
+AMBIGUOUS diagnostics. Synthetic complete fixtures can exercise compatible
+matching. Zero approved live pairs is the intended fail-closed pilot condition,
+not proof that the matching core is impossible; no rule was widened to create
+pairs. Independent authorities must still accept this condition.
+
+### Verification commands and results
+
+Environment: Node **v24.18.1**, npm **11.16.0**, fresh `npm ci`: **450 packages
+added, 458 audited**, **7 workspaces**. No dependency or lockfile edits.
+
+| Command / check in materialized clone                                                                                                                                    | Exact result                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `npm ci`                                                                                                                                                                 | Exit 0                                                                                                       |
+| `npm run format:check`                                                                                                                                                   | Exit 0                                                                                                       |
+| Explicit Prettier check of all eight existing D-055 documents                                                                                                            | Exit 0                                                                                                       |
+| `npm run lint`                                                                                                                                                           | Exit 0, authoritative HEAD aggregate scripts                                                                 |
+| `npm run typecheck`                                                                                                                                                      | Exit 0, authoritative HEAD aggregate scripts                                                                 |
+| `npm test`                                                                                                                                                               | Exit 0; 35 files: 32 passed, 3 skipped; 263 tests: 260 passed, 0 failed, 3 skipped                           |
+| `npm run test --workspace=@arbitrage/design-tokens`                                                                                                                      | Exit 0; 4 files, 74 passed, 0 failed, 0 skipped                                                              |
+| Combined default + explicit frozen D1 suites                                                                                                                             | 39 files; 337 tests: 334 passed, 0 failed, 3 skipped                                                         |
+| Markdown inline/local-file link scan                                                                                                                                     | 65 Markdown files, 68 inline links, 46 local-file links, 0 broken files; not an anchor/remote-link validator |
+| Repeated full `git fsck`, status/HEAD and targeted diff checks                                                                                                           | Five consecutive passes in healthy clone                                                                     |
+| Documentation-only allowlist and `git diff --check`                                                                                                                      | Pass; only existing D-055 documentation plus this readiness addition                                         |
+| Frozen Phase 2A, D1/D2, accepted 2B acceptance/ADR and all non-matching plan sections, Product/Commerce/Admin, application, dependency/lockfile and infrastructure diffs | Unchanged in healthy clone                                                                                   |
+| Brand SHA-256 comparison                                                                                                                                                 | All three match accepted baselines                                                                           |
+
+Three skipped tests are default-off live exchange canaries; none was enabled.
+No production build, live exchange work or implementation was performed.
+`npm ci` reported seven existing audit findings (2 moderate, 4 high, 1
+critical). Optional `npm audit --omit=dev --json` exited 1 and reported three
+production findings across `nanoid`, `next` and `sharp` (2 high, 1 critical).
+These are current advisories against unchanged dependencies, separate
+maintenance/security debt, not D-055 changes; no dependency remediation or
+claim of a clean audit is made.
+
+Brand digests, in `docs/brand/references`:
+
+- `holyparser-dark.png`:
+  `e4a53ef99d5b38b77300eb923bc2c6cdb5e4cd4c1d942fa63c49f111090dbe08`.
+- `holyparser-design-system.png`:
+  `459f2354c5c953b44b391feb8b6d3b61cef709942935db12c9cb5ee467a68c54`.
+- `holyparser-logo-system.png`:
+  `5050e13e5149b5638982ef4845b67a1d6e48af5e29d81199f5d67595a6482a8c`.
+
+Next task: complete independent Quant and Market Data attestations to the
+unchanged review target and obtain explicit matching-only Product/Market
+Data/SRE D-064 approval. Then verify identical approval digests and conditions
+before scheduling a separate D-055 formal acceptance task. Phase 2B.1 remains
+blocked; this readiness record does not authorize it.
+
+## D-055 authority-completion record — 2026-09-14
+
+Authority status: **APPROVED**. This is **authority completion only**, not
+formal D-055 acceptance, Phase 2B.1 implementation approval or live-pair
+approval. The earlier incomplete-review record is historical, not deleted or
+retroactively represented as a successful review.
+
+Exact immutable reviewed complete snapshot SHA-256:
+
+`60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931`
+
+Decision version: `instrument-matching-pilot/v1`.
+D-064 matching-scope version: `instrument-matching-resources/v1`.
+The decision document is retained byte-for-byte at the above digest; only
+separate authority records and cross-references change. Its initial pending
+ledger describes the review target's historical authority state, not the
+current dated approval ledger.
+
+| Required authority   | Explicit completed evidence                                                                                         | Status / blocking conditions |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Quant Reviewer       | /root/d055_quant; [independent Quant attestation](PHASE_2B_D055_QUANT_ATTESTATION.md), 2026-09-14                   | APPROVE / NONE               |
+| Market Data Reviewer | /root/d055_market_data; [independent Market Data attestation](PHASE_2B_D055_MARKET_DATA_ATTESTATION.md), 2026-09-14 | APPROVE / NONE               |
+| D-064 Product        | Task owner's explicit Product APPROVE reply to the exact digest/scope/limits, 2026-09-14                            | APPROVE / NONE               |
+| D-064 Market Data    | /root/d055_market_data; completed scoped approval, 2026-09-14                                                       | APPROVE / NONE               |
+| D-064 SRE            | /root/d064_scope; completed independent scoped approval, 2026-09-14                                                 | APPROVE / NONE               |
+
+The [D-064 scope and complete authority ledger](PHASE_2B_D064_MATCHING_APPROVAL.md)
+records exact limits, rationale, implementation/production gates and deferred
+2B.2–2B.7 scope. All approvals target the same digest and versions; Quant,
+Market Data and SRE actors are distinct from proposer /root. These are
+explicitly identified AI technical reviews, not fabricated human credentials.
+Product's actual explicit reply is preserved; no approval is inferred.
+
+Both independent policy reviewers accept zero current approved pairs as
+intentional fail-closed behavior. OKX ↔ Binance and Binance ↔ Bybit remain
+UNAVAILABLE with MULTIPLIER_UNKNOWN and VALUE_CONVENTION_UNVERIFIED economics
+reasons; OKX ↔ Bybit remains UNAVAILABLE with MULTIPLIER_UNKNOWN. Missing
+canonical bindings may separately prevent identity-established candidates.
+Diagnostic candidates and complete synthetic fixtures do not upgrade frozen
+economics or approve actual mappings.
+
+D-055 is now eligible for a **separate formal independent acceptance task**,
+subject to the successful frozen-boundary and verification evidence recorded
+below. Phase 2B.1 remains blocked pending that acceptance and a separate
+Product Owner implementation task. Later analytics, production economics,
+operational ownership, scheduling/watchdog/latency and data-use approvals
+remain their separate gates.
+
+### Completed authority-task verification
+
+All checks below ran in the healthy materialized remote clone
+`/tmp/holyparser-d055-authority.qFRYME/repo`, source commit
+`3d06712b0cf2958d6920845940314a62fdc391b1`, not the unstable original checkout.
+Environment: Node **v24.18.1**, npm **11.16.0**, **7 workspaces**.
+
+| Command / independent verification                                                                                | Exact observed result                                                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh `npm ci`                                                                                                    | Exit 0; 450 packages added, 458 audited                                                                                                                                    |
+| `npm run format:check`                                                                                            | Exit 0                                                                                                                                                                     |
+| Explicit Prettier checks for all six new/updated authority documents                                              | Pass                                                                                                                                                                       |
+| `npm run lint`                                                                                                    | Exit 0                                                                                                                                                                     |
+| `npm run typecheck`                                                                                               | Exit 0                                                                                                                                                                     |
+| `npm test` using authoritative HEAD aggregate scripts                                                             | Exit 0; 35 files (32 passed, 3 skipped); 263 tests (260 passed, 0 failed, 3 skipped)                                                                                       |
+| Explicit frozen D1 `npm run test --workspace=@arbitrage/design-tokens`                                            | Exit 0; 4 files, 74 passed, 0 failed, 0 skipped                                                                                                                            |
+| Combined default plus explicit D1 coverage                                                                        | 39 files; 337 tests, 334 passed, 0 failed, 3 skipped                                                                                                                       |
+| Markdown/local-file validation                                                                                    | 68 Markdown files, 83 inline links, 61 local links including 1 checked heading anchor, 0 broken                                                                            |
+| Authority consistency                                                                                             | All three new authority records reference only the exact required complete digest; policy/scope versions agree; actor independence and all five explicit approvals checked |
+| Decision integrity                                                                                                | Complete D-055 snapshot remains SHA-256 60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931                                                                   |
+| Repeated Git health                                                                                               | Five consecutive full fsck, status/HEAD, targeted diff and diff-check passes; identical status and decision digests; no SIGBUS                                             |
+| Documentation-only scope                                                                                          | Three new authority documents and three authority cross-reference/register updates; no other task changes                                                                  |
+| Existing unrelated/shared changes                                                                                 | Pre-existing API-contract, domain, security and risk document bytes unchanged by this task; old package.json script diff excluded from clone and not modified              |
+| Frozen Phase 2A, D1/D2, Product/Commerce/Admin, accepted 2B acceptance/ADR and all plan content outside section 6 | No unauthorized diff                                                                                                                                                       |
+| Application/dependency/lockfile/infrastructure                                                                    | No diff                                                                                                                                                                    |
+| Brand SHA-256                                                                                                     | All three accepted baselines match                                                                                                                                         |
+
+The new files are the Quant attestation, Market Data attestation and D-064
+matching approval linked above. Updated files are DECISIONS_REQUIRED.md,
+matching authority cross-references in PHASE_2B_SPREAD_ANALYTICS_PLAN.md and
+this acceptance-criteria record. No technical policy, accepted formula,
+adapter or frozen design artifact changed. The immutable review target was
+not rewritten merely to update its historical pending ledger.
+
+The three skipped tests are default-off exchange canaries; none was enabled.
+No production build or live exchange call was required or performed. Fresh
+installation reported seven advisories against unchanged dependencies (2
+moderate, 4 high, 1 critical) and two existing install-script approval warnings.
+Those are separate dependency-maintenance debt, not new task changes or a
+claim of a clean security audit. No dependency remediation was performed.
+
+### Exact recommended next task — formal acceptance only
+
+```text
+Use the healthy materialized repository
+/tmp/holyparser-d055-authority.qFRYME/repo, not the unstable original checkout.
+Read AGENTS.md, the complete immutable D-055 decision snapshot, all three
+authority records, exact D-064 register/scope, relevant frozen Phase 2A
+contracts/research and accepted Phase 2B architecture, decision/risk/acceptance
+registers completely.
+
+Perform a formal independent documentation acceptance review of D-055 only.
+The exact snapshot SHA-256 must remain
+60d00b8ef38cbbf08baa8c2248aaf1fd9d62e4d923816232c2ffe600b6d97931.
+Decision version is instrument-matching-pilot/v1; approved D-064 matching
+scope is instrument-matching-resources/v1. Treat the approved choices as
+normative inputs; do not treat author reports or attestations as proof of
+technical correctness. Independently verify identity/asset/economics units,
+pilot exclusions, lifecycle/freshness, immutable effective/knowledge-time
+history, governance, cardinality, key encoding, determinism, all 29 documented
+fixture outcomes/reason codes, zero-pair fail-closed behavior and every bound.
+Verify all five explicit approvals and reviewer independence bind to the same
+snapshot/versions with no blocking conditions. Review cooperative cancellation
+and the logical work budget without claiming a wall-clock SLO. Later D-064
+and production evidence gates must remain deferred and visible.
+
+Run pinned Node 24 documentation/repository verification and frozen-boundary
+checks. Do not implement Phase 2B.1, create runtime fixtures/tests, modify
+adapters/contracts/formulas, D1/D2, application/dependencies/infrastructure or
+brand assets. Do not widen the pilot. If a normative rule is rejected, stop
+for a new decision/authority cycle rather than silently changing this snapshot.
+Create docs/PHASE_2B_D055_ACCEPTANCE.md with PASS/PASS_WITH_WARNINGS/FAIL,
+findings, independently reproduced evidence, exact commands/counts,
+authority/digest checks, frozen boundaries, freeze recommendation and the
+next task. Do not authorize implementation or create a commit.
+```
