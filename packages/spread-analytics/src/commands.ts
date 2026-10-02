@@ -11,9 +11,9 @@ import type {
   MappingVersion,
   ReviewApproval,
 } from "./model.js";
-import { immutableMapping } from "./immutable.js";
+import { chargeCopy, immutableMapping } from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
-import { epoch, isEffective } from "./registry.js";
+import { chargeTimestamp, epoch, isEffective } from "./registry.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 import {
@@ -120,8 +120,13 @@ function validateApproveInput(
   assertCompositeId(input.exposureKey, work);
   assertReasonText(input.reasonText, work);
   assertRevision(input.expectedRevision, "Expected revision");
-  epoch(input.recordedKnowledgeAt);
-  isEffective(input.effectiveFrom, input.effectiveTo, input.effectiveFrom);
+  epoch(input.recordedKnowledgeAt, work);
+  isEffective(
+    input.effectiveFrom,
+    input.effectiveTo,
+    input.effectiveFrom,
+    work,
+  );
   for (const approval of input.approvals) {
     work?.step();
     assertAtomicId(approval.actorId, "Reviewer ID", work);
@@ -131,7 +136,7 @@ function validateApproveInput(
       )
     )
       throw new MatchingFailure("INPUT_INVALID", "Reviewer role is invalid.");
-    epoch(approval.recordedAt);
+    epoch(approval.recordedAt, work);
   }
 }
 export function approveCommand(
@@ -141,6 +146,7 @@ export function approveCommand(
   const operation = work ?? new WorkBudget();
   validateApproveInput(input, operation);
   const digest = payload(input, operation);
+  chargeCopy(input, operation);
   const result = Object.freeze({
     ...input,
     kind: "APPROVE_MAPPING",
@@ -148,6 +154,7 @@ export function approveCommand(
       input.approvals.map(
         (a) => (
           operation.step(),
+          chargeCopy(a, operation),
           Object.freeze({ ...a, approvedDigest: digest })
         ),
       ),
@@ -168,7 +175,7 @@ export function invalidateCommand(
   assertRevision(input.expectedRevision, "Expected revision");
   if (!Number.isSafeInteger(input.affectedVersion) || input.affectedVersion < 1)
     throw new MatchingFailure("INPUT_INVALID", "Affected version is invalid.");
-  epoch(input.recordedKnowledgeAt);
+  epoch(input.recordedKnowledgeAt, work);
   const transition = createTransitionRecord(
     {
       transitionId: input.commandId,
@@ -191,6 +198,7 @@ export function invalidateCommand(
     },
     work,
   );
+  chargeCopy(input, work);
   const result = Object.freeze({
     ...input,
     kind: "INVALIDATE_MAPPING",
@@ -232,11 +240,13 @@ export class MappingLedger {
     this.transitions = Object.freeze(
       transitions.map((transition) => {
         work.step();
+        chargeCopy(transition, work);
         return Object.freeze({
           ...transition,
           approvals: Object.freeze(
             transition.approvals.map((approval) => {
               work.step();
+              chargeCopy(approval, work);
               return Object.freeze({ ...approval });
             }),
           ),
@@ -290,6 +300,7 @@ export class MappingLedger {
           "COMMAND_DIGEST_CONFLICT",
           "Command ID reused.",
         );
+      work.units(2 * this.versions.length + 1);
       const mapping = [...this.versions]
         .reverse()
         .find((v) => (work.step(), v.mappingId === command.mappingId));
@@ -383,6 +394,11 @@ export class MappingLedger {
       command.effectiveFrom,
       command.effectiveTo,
       command.effectiveFrom,
+      work,
+    );
+    const parse = (value: string): number => (
+      chargeTimestamp(value, work),
+      Date.parse(value)
     );
     const overlap = this.versions.some(
       (v) =>
@@ -392,8 +408,8 @@ export class MappingLedger {
           (id) =>
             id === command.leftInstrumentId || id === command.rightInstrumentId,
         ) &&
-        Date.parse(v.effectiveFrom) < Date.parse(command.effectiveTo) &&
-        Date.parse(command.effectiveFrom) < Date.parse(v.effectiveTo) &&
+        parse(v.effectiveFrom) < parse(command.effectiveTo) &&
+        parse(command.effectiveFrom) < parse(v.effectiveTo) &&
         v.exposureKey !== command.exposureKey,
     );
     if (overlap)

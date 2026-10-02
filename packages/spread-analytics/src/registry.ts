@@ -17,7 +17,12 @@ import type {
 import { MATCHING_LIMITS } from "./policy.js";
 import { assertClosedKeys } from "./validation.js";
 
-export const epoch = (value: Timestamp): bigint => {
+// Date.parse scans its (caller-supplied, possibly long) input once; charge
+// that pass before it runs. Parsing semantics are unchanged.
+export const chargeTimestamp = (value: unknown, work?: WorkBudget): void =>
+  work?.units(typeof value === "string" ? value.length + 1 : 1);
+export const epoch = (value: Timestamp, work?: WorkBudget): bigint => {
+  chargeTimestamp(value, work);
   const result = Date.parse(value);
   if (!Number.isFinite(result))
     throw new MatchingFailure("EVIDENCE_TIME_INVALID", "Invalid timestamp.");
@@ -27,10 +32,11 @@ export function isEffective(
   from: Timestamp,
   to: Timestamp,
   at: Timestamp,
+  work?: WorkBudget,
 ): boolean {
-  const start = epoch(from),
-    end = epoch(to),
-    point = epoch(at);
+  const start = epoch(from, work),
+    end = epoch(to, work),
+    point = epoch(at, work);
   if (end <= start || end - start > MATCHING_LIMITS.maximumValidityMs)
     throw new MatchingFailure(
       "EVIDENCE_TIME_INVALID",
@@ -51,7 +57,7 @@ export class CuratedAssetRegistry {
       work,
     );
     assertAtomicId(revision.revision, "Registry revision", work);
-    epoch(revision.recordedAt);
+    epoch(revision.recordedAt, work);
     assertCount(
       revision.assets.length,
       MATCHING_LIMITS.bindings,
@@ -83,8 +89,13 @@ export class CuratedAssetRegistry {
       assertAtomicId(alias.aliasAssetId, "Alias asset", work);
       assertAtomicId(alias.targetAssetId, "Alias target asset", work);
       assertAtomicId(alias.reviewedBy, "Alias reviewer", work);
-      epoch(alias.recordedKnowledgeAt);
-      isEffective(alias.effectiveFrom, alias.effectiveTo, alias.effectiveFrom);
+      epoch(alias.recordedKnowledgeAt, work);
+      isEffective(
+        alias.effectiveFrom,
+        alias.effectiveTo,
+        alias.effectiveFrom,
+        work,
+      );
       if (
         alias.aliasAssetId === alias.targetAssetId ||
         sources.has(alias.aliasAssetId)
@@ -125,8 +136,13 @@ export class CuratedAssetRegistry {
       assertAtomicId(asset.registryRevision, "Asset registry revision", work);
       assertAtomicId(asset.evidenceRevision, "Asset evidence revision", work);
       assertAtomicId(asset.reviewedBy, "Asset reviewer", work);
-      epoch(asset.recordedKnowledgeAt);
-      isEffective(asset.effectiveFrom, asset.effectiveTo, asset.effectiveFrom);
+      epoch(asset.recordedKnowledgeAt, work);
+      isEffective(
+        asset.effectiveFrom,
+        asset.effectiveTo,
+        asset.effectiveFrom,
+        work,
+      );
     }
     for (const binding of revision.bindings) {
       work.step();
@@ -162,11 +178,12 @@ export class CuratedAssetRegistry {
         assertAtomicId(value, label, work);
       if (!(["BASE", "QUOTE", "SETTLEMENT"] as const).includes(binding.role))
         throw new MatchingFailure("INPUT_INVALID", "Binding role is invalid.");
-      epoch(binding.recordedKnowledgeAt);
+      epoch(binding.recordedKnowledgeAt, work);
       isEffective(
         binding.effectiveFrom,
         binding.effectiveTo,
         binding.effectiveFrom,
+        work,
       );
     }
     this.revision = immutableRegistryRevision(revision, work);
@@ -262,8 +279,8 @@ export class CuratedAssetRegistry {
           binding.productGroup === group &&
           binding.nativeAssetReference === nativeRef &&
           binding.role === role &&
-          epoch(binding.recordedKnowledgeAt) <= epoch(cutoff) &&
-          isEffective(binding.effectiveFrom, binding.effectiveTo, at)
+          epoch(binding.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
+          isEffective(binding.effectiveFrom, binding.effectiveTo, at, work)
         );
       },
     );
@@ -277,8 +294,8 @@ export class CuratedAssetRegistry {
       work?.step();
       return (
         alias.aliasAssetId === asset &&
-        epoch(alias.recordedKnowledgeAt) <= epoch(cutoff) &&
-        isEffective(alias.effectiveFrom, alias.effectiveTo, at)
+        epoch(alias.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
+        isEffective(alias.effectiveFrom, alias.effectiveTo, at, work)
       );
     });
     if (aliases.length > 1) return { state: "CONFLICT" };
@@ -289,8 +306,13 @@ export class CuratedAssetRegistry {
         work?.step();
         return (
           definition.assetId === asset &&
-          epoch(definition.recordedKnowledgeAt) <= epoch(cutoff) &&
-          isEffective(definition.effectiveFrom, definition.effectiveTo, at)
+          epoch(definition.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
+          isEffective(
+            definition.effectiveFrom,
+            definition.effectiveTo,
+            at,
+            work,
+          )
         );
       },
     );
@@ -315,8 +337,8 @@ export class CuratedAssetRegistry {
       work.step();
       return (
         record.assetId === assetId &&
-        epoch(record.recordedKnowledgeAt) <= epoch(cutoff) &&
-        isEffective(record.effectiveFrom, record.effectiveTo, at)
+        epoch(record.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
+        isEffective(record.effectiveFrom, record.effectiveTo, at, work)
       );
     });
     const result = records.length === 1 ? records[0] : undefined;

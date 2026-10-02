@@ -7,9 +7,15 @@ export interface CancellationSignal {
 export interface WorkCheckObserver {
   checked(logicalStepGap: number, totalLogicalSteps: number): void;
 }
+// Fine-grained repeated work (canonical encoding, comparison, key and hash-input
+// preparation, copying, timestamp parsing) is charged in units. One logical
+// step is at most 128 units; the sub-step remainder carries across helpers of
+// the same operation and is charged before publication, never discarded.
+export const WORK_UNITS_PER_STEP = 128;
 export class WorkBudget {
   #steps = 0;
   #lastCheck = 0;
+  #units = 0;
   constructor(
     private readonly signal?: CancellationSignal,
     private readonly observer?: WorkCheckObserver,
@@ -38,7 +44,20 @@ export class WorkBudget {
         this.check();
     }
   }
+  units(count: number): void {
+    if (!Number.isSafeInteger(count) || count < 0)
+      throw new MatchingFailure("INPUT_INVALID", "Invalid work count.");
+    this.#units += count;
+    const whole = Math.floor(this.#units / WORK_UNITS_PER_STEP);
+    if (whole === 0) return;
+    this.#units -= whole * WORK_UNITS_PER_STEP;
+    this.step(whole);
+  }
   beforePublication(): void {
+    if (this.#units > 0) {
+      this.#units = 0;
+      this.step();
+    }
     this.check();
   }
   get steps(): number {
@@ -117,12 +136,21 @@ export function assertReasonText(value: string, work?: WorkBudget): void {
   if (typeof value !== "string")
     throw new MatchingFailure("INPUT_INVALID", "Reason text is invalid.");
   const scan = scanText(value, work, 64);
+  work?.units(value.length);
   if (
     Buffer.byteLength(value, "utf8") > MATCHING_LIMITS.reasonTextUtf8 ||
     scan.control ||
-    scan.unpairedSurrogate ||
-    /<[^>]*>|(?:javascript|data|blob):|https?:\/\//iu.test(value)
+    scan.unpairedSurrogate
   )
+    throw new MatchingFailure("INPUT_INVALID", "Reason text is invalid.");
+  // The bounded (<=512-byte) markup alternative may rescan the suffix once per
+  // "<"; charge that worst case before the native pattern scan.
+  work?.units(value.length);
+  let angles = 0;
+  for (let index = 0; index < value.length; index += 1)
+    if (value.charCodeAt(index) === 0x3c) angles += 1;
+  work?.units(value.length * (angles + 1));
+  if (/<[^>]*>|(?:javascript|data|blob):|https?:\/\//iu.test(value))
     throw new MatchingFailure("INPUT_INVALID", "Reason text is invalid.");
 }
 function walk(
@@ -192,9 +220,8 @@ export function parseBoundedJson(
   return value;
 }
 export function assertOutputBound(serialized: string, work?: WorkBudget): void {
-  work?.step(
-    Math.max(1, Math.ceil(Buffer.byteLength(serialized, "utf8") / 4096)),
-  );
+  // One native UTF-8 length pass over the authoritative output string.
+  work?.units(serialized.length);
   assertCount(
     Buffer.byteLength(serialized, "utf8"),
     MATCHING_LIMITS.outputBytes,

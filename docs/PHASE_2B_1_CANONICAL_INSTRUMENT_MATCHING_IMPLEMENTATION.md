@@ -1097,144 +1097,419 @@ Exact recommended next prompt:
 
 ## 19. Fourth acceptance-remediation evidence — H-03 only
 
-Remediation date: 2026-09-24. The fourth independent review
-`PHASE_2B_1_CANONICAL_INSTRUMENT_MATCHING_ACCEPTANCE_4.md` failed with H-03
-HIGH, zero BLOCKERs: candidate materialization charged one fixed step while
-building exposure/provisional keys, canonical candidate provenance, two SHA-256
-inputs and its immutable copy without the parent operation budget. This section
-is implementation-produced evidence, not formal acceptance. B-01, B-02, H-01,
-and H-02 were not reopened; no normative decision, reason code, or matching
-semantic changed.
+Remediation date: 2026-09-29. Governing finding:
+[fourth independent acceptance](PHASE_2B_1_CANONICAL_INSTRUMENT_MATCHING_ACCEPTANCE_4.md)
+— **FAIL**, BLOCKER 0, unresolved HIGH 1: H-03 (operation-wide D-064
+logical-work/cancellation guarantee not proven; candidate materialization
+performed key construction, canonical serialization, hash-input preparation
+and copying outside the parent `WorkBudget`). B-01, B-02, H-01 and H-02 are
+recorded there as RESOLVED and were not reopened or redesigned. This section is
+implementation-produced evidence, not formal acceptance, not a Phase 2B.1
+freeze and not Phase 2B.2 authorization. D-055, D-064, the 44-code catalogue,
+policy/resource versions, manifests, lockfile, dependencies and all frozen
+scopes are unchanged.
 
-### 19.1 Architecture and byte stability
+### 19.1 Transferred state and withdrawn claims
 
-`generateCandidatesWithBudget` passes its one `WorkBudget` into `makeCandidate`
-and every reached canonical/key/hash/copy helper. Candidate materialization
-precharges the closed-schema copied-field upper bound, each leg/revision/reason traversal, comparator,
-provisional-field construction, exposure-key field and byte-length preparation,
-canonical array/object/key/string traversal and join preparation, deterministic
-ID source preparation, evidence digest preparation, and the final candidate
-copy. Native SHA-256 rounds remain a primitive boundary; preparing and passing
-their byte input is charged. The output array is frozen and charged **before**
-the final `beforePublication` cancellation check. No repeated transformation
-remains after that check on the candidate path.
+The work was continued from the WIP transport branch `handoff/phase-2b1-h03`
+(commit `e3aa20ec2f733f60e456a2e85eed6d683d3435d5`, parent
+`9dacc824aa375f4f14b60ec91ccbdc69624f23a3`). That commit is a transport
+snapshot, not an acceptance or freeze commit. It already contained an earlier,
+unreviewed draft of this section and a partial remediation. Re-verification of
+that transferred state found:
 
-The same canonical functions still accept no budget for isolated vector/test
-use, but every authoritative candidate call supplies the parent budget. Budget
-plumbing changes no canonical bytes or SHA-256 values: the focused regression
-compares budgeted and unbudgeted serialization and ID output byte-for-byte;
-existing serialization, mapping, transition and replay vector suites pass.
-`makeCandidate` is exported only from its internal module for exact accounting
-regressions; the package export map remains root-only and its root runtime API
-remains the approved 22-name allowlist.
+- it was **red**: 191/192 package tests. The accepted regression "observes a
+  maximum gap of 128 through validation and candidate loops" (32 instruments,
+  496 valid pairs) failed with `MATCHING_BOUND_EXCEEDED`. The draft charged
+  every canonical string at least one whole step (a ×4 UTF-8 upper bound
+  rounded up per string) and every copied field one step, so one candidate cost
+  about 195 steps and the approved 8,192-pair allowance collapsed to about 500
+  pairs;
+- its "no further production path omits the supplied budget" claim was false
+  (section 19.2);
+- its only cancellation evidence was the charged counter's gap of exactly 128.
+  Acceptance-4 already rejected this as proof of operation-wide coverage.
 
-### 19.2 Static H-03 accounting inventory
+The draft's test counts, audit conclusion and gap evidence are withdrawn and
+replaced by the evidence below.
 
-| Site / function                                                              | Repeated-work family                                                                       | Parent authority and charge / cancellation coverage                                                                                                            |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `candidates.ts` `generateCandidatesWithBudget`                               | instrument validation, ordering, grouping, pair/partner enumeration, batch materialization | one operation `WorkBudget`; each traversal/comparison/pair and final freeze charged; final check                                                               |
-| `candidates.ts` `resolveExposureIdentity`, `provisionalKey`, `makeCandidate` | registry resolution, provisional fields, leg arrays, reasons, final key, evidence fields   | same passed budget; per field/element and budgeted comparator/serialization                                                                                    |
-| `serialization.ts` `canonicalExposureKey`                                    | seven ordered fields, UTF-8 byte-length preparation and output join                        | same passed budget; deterministic conservative UTF-16-to-UTF-8 upper-bound charge before native byte scan, per field and joined length                         |
-| `serialization.ts` `canonicalSerialize`                                      | nested arrays/objects, key sort, strings and joins                                         | same passed budget through `SerializationMeter`; text charged before native byte scan, each item/key/comparator and join length charged                        |
-| `serialization.ts` `deterministicId`, `sha256`                               | canonical hash-input and domain concatenation preparation                                  | same passed budget; proportional input length charged before concatenation/native hash; no digest-byte change                                                  |
-| `immutable.ts` `immutableCandidate`                                          | top-level fields, provisional nested fields and reasons copy/freeze                        | same passed budget; conservative 32-field and seven-field precharge plus each reason before materialization                                                    |
-| `bounds.ts` `assertEvidenceRecord`                                           | bounded evidence JSON traversal and serialization                                          | caller's evidence-operation budget passed through preflight `walk`; native JSON serialization follows charged traversal; byte block charged before bound check |
-| `evaluator.ts`, `evidence.ts` comparator call sites                          | sorting bounded opaque IDs                                                                 | same existing operation budget via length-proportional UTF-8 comparator                                                                                        |
-| `registry.ts` constructor and `resolve`                                      | binding-key join and asset/binding/alias traversal                                         | existing operation budget; ID lengths additionally charged before key join                                                                                     |
-| `commands.ts` `MappingLedger.apply` / digest snapshot                        | old versions/transitions/digest-map copy and ordered ID comparison                         | same command-operation budget; per entry copied and length-proportional comparator                                                                             |
-| admission, transitions, replay and output helpers                            | per-version/approval/transition/replay traversal and canonical digests                     | their pre-existing passed operation budget; audited call sites all pass it to canonical/digest helpers                                                         |
-| `diagnostics.ts` `boundedDiagnostics`                                        | bounded diagnostic sort                                                                    | standalone operation with its own budget; no authoritative caller from matching operation                                                                      |
+### 19.2 Exact H-03 root cause
 
-The audit searched all runtime `canonicalSerialize`, `canonicalExposureKey`,
-`deterministicId`, `sha256`, `immutableCandidate`, comparator, text-scan,
-`map`/`filter`/`reduce`, sort and copy call sites. Test-fixture builders are
-excluded from production authority. No further production candidate or
-analogous canonical/hash path omits the supplied operation budget. The
-deterministic logical-work model charges proportional bounded chunks before
-native UTF-8/JSON/hash primitives; it is not a wall-clock deadline.
+1. **Acceptance-4 counterexample (candidate path).** `makeCandidate` charged a
+   fixed amount while the work proportional to identifier length was not
+   charged against the parent budget: exposure-key construction, provisional
+   and candidate canonical serialization, deterministic-ID/evidence hash-input
+   preparation, and the immutable copy.
+2. **Unproven equivalence between charged and actual work.** Every earlier gap
+   measurement read the budget's own counter. No independent measurement of
+   actual work existed, so omitted work was invisible by construction.
+3. **Analogous omissions found by the independent oracle (section 19.6) in the
+   transferred source:**
+   - Standalone `admitMaterializedMapping` published every non-`VALID` typed
+     outcome without the final pre-publication check: 1,134 units of work were
+     performed after the last check.
+   - `Date.parse` ran on caller-supplied timestamp strings of unbounded length
+     without a charge, in the registry, admission, transitions, commands,
+     evidence, evaluator freshness and replay.
+   - `sha256` measured its input with an uncharged `Buffer.byteLength` pass
+     before charging.
+   - `[...x]` array copies before sorts were not charged. This affected
+     instruments, groups, history, transitions, versions and approvals.
+   - Caller-object spreads were not charged by actual key count, in commands,
+     transitions, the ledger and admission copies.
+   - `evaluateBatch` froze its result array after the final check.
+   - JSON escape expansion was not charged.
 
-### 19.3 Focused regressions and resource result
+   Measured interruptible gaps in the transferred source were up to 69,531
+   actual units (replay), 52,406 (batch evaluation), 21,461 (match evaluation),
+   19,712 (evidence) and 17,109 (admission). The ceiling is 16,384.
 
-`fourth-acceptance-remediation.test.ts` adds **9** H-03 cases. It directly
-reproduces the fourth-review short-versus-long canonical asset ID counterexample:
-the near-atomic-boundary valid ID now incurs more than ten additional logical
-steps during `makeCandidate` and leaves the key/digest semantics unchanged.
-Tests also cover a full candidate operation with observed check positions,
-cancellation in key/serialization/ID/copy helpers and candidate generation,
-evidence-JSON precharging, no partial result or accepted-state mutation, and
-byte-identical budgeted/unbudgeted vectors. The 8,192-valid-pair batch
-combines validation, registry resolution, enumeration and materialization on
-one budget. It fails atomically with the existing `MATCHING_BOUND_EXCEEDED`
-once distributed work reaches the 100,000-step ceiling; the 8,192 pair-count
-ceiling does **not** override that tighter independent limit. The old
-`candidate-bounds.test.ts` assumption of mandatory 8,192-pair success was
-corrected to assert this precedence without removing the 8,193rd-pair and
-partner-33 rejection cases.
+### 19.3 Remediation architecture and work model
 
-The measured maximum adjacent cancellation-check gap on the large candidate
-operation is **exactly 128 charged logical steps**; the static inventory above
-identifies the previously omitted work now included in that counter. The
-100,001st required unit is rejected by `WorkBudget` with
-`MATCHING_BOUND_EXCEEDED`. Cancellation and work-cap failure publish no partial
-candidate array and mutate no admitted mapping or registry. Existing D-064
-boundary/one-over, hostile-input, replay, determinism, governance and atomicity
-tests remain green. The authored D-055 scenario file remains **40/40 runtime
-cases**, representing **29/29 normative groups**; the reason catalogue is
-still **44/44 unique codes**. All three current real venue combinations remain
-`UNAVAILABLE`: OKX/Binance has `MULTIPLIER_UNKNOWN` and
-`VALUE_CONVENTION_UNVERIFIED`; OKX/Bybit has `MULTIPLIER_UNKNOWN`;
-Binance/Bybit has both multiplier gaps and Binance's unverified convention.
+There is exactly one `WorkBudget` per authoritative operation. `WorkBudget` gains
+an internal fine-grained accumulator, `units(n)`, which charges 128 units per
+logical step (`WORK_UNITS_PER_STEP`, internal, not exported from the package
+root). The sub-step remainder carries across every helper of the same operation.
+Nothing is rounded away or reset. `beforePublication()` charges any non-zero
+remainder as one step and then performs the final cancellation check. The
+100,000-step cap and the 128-step check interval are enforced in `step()`
+exactly as before. D-055 §13 defines the budget as "explicit
+record/pair/evidence validation steps" and does not fix a bytes-per-step
+quantum. The 128-unit quantum is the rate already used by the third
+remediation's reviewed serialization meter; no new normative rate was invented.
 
-### 19.4 Exact change and pinned verification record
+One unit is one UTF-16 code unit, element or key processed by one native pass.
+Each native pass is charged before it runs. The exception is JSON escape
+expansion, whose size is only known after the atomic call; it is charged
+immediately after that call and before any further work.
 
-Source changes in this fourth remediation are confined to
-`packages/spread-analytics/src/{bounds,candidates,commands,evaluator,evidence,immutable,registry,serialization}.ts`.
-The new test is `src/fourth-acceptance-remediation.test.ts`; the existing
-`src/candidate-bounds.test.ts` changes only the rejected work-cap assumption.
-`dist/**` is a generated rebuild, not independent source authority. This
-implementation report is the only documentation change. Root `package.json`
-and `package-lock.json` remain at their pre-remediation SHA-256 values
-`6282c135e0f807d88afd59a11471756f5bad7f346769bab40db6e70658776ad5`
-and `810aaa67382f9b9687f8746e07d3f60f747274470df558f6c34dd98273ee3d59`.
+| Repeated work                              | Charge                                                                                         |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Canonical string quoting                   | length + 2 before; escape expansion (at most 5 × length) immediately after                     |
+| Canonical array / object                   | 1 per value; array length; 64-key enumeration upper bound (plus any excess); joined length + 2 |
+| Canonical key order and all UTF-8 sorts    | a + b + 3·min(a, b) + 1 per comparator call (two encodings plus the byte comparison)           |
+| Exposure key                               | 7 + per field (2 × length + 12) + joined length + version prefix                               |
+| Deterministic ID                           | 1 + canonical serialization + (domain + canonical) concatenation + SHA input preparation       |
+| SHA-256 input preparation                  | input length + 1 (flatten/encode); the digest rounds are the trusted primitive                 |
+| Candidate key / provisional equality       | compared length when lengths are equal, + 1                                                    |
+| Caller-object copy and freeze              | 3 × own-key count + 1, after the one native enumeration needed to measure it                   |
+| Array copies (`[...x]`) and result freezes | element count + 1 before the copy                                                              |
+| Timestamp parsing                          | string length + 1 before `Date.parse` (parse semantics unchanged)                              |
+| Output byte bound                          | output length before the byte-length pass                                                      |
+| Reason/description markup check            | byte-length pass + `<` count pass + length × (`<` count + 1) before the bounded pattern scan   |
 
-Verification materialization: `/Volumes/M2 ssd/holyparser-h03-verify.YLpd2P/repo`
-on a volume with 766 GiB available before `npm ci`. Exact runtime is Node
-**v24.18.1** and npm **11.16.0**. `npm ci` passed with 451 installed / 460
-audited packages; `npm query '*'` returns 452 entries and the workspace query
-returns eight workspaces. Seven pre-existing advisories were not remediated. Aggregate
-format, lint and typecheck passed. Focused fourth-remediation: **1 file, 9/9**.
-Complete spread analytics: **16 files, 192/192**. Aggregate default tests:
-**51 source files** (48 passed, three opt-in live-canary files skipped),
-**452 passed, zero failed, three skipped**. All-workspace production build
-passed and emitted six static web routes: `/`, `/_not-found`,
-`/forgot-password`, `/login`, `/register`, `/verify-email`.
-A post-build rerun also passed, discovering 52 files and 456 passing tests
-because the contracts build emits one compiled duplicate test file with four
-duplicate cases; it is not counted as additional unique source coverage.
-Markdown/local-link validation covers 74 Markdown files, 87 links, 65 local
-links, one anchor and zero broken targets/anchors.
+Unchanged accepted rates:
 
-The verified boundary remains `packages/spread-analytics/**` plus this report;
-the frozen market-data package, OKX/Binance/Bybit adapters, Phase 2A, D-055,
-D-064, accepted Phase 2B formulas, D1/D2, Product/Commerce/Admin, application,
-infrastructure and brand assets remain unchanged. This remediation is ready
-for a **fifth formal independent acceptance review**, not a Phase 2B.1 freeze
-or Phase 2B.2 authorization. The prior acceptance reports remain untouched.
+- atomic, composite and reason scans at 32, 64 and 256 code units per step;
+- JSON walk at 128 nodes and 256 string code units per step;
+- evidence JSON at 512 per step;
+- the standalone 16 MiB input decode/parse at 4,096 bytes per step, which the
+  accepted 16 MiB boundary test requires;
+- every explicit per-record, per-pair, per-evidence and per-version step.
+
+Execution model (D-064 §3): cancellation is cooperative. Between adjacent
+checks there are at most 128 charged steps of interruptible work. A single
+native primitive call (join, encode, hash feed, parse) is fully charged before
+it starts and cannot be interrupted mid-call. The D-064 byte limits bound each
+such call. No wall-clock latency is claimed.
+
+### 19.4 Budget propagation path
+
+`generateCandidates` → `generateCandidatesWithBudget` → per-instrument
+validation (`assertClosedKeys`, `assertAtomicId`, `assertCompositeId`,
+`assertReasonText`) → charged copy and UTF-8 sort → `resolveExposureIdentity`
+→ `CuratedAssetRegistry.resolve` (budgeted `epoch`/`isEffective`) →
+`provisionalKey` → `canonicalSerialize` → group/pair enumeration →
+`makeCandidate` → `canonicalExposureKey`, candidate string equality,
+`provisionalValue` + `canonicalSerialize`, `deterministicId` → `sha256`,
+evidence `canonicalSerialize` → `sha256`, `immutableCandidate` → `chargeCopy`
+→ charged final freeze → `beforePublication`.
+
+The evaluation path is `evaluateMatch`/`evaluateBatch` → validation →
+resolution → freshness (budgeted timestamps) → `admitMaterializedMapping(…,
+work)` → `admitWithBudget` → record, command, transition and history
+validation, digests and copies → evaluation result `deterministicId` →
+(batch) canonical output serialization and output bound → charged freeze →
+`beforePublication`. Replay, evidence, registry admission and command
+admission follow the same pattern with their own single root budget.
+
+A static source test (`instantiates WorkBudget only at approved operation
+roots`) enumerates all 20 `new WorkBudget(` sites. Every one is a public or
+standalone operation root, or an `operationBudget ?? new WorkBudget()`
+fallback used only when no parent budget exists. No helper resets a parent
+budget.
+
+### 19.5 Static accounting inventory
+
+All 205 runtime occurrences of `map`, `filter`, `sort`, `some`, `find`,
+`every`, `includes`, `join`, spread copies, `Object.keys`, `JSON.stringify`,
+`Buffer.*`, `Set`/`Map` construction, `for` loops, `reduce` and object spreads
+in the 15 non-test modules were reviewed. Every occurrence is either charged to
+the operation budget before its work, or bounded by a code-defined constant:
+
+- fixed schema key lists;
+- fixed enumerations;
+- the two candidate legs;
+- at most 44 reason codes;
+- at most three approvals, after a count check.
+
+Such constant-bounded work is covered by the enclosing explicit step.
+**Uncovered authoritative repeated-work paths: 0.**
+
+| Module                                                                                               | Remediated sites in this round                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bounds.ts`                                                                                          | unit accumulator and remainder flush; reason byte-length and markup-pattern worst case; output bound                                                                |
+| `serialization.ts`                                                                                   | string quoting and escape expansion, array/object traversal, joins, key sort, exposure key, deterministic-ID concatenation, SHA preparation (no uncharged pre-scan) |
+| `candidates.ts`                                                                                      | leg/revision/reason traversal, key and provisional equality, instrument and group copies, final freeze                                                              |
+| `immutable.ts`                                                                                       | `chargeCopy` for mapping, review, candidate, approval, asset, binding and alias copies                                                                              |
+| `registry.ts`                                                                                        | budgeted `epoch`, `isEffective` and `chargeTimestamp` in construction and resolution                                                                                |
+| `admission.ts`                                                                                       | final check for every standalone outcome, history/transition/approval copies, command/transition copies, timestamps, provenance reason copy                         |
+| `transitions.ts`                                                                                     | timestamps, record and approval copies                                                                                                                              |
+| `commands.ts`                                                                                        | timestamps, overlap `Date.parse`, idempotent version copy, command/transition/approval copies                                                                       |
+| `evaluator.ts`                                                                                       | freshness timestamps; batch freeze moved before the final check                                                                                                     |
+| `evidence.ts`, `replay.ts`                                                                           | timestamps, record copies, replay version copy                                                                                                                      |
+| `validation.ts`, `economics.ts`, `policy.ts`, `reasons.ts`, `model.ts`, `index.ts`, `diagnostics.ts` | no change required                                                                                                                                                  |
+
+### 19.6 Independent actual-work oracle
+
+`src/work-oracle.ts` is test-only: it is excluded from the build and never
+imported by runtime code. It instruments the native primitives that perform
+data-proportional work:
+
+- string, JSON and `Buffer` operations;
+- `Date.parse` and regular expressions;
+- hash `update`;
+- array traversal, copy, sort and iteration;
+- `Map`/`Set` iteration;
+- key enumeration, `Object.freeze` and `Reflect.ownKeys`.
+
+It records the actual work performed at every cancellation check through the
+signal's `aborted` getter, which `WorkBudget.check()` reads exactly once per
+check. It therefore measures actual work, not charged steps. The
+interruptible gap is each gap minus the one largest atomic native call inside
+it. The ceiling is 128 × 128 = 16,384 units (one unit of charge per unit of
+actual work).
+
+| Operation (maximum inputs used)                       | Transferred source: interruptible gap / tail | Remediated: checks, interruptible gap, tail |
+| ----------------------------------------------------- | -------------------------------------------- | ------------------------------------------- |
+| Candidate generation, 24 instruments, 160-unit assets | within bound / 0                             | 218, 11,699, 0                              |
+| Standalone admission, 64-version history, `VALID`     | **17,109** / 0                               | 342, 10,880, 0                              |
+| Standalone admission, typed `REVISION_MISMATCH`       | within bound / **1,134**                     | 267, 10,796, 0                              |
+| Match evaluation with admitted mapping                | **21,461** / 0                               | 343, 10,871, 0                              |
+| Batch evaluation, 200                                 | **52,406** / 0                               | 360, 13,521, 0                              |
+| Replay, 64 versions                                   | **69,531** / 0                               | 54, 14,464, 0                               |
+| Evidence bundle, 300 near-limit records               | **19,712** / 0                               | 287, 10,010, 0                              |
+| Registry admission                                    | within bound / 0                             | 12, 4,974, 0                                |
+| Command admission, 4,096-byte composite IDs           | within bound / 0                             | 12, 9,707, 0                                |
+
+**Maximum measured interruptible gap after remediation: 14,464 actual
+units.** This is below the 16,384 ceiling, and the charged counter's maximum
+gap is 128 steps. Across all operations:
+
+- the first check precedes all work (0 units);
+- no work occurs between the final check and publication (tail 0);
+- total actual work never exceeds charged units.
+
+The standalone `parseBoundedJson`, which no matching operation calls, stays
+within 3 × 16,384 at its accepted 16 MiB-compatible rates. A negative control
+emulates the acceptance-4 pattern (one charged step per candidate, with
+helpers unbudgeted). The oracle flags it at more than four times the ceiling,
+so the measurement is not vacuous. Hostile 200,000-character timestamps are
+charged before `Date.parse` and fail with the typed `EVIDENCE_TIME_INVALID`.
+
+### 19.7 Focused regressions and resource results
+
+`fourth-acceptance-remediation.test.ts` (rewritten; **21** tests) and
+`work-accounting-oracle.test.ts` (new; **15** tests) add:
+
+- **Exact long-ID counterexample.** `makeCandidate` with a 10-unit versus a
+  155-unit canonical base asset ID now costs **75 versus 93 logical steps**;
+  acceptance-4 measured 1 versus 1. The cost is deterministic on repetition.
+  The difference is at least the model's twelve charged passes. The exposure
+  key grows by more than 100 bytes with identical canonical semantics.
+  Provisional-only candidates are also charged proportionally.
+- **Long valid near-boundary values.**
+  - A 160-unit atomic ID costs 5 steps, and 80 astral characters cost more
+    than one character.
+  - A 4,096-byte composite ID costs more than a 1-byte one.
+  - A 512-byte reason costs more than a short reason.
+  - A `<`-dense bounded reason is charged its pattern worst case.
+  - Hostile control-character text is charged its JSON escape expansion.
+  - Long registry, evidence, transition and candidate identity fields all
+    cost more than short ones, and every one of these valid values is still
+    accepted.
+- **8,192 candidate pairs.** The exact approved maximum of valid pairs fails
+  with `MATCHING_BOUND_EXCEEDED` at 99,996 steps, inside `makeCandidate`, on
+  the single operation budget. Nothing is published, and the maximum charged
+  gap is 128. The stricter cumulative bound wins over the pair-count bound.
+- **Measured capacity with fixture identifiers** (about 80 steps per pair):
+
+  | Valid pairs | Result                                   |
+  | ----------: | ---------------------------------------- |
+  |         496 | published, 39,683 steps                  |
+  |         992 | published, 79,496 steps                  |
+  |       1,112 | published, 90,326 steps                  |
+  |       1,268 | fails closed (`MATCHING_BOUND_EXCEEDED`) |
+
+  The 8,193rd-pair and 33rd-partner rejections are unchanged.
+
+- **Distributed cumulative work.** Six stages share one budget: registry
+  construction, instrument validation, 200 evidence records, candidate
+  generation and materialization, mapping admission, and a large
+  serialization/hash. Each stage stays below 50,000 steps. With the budget
+  prefilled so that the whole operation ends at exactly 100,000 steps, it
+  succeeds, and the 100,001st step or unit block fails. With one more step of
+  prefill, the operation itself fails at its 100,001st required step. Without
+  prefill, repeating the stages crosses the cap cumulatively.
+- **Cancellation.** Cancellation is shown to occur inside each of these:
+  - long ID scanning;
+  - exposure-key serialization;
+  - provisional serialization;
+  - candidate-string comparison;
+  - provenance and deterministic-ID preparation;
+  - SHA input preparation;
+  - the immutable candidate copy;
+  - deep inside a 496-pair batch;
+  - at the final pre-publication check.
+
+  A sweep of the abort point across every 4-unit offset of a whole
+  `makeCandidate` reaches all seven materialization phases.
+
+- **Final publication.** Every public operation's actual-work tail after its
+  final check is 0 oracle units. Standalone admission now checks before
+  publishing every typed outcome.
+- **Atomicity.** Under cancellation and under budget exhaustion during
+  materialization, no candidates are published. The frozen registry revision,
+  caller instruments, admitted history digest and frozen versions, and the
+  ledger versions are unchanged, and replay of the admitted history still
+  yields `MATCHED`.
+
+Budgeted and unbudgeted canonical serialization, deterministic IDs,
+SHA-256 values and exposure keys are byte-identical, including escaped, astral
+and nested values. The existing golden vectors
+(`786dc0d4…07ef` in `serialization.test.ts`) and every mapping, transition and
+replay digest suite pass unchanged. `serialization.test.ts`,
+`d055-scenarios.test.ts`, `reasons.ts`, `policy.ts`, `model.ts`,
+`economics.ts` and `index.ts` are byte-identical to the transferred state.
+
+### 19.8 Regression gates
+
+- B-01: the append-only transition, forged-status and digest-domain suites
+  pass unchanged (`third-acceptance-remediation.test.ts` 23/23).
+- B-02: the caller-mutation and forged-handle suites pass unchanged.
+- H-01: the product-scope-before-identity suites pass unchanged.
+- H-02: the built `dist/index.js` exposes exactly **22** runtime exports, with
+  unchanged names. `WorkBudget`, `WORK_UNITS_PER_STEP`, `chargeCopy`,
+  `chargeTimestamp`, `makeCandidate`, `generateCandidatesWithBudget`,
+  serialization helpers and the oracle are not exported. A deep import
+  returns `ERR_PACKAGE_PATH_NOT_EXPORTED`, and the oracle is absent from
+  `dist`.
+- D-055: the numbered scenario suite passes **40/40** authored runtime cases
+  (37 synthetic plus 3 real-venue), representing **29/29** policy groups,
+  where group 29 is now covered by the resource/cancellation suites above.
+  The reason catalogue has **44/44** unique codes and no new code.
+- D-064: every numeric boundary and one-over test passes, including 16 MiB
+  input/output, 1,024 instruments, 8,193 pairs, partner 33, JSON depth/nodes/
+  keys, decimal bounds and the exact 100,000-step test. Cumulative logical
+  work, cancellation ≤128 and atomic publication now pass under the
+  independent oracle.
+- Real venues are unchanged, with zero approved real pairs:
+  - OKX/Binance is `UNAVAILABLE` with `MULTIPLIER_UNKNOWN` and
+    `VALUE_CONVENTION_UNVERIFIED`;
+  - OKX/Bybit is `UNAVAILABLE` with `MULTIPLIER_UNKNOWN`;
+  - Binance/Bybit is `UNAVAILABLE` with `MULTIPLIER_UNKNOWN` and
+    `VALUE_CONVENTION_UNVERIFIED`.
+
+### 19.9 Changed files and verification record
+
+Changes relative to the transferred commit `e3aa20e`:
+
+- Runtime: `packages/spread-analytics/src/{admission,bounds,candidates,commands,evaluator,evidence,immutable,registry,replay,serialization,transitions}.ts`.
+- Test-only support (new, excluded from the build):
+  `packages/spread-analytics/src/work-oracle.ts`.
+- Tests:
+  - `src/fourth-acceptance-remediation.test.ts` (rewritten);
+  - `src/work-accounting-oracle.test.ts` (new).
+- Configuration: `packages/spread-analytics/tsconfig.json` (build exclusion of
+  the oracle only).
+- Documentation: this section.
+
+No other test file, and no root manifest, lockfile, dependency, D-055, D-064,
+prior acceptance report, frozen package, adapter, formula, application,
+infrastructure or brand file changed.
+
+Verification ran in a fresh materialization of the exact working tree, with
+tracked and new files but without `node_modules`/`dist`, under
+Node **v24.18.1** and npm **11.16.0**. That runtime is the official
+checksum-verified distribution.
+
+- `npm ci` passed: 450 added / 459 audited.
+  - 450/459 versus 451/460 on macOS is consistent with platform-specific
+    optional packages; the lockfile is byte-identical.
+  - The audit reports eight pre-existing advisories, against seven recorded
+    earlier. The difference is audit-database drift, not a dependency change.
+    No advisory was remediated.
+- `format:check`, `lint` and `typecheck` passed.
+- `spread-analytics`: **17 files, 219/219** tests.
+- Aggregate default suite: **52 source test files** (49 passed, three opt-in
+  live-canary files skipped); **479 passed, 0 failed, 3 skipped**. The
+  non-spread workspaces are unchanged at 260 passed.
+- The all-workspace production build passed and emitted six static web
+  routes: `/`, `/_not-found`, `/forgot-password`, `/login`, `/register` and
+  `/verify-email`.
+- Root `package.json` SHA-256 is
+  `6282c135e0f807d88afd59a11471756f5bad7f346769bab40db6e70658776ad5` and
+  `package-lock.json` is
+  `810aaa67382f9b9687f8746e07d3f60f747274470df558f6c34dd98273ee3d59`,
+  both unchanged.
+- D-055 is `60d00b8e…6d97931`, unchanged. D-064 and the four prior
+  acceptance reports are byte-identical to the transferred commit.
+- The brand hashes are unchanged: dark `e4a53ef9…0dbe08`, design system
+  `459f2354…68c54`, logo `5050e13e…82a8c`.
+- `git diff --check` and `git fsck --full` pass.
+
+### 19.10 Limitations and capacity observation
+
+Honest charging makes the 100,000-step cap, not the 8,192-pair count, the
+binding limit: about 1,100–1,250 valid pairs with fixture-sized identifiers,
+and fewer with near-maximum identifiers. This is the conservative direction
+("stricter wins"), and D-064 §3 already lists measured budget exhaustion as a
+trigger for a new scoped resource version with Product/Market Data/SRE
+review. No bound, rate or policy was widened to compensate. Cancellation
+remains cooperative: a single atomic native call is charged in full before it
+starts but cannot be interrupted mid-call, and no wall-clock latency is
+claimed. There is zero approved real venue pair.
+
+### 19.11 Recommendation
+
+H-03 is technically remediated in implementation. B-01, B-02, H-01 and H-02
+remain resolved. Phase 2B.1 is ready for a **fifth formal independent
+acceptance review**. It is not frozen, and Phase 2B.2 remains unauthorized.
 
 Recommended next task:
 
-> Perform a fifth formal independent Phase 2B.1 acceptance review in
-> `/Volumes/M2 ssd/HolyParser`. Treat this fourth-remediation evidence as
-> author-produced evidence, not proof. Reproduce the original H-03 short/long
-> candidate-materialization counterexample; independently audit all candidate
-> key/provenance/hash/copy paths and analogous canonical call sites for a single
-> cumulative budget; measure the full-operation cancellation gap at no more
-> than 128, the 100,000-step limit, 8,192-pair atomic failure and final
-> pre-publication check. Reconfirm B-01/B-02/H-01/H-02, 22 runtime exports,
-> 29 D-055 groups/40 authored cases, 44 reason codes, D-064 boundaries,
-> serialization vectors, zero real approved pairs, replay and frozen boundaries.
-> Use a fresh Node 24.18.1/npm 11.16.0 materialization with adequate disk;
-> run npm ci, format, lint, typecheck, focused/full tests, production build,
-> Markdown/local-link validation, git diff --check and git fsck --full. Create
-> a new acceptance report without modifying implementation or prior reports.
-> Do not commit or begin Phase 2B.2.
+> Perform a fifth formal independent Phase 2B.1 acceptance review in the
+> authoritative repository, on the working-tree state of branch
+> `claude/stoic-lovelace-uxfohy` (transport base `handoff/phase-2b1-h03`,
+> `e3aa20e`; neither is an acceptance commit). Treat section 19 of the
+> implementation evidence as author-produced, not proof. Read AGENTS.md, D-055,
+> D-064 and all four prior acceptance reports. Reproduce the acceptance-4
+> short/long candidate counterexample. Independently audit every runtime
+> repeated-work path for charge-before-work on the single operation budget,
+> including timestamps, copies, JSON escaping, UTF-8 comparison, hash
+> preparation and standalone-admission publication. Independently confirm or
+> refute the test-only actual-work oracle and its negative control, and measure
+> actual (not charged) work between adjacent cancellation checks against 128
+> steps. Verify the 100,000-step cap, the distributed 100,001st-step failure,
+> 8,192-pair atomic failure, zero post-check publication work and atomicity.
+> Assess the documented pair-capacity consequence against D-064 without
+> widening it. Reconfirm B-01/B-02/H-01/H-02, 22 runtime exports, 29/29
+> D-055 groups and 40/40 cases, 44 unique codes, every D-064
+> boundary/one-over, unchanged serialization/digest vectors and the three
+> fail-closed real-venue results. Use a fresh Node 24.18.1/npm 11.16.0
+> materialization with adequate disk, and run npm ci, format, lint,
+> typecheck, focused and full tests, production build, Markdown/local-link
+> validation, git diff --check, git fsck --full, manifest/lock hashes and all
+> frozen-boundary checks. Write a new fifth acceptance report without
+> modifying implementation, D-055, D-064, manifests, the lockfile, frozen
+> scopes or prior reports. Do not commit and do not begin Phase 2B.2.

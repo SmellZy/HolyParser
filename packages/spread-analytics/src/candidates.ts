@@ -190,7 +190,7 @@ const provisionalValue = (
   value: ProvisionalExposureIdentity,
   work: WorkBudget,
 ) => {
-  work.step(7);
+  work.units(7);
   return {
     baseAssetId: value.baseAssetId,
     productClass: value.productClass ?? null,
@@ -201,6 +201,17 @@ const provisionalValue = (
     exposureUnit: value.exposureUnit ?? null,
   };
 };
+// Native string equality compares every code unit when lengths are equal.
+const sameText = (
+  left: string | undefined,
+  right: string | undefined,
+  work: WorkBudget,
+): boolean => {
+  work.units(
+    (left !== undefined && left.length === right?.length ? left.length : 0) + 1,
+  );
+  return left !== undefined && left === right;
+};
 
 export function makeCandidate(
   left: ResolvedInstrument,
@@ -210,23 +221,20 @@ export function makeCandidate(
   cutoff: Timestamp,
   work: WorkBudget,
 ): InstrumentMatchCandidate {
-  work.step(2);
+  // Every traversal, key, canonical encoding, hash-input preparation and copy
+  // below is charged to the caller's single operation budget.
+  work.step();
   const legs = [left, right].sort((a, b) =>
     compareUtf8WithBudget(work)(
       a.instrument.metadata.instrumentId,
       b.instrument.metadata.instrumentId,
     ),
   );
-  const ids = legs.map(
-    (value) => (work.step(), value.instrument.metadata.instrumentId),
-  );
-  const revisions = legs.map(
-    (value) => (work.step(), value.instrument.metadataRevision),
-  );
-  const metadataDigests = legs.map(
-    (value) => (work.step(), value.instrument.metadataDigest),
-  );
-  work.step(left.reasons.length + right.reasons.length);
+  work.units(3 * legs.length);
+  const ids = legs.map((value) => value.instrument.metadata.instrumentId);
+  const revisions = legs.map((value) => value.instrument.metadataRevision);
+  const metadataDigests = legs.map((value) => value.instrument.metadataDigest);
+  work.units(3 * (left.reasons.length + right.reasons.length) + 1);
   const reasons = [...new Set([...left.reasons, ...right.reasons])].sort(
     compareUtf8WithBudget(work),
   );
@@ -236,25 +244,27 @@ export function makeCandidate(
   const rightKey = right.identity
     ? canonicalExposureKey(right.identity, work)
     : undefined;
-  const key =
-    leftKey !== undefined && leftKey === rightKey ? leftKey : undefined;
+  const key = sameText(leftKey, rightKey, work) ? leftKey : undefined;
   const provisionalIdentity =
     left.provisionalIdentity &&
     right.provisionalIdentity &&
-    canonicalSerialize(
-      provisionalValue(left.provisionalIdentity, work),
-      work,
-    ) ===
+    sameText(
+      canonicalSerialize(
+        provisionalValue(left.provisionalIdentity, work),
+        work,
+      ),
       canonicalSerialize(
         provisionalValue(right.provisionalIdentity, work),
         work,
-      )
+      ),
+      work,
+    )
       ? left.provisionalIdentity
       : undefined;
+  work.units(legs.length + 4);
   const economicsRevisions = legs.map(
-    (value) => (work.step(), value.instrument.economics.evidenceRevision),
+    (value) => value.instrument.economics.evidenceRevision,
   );
-  work.step(4);
   const evidence = {
     economicsRevisions,
     metadataDigests,
@@ -337,6 +347,7 @@ export function generateCandidatesWithBudget(
     work.step();
     validateVenueInstrumentEvidence(instrument, work);
   }
+  work.units(instruments.length + 1);
   const ordered = [...instruments].sort((a, b) => {
     return compareUtf8WithBudget(work)(
       a.metadata.instrumentId,
@@ -369,6 +380,7 @@ export function generateCandidatesWithBudget(
   }
   const pairs: [ResolvedInstrument, ResolvedInstrument][] = [],
     partner = new Map<string, number>();
+  work.units(groups.size + 1);
   for (const key of [...groups.keys()].sort(compareUtf8WithBudget(work))) {
     const group = groups.get(key)!;
     for (let i = 0; i < group.length; i++)
@@ -402,6 +414,8 @@ export function generateCandidatesWithBudget(
     work.step();
     return makeCandidate(a, b, registry, at, cutoff, work);
   });
+  // The final freeze is charged before it runs; nothing but the final
+  // cancellation check separates it from publication.
   work.step(result.length);
   const published = Object.freeze(result);
   work.beforePublication();

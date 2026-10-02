@@ -13,7 +13,7 @@ import {
 } from "./admission.js";
 import type { MappingVersion, ReplayMode, ReplayResult } from "./model.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
-import { isEffective } from "./registry.js";
+import { chargeTimestamp, isEffective } from "./registry.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 
@@ -47,23 +47,25 @@ export function replayMapping(input: {
     MATCHING_LIMITS.mappingVersionsPerMapping,
     "Mapping history",
   );
+  // Date.parse semantics (including NaN comparisons) are preserved; each
+  // native parse of a caller-supplied timestamp is charged before it runs.
+  const parse = (value: string): number => (
+    chargeTimestamp(value, work),
+    Date.parse(value)
+  );
   const versions = records.map((record) => (work.step(), record.mapping));
   const known = versions
     .filter((version) => {
       work.step();
-      return (
-        Date.parse(version.recordedKnowledgeAt) <=
-        Date.parse(input.knowledgeCutoff)
-      );
+      return parse(version.recordedKnowledgeAt) <= parse(input.knowledgeCutoff);
     })
     .sort((a, b) => (work.step(), a.version - b.version));
   const visibleTransitions = transitions.filter((transition) => {
     work.step();
     return (
-      Date.parse(transition.effectiveAt) <= Date.parse(input.evaluationAt) &&
+      parse(transition.effectiveAt) <= parse(input.evaluationAt) &&
       (input.mode === "CORRECTED" ||
-        Date.parse(transition.recordedKnowledgeAt) <=
-          Date.parse(input.knowledgeCutoff))
+        parse(transition.recordedKnowledgeAt) <= parse(input.knowledgeCutoff))
     );
   });
   const transitionFor = (version: number) => {
@@ -81,6 +83,7 @@ export function replayMapping(input: {
         version.effectiveFrom,
         version.effectiveTo,
         input.evaluationAt,
+        work,
       );
     })
     .at(-1);
@@ -96,6 +99,7 @@ export function replayMapping(input: {
       ? "COMPATIBLE_APPROVED"
       : "MAPPING_UNAPPROVED";
   const compare = compareUtf8WithBudget(work);
+  work.units(versions.length + 1);
   const history = [...versions]
     .sort(
       (a, b) => (

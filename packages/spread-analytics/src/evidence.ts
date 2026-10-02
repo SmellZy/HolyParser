@@ -7,6 +7,7 @@ import {
   type CancellationSignal,
 } from "./bounds.js";
 import type { EvidenceRecord } from "./model.js";
+import { chargeCopy } from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { epoch, isEffective } from "./registry.js";
 import { MatchingFailure } from "./reasons.js";
@@ -86,7 +87,7 @@ export function validateEvidenceBundle(
       record.receiveTimestamp,
       record.processingTimestamp,
     ])
-      if (timestamp !== undefined) epoch(timestamp);
+      if (timestamp !== undefined) epoch(timestamp, work);
     if (record.reviewerId !== undefined)
       assertAtomicId(record.reviewerId, "Evidence reviewer", work);
     if ((record.reviewerId === undefined) !== (record.reviewedAt === undefined))
@@ -94,7 +95,7 @@ export function validateEvidenceBundle(
         "INPUT_INVALID",
         "Evidence review provenance is incomplete.",
       );
-    if (record.reviewedAt !== undefined) epoch(record.reviewedAt);
+    if (record.reviewedAt !== undefined) epoch(record.reviewedAt, work);
     if (record.documentedUnit !== undefined)
       assertAtomicId(record.documentedUnit, "Evidence documented unit", work);
     if (
@@ -121,8 +122,8 @@ export function validateEvidenceBundle(
         "Duplicate evidence ID.",
       );
     ids.add(record.evidenceId);
-    epoch(record.recordedAt);
-    isEffective(record.validFrom, record.validTo, record.validFrom);
+    epoch(record.recordedAt, work);
+    isEffective(record.validFrom, record.validTo, record.validFrom, work);
     if (record.description !== undefined)
       assertReasonText(record.description, work);
   }
@@ -152,7 +153,13 @@ export function validateEvidenceBundle(
   }
   const result = Object.freeze(
     records
-      .map((record) => (work.step(), Object.freeze({ ...record })))
+      .map(
+        (record) => (
+          work.step(),
+          chargeCopy(record, work),
+          Object.freeze({ ...record })
+        ),
+      )
       .sort((a, b) => {
         return compareUtf8WithBudget(work)(a.evidenceId, b.evidenceId);
       }),

@@ -33,8 +33,9 @@ import { validateVenueInstrumentEvidence } from "./validation.js";
 function freshness(
   item: VenueInstrumentEvidence,
   at: Timestamp,
+  work: WorkBudget,
 ): MatchReasonCode | undefined {
-  const age = epoch(at) - epoch(item.metadata.metadataObservedAt);
+  const age = epoch(at, work) - epoch(item.metadata.metadataObservedAt, work);
   if (age < 0n) return "EVIDENCE_TIME_INVALID";
   if (age > MATCHING_LIMITS.metadataAgeMs) return "EVIDENCE_STALE";
   if (item.metadata.context.quality !== "HEALTHY")
@@ -229,7 +230,7 @@ function evaluateMatchWithBudget(
       );
     throw error;
   }
-  const fresh = [freshness(left, at), freshness(right, at)].filter(
+  const fresh = [freshness(left, at, work), freshness(right, at, work)].filter(
     (v): v is MatchReasonCode => v !== undefined,
   );
   if (fresh.length) return emit("UNAVAILABLE", fresh, candidate, undefined);
@@ -335,6 +336,9 @@ export function evaluateBatch(
     work,
   );
   assertOutputBound(serialized, work);
+  // Freeze (and charge) the staged batch before the final cancellation check.
+  work.units(staged.length + 1);
+  const published = Object.freeze(staged);
   work.beforePublication();
-  return Object.freeze(staged);
+  return published;
 }

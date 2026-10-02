@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { CanonicalAssetId } from "@arbitrage/market-data";
 import type { WorkBudget } from "./bounds.js";
-import { EXPOSURE_KEY_VERSION } from "./policy.js";
+import { EXPOSURE_KEY_VERSION, MATCHING_LIMITS } from "./policy.js";
 
 export type CanonicalValue =
   | boolean
@@ -11,96 +11,79 @@ export type CanonicalValue =
   | { readonly [key: string]: CanonicalValue };
 export const compareUtf8 = (a: string, b: string): number =>
   Buffer.compare(Buffer.from(a, "utf8"), Buffer.from(b, "utf8"));
-const SERIALIZATION_UNITS_PER_STEP = 128;
-class SerializationMeter {
-  #units = 0;
-  constructor(private readonly work?: WorkBudget) {}
-  charge(units = 1): void {
-    this.#units += units;
-    while (this.#units >= SERIALIZATION_UNITS_PER_STEP) {
-      this.work?.step();
-      this.#units -= SERIALIZATION_UNITS_PER_STEP;
-    }
-  }
-  finish(): void {
-    if (this.#units > 0) this.work?.step();
-    this.#units = 0;
-  }
-}
-const chargeText = (value: string, meter: SerializationMeter): void => {
-  // Charge a conservative UTF-8 upper bound before the native byte scan.
-  meter.charge(Math.max(1, Math.ceil((value.length * 4) / 128)) * 128);
-};
+// Every native pass below is charged to the caller's operation budget in
+// units (see WorkBudget.units) before it runs; output bytes are unchanged.
 export const compareUtf8WithBudget =
   (work?: WorkBudget) =>
   (a: string, b: string): number => {
-    work?.step(Math.max(1, Math.ceil((a.length + b.length) / 128)));
+    // Two UTF-8 encodings (one pass per code unit) plus one byte comparison
+    // over at most three bytes per code unit of the shorter operand.
+    work?.units(a.length + b.length + 3 * Math.min(a.length, b.length) + 1);
     return compareUtf8(a, b);
   };
-function encode(value: CanonicalValue, meter: SerializationMeter): string {
-  meter.charge();
+// JSON string quoting scans the input once; escape expansion (at most six
+// output code units per input code unit) is charged as soon as it is known,
+// before any further work consumes the encoded string.
+function quote(value: string, work?: WorkBudget): string {
+  work?.units(value.length + 2);
+  const encoded = JSON.stringify(value);
+  work?.units(encoded.length - value.length - 2);
+  return encoded;
+}
+function encode(value: CanonicalValue, work?: WorkBudget): string {
+  work?.units(1);
   if (value === null || typeof value === "boolean")
     return JSON.stringify(value);
-  if (typeof value === "string") {
-    chargeText(value, meter);
-    return JSON.stringify(value);
-  }
+  if (typeof value === "string") return quote(value, work);
   if (Array.isArray(value)) {
+    work?.units(value.length);
     const encoded: string[] = [];
     let joinedLength = 0;
     for (const item of value) {
-      meter.charge();
-      const part = encode(item, meter);
+      const part = encode(item, work);
       encoded.push(part);
       joinedLength += part.length + 1;
     }
-    meter.charge(Math.max(1, joinedLength));
+    work?.units(joinedLength + 2);
     return `[${encoded.join(",")}]`;
   }
   const record = value as Readonly<Record<string, CanonicalValue>>;
   // Authoritative canonical objects are closed to at most 64 keys. Charge
   // their upper-bound enumeration before Object.keys performs native work.
-  meter.charge(64);
-  const keys = Object.keys(record).sort((a, b) => {
-    meter.charge();
-    return compareUtf8(a, b);
-  });
+  work?.units(MATCHING_LIMITS.objectKeys);
+  const unsorted = Object.keys(record);
+  if (unsorted.length > MATCHING_LIMITS.objectKeys)
+    work?.units(unsorted.length - MATCHING_LIMITS.objectKeys);
+  const keys = unsorted.sort(compareUtf8WithBudget(work));
   const encoded: string[] = [];
   let joinedLength = 0;
   for (const key of keys) {
-    meter.charge();
-    chargeText(key, meter);
-    const part = `${JSON.stringify(key)}:${encode(record[key]!, meter)}`;
+    work?.units(1);
+    const part = `${quote(key, work)}:${encode(record[key]!, work)}`;
     encoded.push(part);
     joinedLength += part.length + 1;
   }
-  meter.charge(Math.max(1, joinedLength));
+  work?.units(joinedLength + 2);
   return `{${encoded.join(",")}}`;
 }
 export const canonicalSerialize = (
   value: CanonicalValue,
   work?: WorkBudget,
 ): string => {
-  const meter = new SerializationMeter(work);
-  const result = `${encode(value, meter)}\n`;
-  meter.finish();
-  return result;
+  const encoded = encode(value, work);
+  // Appending the newline builds a rope; its flattening is charged by the
+  // consumer that copies or hashes the result.
+  work?.units(1);
+  return `${encoded}\n`;
 };
 export const sha256 = (
   value: string | Uint8Array,
   work?: WorkBudget,
 ): string => {
-  // The native hash rounds are outside the logical model; input preparation is not.
-  work?.step(Math.max(1, Math.ceil(value.length / 4096)));
-  work?.step(
-    Math.max(
-      1,
-      Math.ceil(
-        (typeof value === "string"
-          ? Buffer.byteLength(value, "utf8")
-          : value.byteLength) / 4096,
-      ),
-    ),
+  // The native hash rounds are outside the logical model; input preparation
+  // is not: a string input is flattened and UTF-8 encoded in one pass.
+  work?.units(
+    (typeof value === "string" ? value.length : value.byteLength) + 1,
   );
   return createHash("sha256").update(value).digest("hex");
 };
@@ -109,9 +92,10 @@ export const deterministicId = (
   value: CanonicalValue,
   work?: WorkBudget,
 ): string => {
-  work?.step();
+  work?.units(1);
   const canonical = canonicalSerialize(value, work);
-  work?.step(Math.max(1, Math.ceil((domain.length + canonical.length) / 4096)));
+  // Domain concatenation is flattened (copied) before encoding.
+  work?.units(domain.length + canonical.length + 1);
   return sha256(`${domain}\n${canonical}`, work);
 };
 export interface CanonicalExposureIdentity {
@@ -129,6 +113,7 @@ export function canonicalExposureKey(
   value: CanonicalExposureIdentity,
   work?: WorkBudget,
 ): string {
+  work?.units(7);
   const fields = [
     value.productClass,
     value.baseAssetId,
@@ -138,20 +123,15 @@ export function canonicalExposureKey(
     value.valueConvention,
     value.exposureUnit,
   ];
-  let upperBoundBytes = 0;
-  for (const field of fields) {
-    work?.step();
-    upperBoundBytes += field.length * 4;
-  }
-  work?.step(Math.max(1, Math.ceil(upperBoundBytes / 128)));
   const encoded: string[] = [];
   let joinedLength = 0;
   for (const field of fields) {
-    work?.step();
+    // UTF-8 byte-length pass plus the length-prefixed part construction.
+    work?.units(2 * field.length + 12);
     const part = lp(field);
     encoded.push(part);
     joinedLength += part.length;
   }
-  work?.step(Math.max(1, Math.ceil(joinedLength / 128)));
+  work?.units(joinedLength + EXPOSURE_KEY_VERSION.length + 1);
   return `${EXPOSURE_KEY_VERSION}|${encoded.join("")}`;
 }

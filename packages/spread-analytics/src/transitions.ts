@@ -9,6 +9,7 @@ import type {
 import { MATCHING_POLICY_VERSION } from "./policy.js";
 import { epoch, isEffective } from "./registry.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
+import { chargeCopy } from "./immutable.js";
 import { deterministicId } from "./serialization.js";
 
 export interface TransitionApprovalInput {
@@ -98,7 +99,7 @@ function validateApprovalActors(
     work.step();
     assertAtomicId(approval.actorId, "Transition reviewer", work);
     assertAtomicId(approval.approvedDigest, "Transition approval digest", work);
-    epoch(approval.recordedAt);
+    epoch(approval.recordedAt, work);
     if (approval.approvedDigest !== digest)
       throw new MatchingFailure(
         "COMMAND_DIGEST_CONFLICT",
@@ -172,8 +173,8 @@ function validateSemanticFields(
     input.successorVersion === undefined
   )
     throw new MatchingFailure("TRANSITION_REJECTED", "Successor is required.");
-  epoch(input.effectiveAt);
-  epoch(input.recordedKnowledgeAt);
+  epoch(input.effectiveAt, work);
+  epoch(input.recordedKnowledgeAt, work);
   if (input.reference !== undefined)
     assertAtomicId(input.reference, "Transition reference", work);
   if (input.transitionType !== "SUPERSEDE" && input.reference === undefined)
@@ -212,10 +213,12 @@ export function createTransitionRecord(
   const approvals = Object.freeze(
     input.approvals.map((approval) => {
       work.step();
+      chargeCopy(approval, work);
       return Object.freeze({ ...approval, approvedDigest: commandDigest });
     }),
   );
   validateApprovalActors(input.proposerId, approvals, commandDigest, work);
+  chargeCopy(unsigned, work);
   const result = Object.freeze({ ...unsigned, approvals, commandDigest });
   if (operationBudget === undefined) work.beforePublication();
   return result;
@@ -241,8 +244,14 @@ export function validateTransitionRecord(
       "Transition target provenance mismatch.",
     );
   if (
-    epoch(input.recordedKnowledgeAt) < epoch(target.recordedKnowledgeAt) ||
-    !isEffective(target.effectiveFrom, target.effectiveTo, input.effectiveAt)
+    epoch(input.recordedKnowledgeAt, work) <
+      epoch(target.recordedKnowledgeAt, work) ||
+    !isEffective(
+      target.effectiveFrom,
+      target.effectiveTo,
+      input.effectiveAt,
+      work,
+    )
   )
     throw new MatchingFailure(
       "EVIDENCE_TIME_INVALID",
@@ -260,11 +269,13 @@ export function validateTransitionRecord(
     input.commandDigest,
     work,
   );
+  chargeCopy(input, work);
   return Object.freeze({
     ...input,
     approvals: Object.freeze(
       input.approvals.map((approval) => {
         work.step();
+        chargeCopy(approval, work);
         return Object.freeze({ ...approval });
       }),
     ),

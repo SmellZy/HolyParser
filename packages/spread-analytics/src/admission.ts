@@ -8,6 +8,7 @@ import {
 } from "./bounds.js";
 import { approveCommand, type ApproveMappingCommand } from "./commands.js";
 import {
+  chargeCopy,
   immutableCandidate,
   immutableMapping,
   immutableReview,
@@ -142,11 +143,13 @@ function immutableCommand(
   value: ApproveMappingCommand,
   work: WorkBudget,
 ): ApproveMappingCommand {
+  chargeCopy(value, work);
   return Object.freeze({
     ...value,
     approvals: Object.freeze(
       value.approvals.map((item) => {
         work.step();
+        chargeCopy(item, work);
         return Object.freeze({ ...item });
       }),
     ),
@@ -165,7 +168,7 @@ function approvalsEqual(
   if (left.length !== right.length) return false;
   const compare = compareUtf8WithBudget(work);
   const sorted = (values: readonly ReviewApproval[]) =>
-    [...values].sort((a, b) =>
+    (work.units(values.length + 1), [...values]).sort((a, b) =>
       compare(`${a.role}:${a.actorId}`, `${b.role}:${b.actorId}`),
     );
   const a = sorted(left),
@@ -254,6 +257,7 @@ export function candidateProvenanceDigest(
   candidate: InstrumentMatchCandidate,
   work?: WorkBudget,
 ): string {
+  work?.units(candidate.reasons.length + 1);
   return deterministicId(
     "materialized-match-candidate/v1",
     {
@@ -299,7 +303,7 @@ function validateApprovals(
     );
     assertAtomicId(approval.actorId, "Reviewer ID", work);
     assertAtomicId(approval.approvedDigest, "Approval digest", work);
-    epoch(approval.recordedAt);
+    epoch(approval.recordedAt, work);
   }
 }
 function validateRecord(
@@ -524,11 +528,12 @@ function validateRecord(
       "DUPLICATE_EXPOSURE_CONFLICT",
       "Candidate identity mismatch.",
     );
-  epoch(review.recordedAt);
+  epoch(review.recordedAt, work);
   isEffective(
     mapping.effectiveFrom,
     mapping.effectiveTo,
     mapping.effectiveFrom,
+    work,
   );
   if (mapping.status !== "APPROVED")
     throw new MatchingFailure(
@@ -698,6 +703,7 @@ function validateTransitionGraph(
     work.step();
     byVersion.set(record.mapping.version, record);
   }
+  work.units(rawTransitions.length + 1);
   const ordered = [...rawTransitions].sort((left, right) => {
     work.step();
     return (
@@ -777,8 +783,9 @@ function transitionForVersion(
     work.step();
     if (
       transition.affectedVersion === version &&
-      epoch(transition.recordedKnowledgeAt) <= epoch(evaluationAt) &&
-      epoch(transition.effectiveAt) <= epoch(evaluationAt)
+      epoch(transition.recordedKnowledgeAt, work) <=
+        epoch(evaluationAt, work) &&
+      epoch(transition.effectiveAt, work) <= epoch(evaluationAt, work)
     )
       selected = transition;
   }
@@ -801,11 +808,13 @@ function materializeHistory(
   const immutableTransitions = Object.freeze(
     transitions.map((transition) => {
       work.step();
+      chargeCopy(transition, work);
       return Object.freeze({
         ...transition,
         approvals: Object.freeze(
           transition.approvals.map((approval) => {
             work.step();
+            chargeCopy(approval, work);
             return Object.freeze({ ...approval });
           }),
         ),
@@ -834,6 +843,17 @@ export function admitMaterializedMapping(
   operationBudget?: WorkBudget,
 ): MappingAdmissionResult {
   const work = operationBudget ?? new WorkBudget(signal);
+  const result = admitWithBudget(input, evaluationAt, work);
+  // Every standalone outcome, including typed non-VALID results, is published
+  // only after the final cancellation check; a parent operation checks later.
+  if (operationBudget === undefined) work.beforePublication();
+  return result;
+}
+function admitWithBudget(
+  input: MappingAdmissionInput,
+  evaluationAt: Timestamp,
+  work: WorkBudget,
+): MappingAdmissionResult {
   try {
     work.step();
     if (
@@ -860,6 +880,7 @@ export function admitMaterializedMapping(
     );
     if (input.history.length === 0)
       return failure("INVALID_PROVENANCE", "INPUT_INVALID");
+    work.units(input.history.length + 1);
     const orderedRaw = [...input.history].sort(
       (left, right) => (
         work.step(),
@@ -923,15 +944,20 @@ export function admitMaterializedMapping(
         reason: "MAPPING_INVALIDATED",
         ...common,
       });
-    if (!isEffective(mapping.effectiveFrom, mapping.effectiveTo, evaluationAt))
+    if (
+      !isEffective(
+        mapping.effectiveFrom,
+        mapping.effectiveTo,
+        evaluationAt,
+        work,
+      )
+    )
       return failure("INVALID_INTERVAL", "MAPPING_EXPIRED");
-    const result = Object.freeze({
+    return Object.freeze({
       state: "VALID" as const,
       reason: "COMPATIBLE_APPROVED" as const,
       ...common,
     });
-    if (operationBudget === undefined) work.beforePublication();
-    return result;
   } catch (error) {
     if (!(error instanceof MatchingFailure)) throw error;
     if (
