@@ -14,6 +14,7 @@ export function boundedDiagnostics(
   work.step(items.length);
   const compare = compareUtf8WithBudget(work);
   const ordered = [...items].sort((a, b) =>
+    // work: fixed vocabularies; flattened by the charged comparator.
     compare(`${a.subject}:${a.code}`, `${b.subject}:${b.code}`),
   );
   const result = Object.freeze(

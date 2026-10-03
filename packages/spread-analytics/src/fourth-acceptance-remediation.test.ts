@@ -3,7 +3,9 @@ import { canonicalAssetId } from "@arbitrage/market-data";
 import { describe, expect, it } from "vitest";
 import {
   admitMaterializedMapping,
+  admitMaterializedMappingWithBudget,
   candidateProvenanceDigest,
+  candidateProvenanceDigestWithBudget,
 } from "./admission.js";
 import {
   WORK_UNITS_PER_STEP,
@@ -23,10 +25,11 @@ import { MappingLedger, approveCommand } from "./commands.js";
 import { immutableCandidate } from "./immutable.js";
 import type { EvidenceRecord, VenueInstrumentEvidence } from "./model.js";
 import { MATCHING_LIMITS } from "./policy.js";
-import { CuratedAssetRegistry } from "./registry.js";
+import { CuratedAssetRegistry, registryWithBudget } from "./registry.js";
 import { replayMapping } from "./replay.js";
 import {
   canonicalExposureKey,
+  canonicalExposureKeyWithBudget,
   canonicalSerialize,
   deterministicId,
   sha256,
@@ -63,8 +66,8 @@ function legs(length: number, options: { unknownEconomics?: boolean } = {}) {
   });
   const curated = registry([left, right]);
   return {
-    left: resolveExposureIdentity(left, curated, T30, T30),
-    right: resolveExposureIdentity(right, curated, T30, T30),
+    left: resolveExposureIdentity(left, curated, T30, T30, new WorkBudget()),
+    right: resolveExposureIdentity(right, curated, T30, T30, new WorkBudget()),
     curated,
     instruments: [left, right] as const,
   };
@@ -182,7 +185,7 @@ describe("fourth acceptance H-03 exact counterexample", () => {
       expect(work.steps).toBeGreaterThanOrEqual(0);
     }
     const identity = legs(155).left.identity!;
-    expect(canonicalExposureKey(identity, new WorkBudget())).toBe(
+    expect(canonicalExposureKeyWithBudget(identity, new WorkBudget())).toBe(
       canonicalExposureKey(identity),
     );
     // Golden pilot vector from the D-055 serialization suite is unchanged.
@@ -280,7 +283,7 @@ describe("fourth acceptance H-03 long valid near-boundary values", () => {
     const registryCost = (long: boolean) =>
       cost((work) => {
         const base = registry([instrument({ name: "REG" })]).revision;
-        new CuratedAssetRegistry(
+        registryWithBudget(
           {
             ...base,
             revision: id("registry", long),
@@ -368,7 +371,7 @@ describe("fourth acceptance H-03 long valid near-boundary values", () => {
 });
 
 describe("fourth acceptance H-03 8,192-pair and cumulative work bounds", () => {
-  it("fails 8,192 valid pairs at the 100,000-step cap inside materialization, publishing nothing", () => {
+  it("fails 8,192 valid pairs at the 100,000-step cap inside the operation, publishing nothing", () => {
     const sizes = [
       32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 33, 33,
     ];
@@ -399,8 +402,9 @@ describe("fourth acceptance H-03 8,192-pair and cumulative work bounds", () => {
     expect(published).toBeUndefined();
     expect(failure).toMatchObject({ code: "MATCHING_BOUND_EXCEEDED" });
     // The stricter cumulative work bound, not the pair-count bound, fired
-    // while candidates were being materialized on the same budget.
-    expect((failure as Error).stack).toContain("makeCandidate");
+    // inside the same operation (D-064 capacity semantics, Option A: the
+    // first bound reached wins; no capacity is guaranteed).
+    expect((failure as Error).stack).toContain("generateCandidatesWithBudget");
     expect(work.steps).toBeLessThanOrEqual(MATCHING_LIMITS.logicalSteps);
     expect(work.steps).toBeGreaterThan(MATCHING_LIMITS.logicalSteps - 200);
     expect(maximumGap).toBe(MATCHING_LIMITS.cancellationInterval);
@@ -433,8 +437,7 @@ describe("fourth acceptance H-03 8,192-pair and cumulative work bounds", () => {
     const stages: readonly [string, (work: WorkBudget) => unknown][] = [
       [
         "registry",
-        (work) =>
-          new CuratedAssetRegistry(registry(instruments).revision, work),
+        (work) => registryWithBudget(registry(instruments).revision, work),
       ],
       [
         "validation",
@@ -462,7 +465,7 @@ describe("fourth acceptance H-03 8,192-pair and cumulative work bounds", () => {
       ],
       [
         "admission",
-        (work) => admitMaterializedMapping(fixture.input, T30, undefined, work),
+        (work) => admitMaterializedMappingWithBudget(fixture.input, T30, work),
       ],
       [
         "serialization-hash",
@@ -537,25 +540,28 @@ describe("fourth acceptance H-03 8,192-pair and cumulative work bounds", () => {
       });
     }
     expect(roots.map((root) => root.replace(/ @.*$/u, ""))).toEqual([
-      "admission.ts: const work = operationBudget ?? new WorkBudget(signal);",
+      "admission.ts: const work = new WorkBudget();",
+      "admission.ts: const work = new WorkBudget(signal);",
       "bounds.ts: const work = new WorkBudget(signal);",
       "bounds.ts: const authority = work ?? new WorkBudget();",
       "candidates.ts: const work = new WorkBudget(signal);",
-      "commands.ts: const operation = work ?? new WorkBudget();",
-      "commands.ts: const work = new WorkBudget();",
-      "commands.ts: work = new WorkBudget(),",
       "commands.ts: const work = new WorkBudget();",
       "commands.ts: const work = new WorkBudget();",
-      "commands.ts: const work = operationBudget ?? new WorkBudget();",
+      "commands.ts: const work = parent ?? new WorkBudget();",
+      "commands.ts: const work = new WorkBudget();",
+      "commands.ts: const work = new WorkBudget();",
+      "commands.ts: const work = new WorkBudget();",
       "commands.ts: const work = new WorkBudget(signal);",
       "diagnostics.ts: const work = new WorkBudget();",
       "evaluator.ts: const work = new WorkBudget(input.signal);",
       "evaluator.ts: const work = new WorkBudget(signal);",
       "evidence.ts: const work = new WorkBudget(signal);",
-      "registry.ts: constructor(revision: AssetRegistryRevision, work = new WorkBudget()) {",
-      "registry.ts: const work = operationBudget ?? new WorkBudget();",
-      "registry.ts: registry: new CuratedAssetRegistry(revision, new WorkBudget(signal)),",
+      "registry.ts: const work = parent ?? new WorkBudget();",
+      "registry.ts: const work = new WorkBudget();",
+      "registry.ts: const work = new WorkBudget();",
+      "registry.ts: const work = new WorkBudget(signal);",
       "replay.ts: const work = new WorkBudget(input.signal);",
+      "serialization.ts: const work = new WorkBudget();",
       "transitions.ts: const work = operationBudget ?? new WorkBudget();",
     ]);
   });
@@ -567,7 +573,7 @@ describe("fourth acceptance H-03 cancellation inside repeated work", () => {
     work.step(127);
     expectCancelledInside(
       () => assertCompositeId("x".repeat(4_000), work),
-      "scanText",
+      "assertCompositeId",
     );
   });
 
@@ -577,7 +583,7 @@ describe("fourth acceptance H-03 cancellation inside repeated work", () => {
     work.step(127);
     work.units(WORK_UNITS_PER_STEP - 1);
     expectCancelledInside(
-      () => canonicalExposureKey(identity, work),
+      () => canonicalExposureKeyWithBudget(identity, work),
       "canonicalExposureKey",
     );
   });
@@ -656,7 +662,7 @@ describe("fourth acceptance H-03 cancellation inside repeated work", () => {
     const provenance = cancellingBudget(128);
     provenance.step(127);
     expectCancelledInside(
-      () => candidateProvenanceDigest(candidate, provenance),
+      () => candidateProvenanceDigestWithBudget(candidate, provenance),
       "deterministicId",
     );
     const identifier = cancellingBudget(128);

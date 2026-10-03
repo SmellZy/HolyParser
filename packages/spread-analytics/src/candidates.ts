@@ -1,5 +1,11 @@
 import type { CanonicalAssetId, Timestamp } from "@arbitrage/market-data";
-import { WorkBudget, assertCount, type CancellationSignal } from "./bounds.js";
+import {
+  WorkBudget,
+  assertCount,
+  chargeKey,
+  sameText,
+  type CancellationSignal,
+} from "./bounds.js";
 import type {
   InstrumentMatchCandidate,
   ProvisionalExposureIdentity,
@@ -13,16 +19,17 @@ import {
   MATCHING_POLICY_VERSION,
   isSpecialNativeFamily,
 } from "./policy.js";
-import { CuratedAssetRegistry } from "./registry.js";
+import { CuratedAssetRegistry, resolveWithBudget } from "./registry.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import {
-  canonicalExposureKey,
+  canonicalExposureKeyWithBudget,
   canonicalSerialize,
   compareUtf8WithBudget,
   deterministicId,
   sha256,
 } from "./serialization.js";
 import { validateVenueInstrumentEvidence } from "./validation.js";
+import { epoch } from "./time.js";
 
 export function classifyProductScope(
   item: VenueInstrumentEvidence,
@@ -49,13 +56,14 @@ function role(
   ref: string,
   at: Timestamp,
   cutoff: Timestamp,
-  work?: WorkBudget,
+  work: WorkBudget,
 ): {
   asset?: CanonicalAssetId;
   confidence?: "EXACT_METADATA" | "REVIEWED_MANUAL";
   reason?: MatchReasonCode;
 } {
-  const value = registry.resolve(
+  const value = resolveWithBudget(
+    registry,
     instrument.metadata.venue,
     instrument.metadata.productGroup,
     ref,
@@ -78,9 +86,9 @@ export function resolveExposureIdentity(
   registry: CuratedAssetRegistry,
   at: Timestamp,
   cutoff: Timestamp,
-  work?: WorkBudget,
+  work: WorkBudget,
 ): ResolvedInstrument {
-  work?.step();
+  work.step();
   const base = role(
     registry,
     instrument,
@@ -154,6 +162,7 @@ export function resolveExposureIdentity(
     instrument.economics.nativeQuantityUnit.state === "KNOWN" &&
     instrument.economics.canonicalBaseUnit.state === "KNOWN";
   const provenIdentity = Object.freeze({
+    // work: fixed-shape internal identity (at most five keys).
     ...provisionalIdentity,
     ...(economicsProven
       ? {
@@ -201,18 +210,6 @@ const provisionalValue = (
     exposureUnit: value.exposureUnit ?? null,
   };
 };
-// Native string equality compares every code unit when lengths are equal.
-const sameText = (
-  left: string | undefined,
-  right: string | undefined,
-  work: WorkBudget,
-): boolean => {
-  work.units(
-    (left !== undefined && left.length === right?.length ? left.length : 0) + 1,
-  );
-  return left !== undefined && left === right;
-};
-
 export function makeCandidate(
   left: ResolvedInstrument,
   right: ResolvedInstrument,
@@ -239,12 +236,15 @@ export function makeCandidate(
     compareUtf8WithBudget(work),
   );
   const leftKey = left.identity
-    ? canonicalExposureKey(left.identity, work)
+    ? canonicalExposureKeyWithBudget(left.identity, work)
     : undefined;
   const rightKey = right.identity
-    ? canonicalExposureKey(right.identity, work)
+    ? canonicalExposureKeyWithBudget(right.identity, work)
     : undefined;
-  const key = sameText(leftKey, rightKey, work) ? leftKey : undefined;
+  const key =
+    sameText(leftKey, rightKey, work) && leftKey !== undefined
+      ? leftKey
+      : undefined;
   const provisionalIdentity =
     left.provisionalIdentity &&
     right.provisionalIdentity &&
@@ -343,6 +343,9 @@ export function generateCandidatesWithBudget(
   work: WorkBudget,
 ): readonly InstrumentMatchCandidate[] {
   assertCount(instruments.length, MATCHING_LIMITS.instruments, "Instrument");
+  // H-04: strict canonical UTC evaluation/knowledge times before any work.
+  epoch(at, work);
+  epoch(cutoff, work);
   for (const instrument of instruments) {
     work.step();
     validateVenueInstrumentEvidence(instrument, work);
@@ -357,8 +360,11 @@ export function generateCandidatesWithBudget(
   for (let index = 1; index < ordered.length; index += 1) {
     work.step();
     if (
-      ordered[index - 1]!.metadata.instrumentId ===
-      ordered[index]!.metadata.instrumentId
+      sameText(
+        ordered[index - 1]!.metadata.instrumentId,
+        ordered[index]!.metadata.instrumentId,
+        work,
+      )
     )
       throw new MatchingFailure(
         "DUPLICATE_EXPOSURE_CONFLICT",
@@ -374,33 +380,40 @@ export function generateCandidatesWithBudget(
     work.step();
     const key = provisionalKey(item, work);
     if (key === undefined) continue;
-    const group = groups.get(key) ?? [];
+    // Map hashing reads the whole key; charge each lookup and insertion.
+    const group = groups.get(chargeKey(key, work)) ?? [];
     group.push(item);
-    groups.set(key, group);
+    groups.set(chargeKey(key, work), group);
   }
   const pairs: [ResolvedInstrument, ResolvedInstrument][] = [],
     partner = new Map<string, number>();
   work.units(groups.size + 1);
   for (const key of [...groups.keys()].sort(compareUtf8WithBudget(work))) {
-    const group = groups.get(key)!;
+    const group = groups.get(chargeKey(key, work))!;
     for (let i = 0; i < group.length; i++)
       for (let j = i + 1; j < group.length; j++) {
         work.step();
         const a = group[i]!,
           b = group[j]!;
-        if (a.instrument.metadata.venue === b.instrument.metadata.venue)
+        if (
+          sameText(
+            a.instrument.metadata.venue,
+            b.instrument.metadata.venue,
+            work,
+          )
+        )
           continue;
         for (const id of [
           a.instrument.metadata.instrumentId,
           b.instrument.metadata.instrumentId,
         ]) {
-          const n = (partner.get(id) ?? 0) + 1;
+          const n = (partner.get(chargeKey(id, work)) ?? 0) + 1;
           if (n > MATCHING_LIMITS.partnersPerInstrument)
             throw new MatchingFailure(
               "MATCHING_BOUND_EXCEEDED",
               "Partner bound exceeded.",
             );
-          partner.set(id, n);
+          partner.set(chargeKey(id, work), n);
         }
         pairs.push([a, b]);
         if (pairs.length > MATCHING_LIMITS.candidatePairs)

@@ -5,6 +5,9 @@ import {
   assertCompositeId,
   assertCount,
   assertReasonText,
+  chargeKey,
+  sameText,
+  type CancellationSignal,
 } from "./bounds.js";
 import type {
   MappingTransitionRecord,
@@ -13,8 +16,9 @@ import type {
 } from "./model.js";
 import { chargeCopy, immutableMapping } from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
-import { chargeTimestamp, epoch, isEffective } from "./registry.js";
-import { MatchingFailure } from "./reasons.js";
+import { isEffective } from "./registry.js";
+import { epoch } from "./time.js";
+import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 import {
   createTransitionRecord,
@@ -99,9 +103,35 @@ function assertRevision(value: number, label: string): void {
     throw new MatchingFailure("INPUT_INVALID", `${label} is invalid.`);
 }
 
+const REVIEWER_ROLES = [
+  "MARKET_DATA_REVIEWER",
+  "PRODUCT_REVIEWER",
+  "QUANT_REVIEWER",
+] as const;
+const APPROVAL_LIMIT = 3;
+
+function validateApprovalInputs(
+  approvals: readonly ApprovalInput[],
+  work: WorkBudget,
+): void {
+  if (!Array.isArray(approvals))
+    throw new MatchingFailure("INPUT_INVALID", "Approvals are invalid.");
+  // Count before any traversal; every field is bounded before comparison.
+  assertCount(approvals.length, APPROVAL_LIMIT, "Approval");
+  for (const approval of approvals) {
+    work.step();
+    if (approval === null || typeof approval !== "object")
+      throw new MatchingFailure("INPUT_INVALID", "Approval is invalid.");
+    assertAtomicId(approval.actorId, "Reviewer ID", work);
+    if (!REVIEWER_ROLES.includes(approval.role))
+      throw new MatchingFailure("INPUT_INVALID", "Reviewer role is invalid.");
+    epoch(approval.recordedAt, work);
+  }
+}
+
 function validateApproveInput(
   input: ApproveCommandInput,
-  work?: WorkBudget,
+  work: WorkBudget,
 ): void {
   for (const [value, label] of [
     [input.commandId, "Command ID"],
@@ -112,7 +142,7 @@ function validateApproveInput(
     [input.registryRevision, "Registry revision"],
     [input.evidenceRevision, "Evidence revision"],
   ] as const) {
-    work?.step();
+    work.step();
     assertAtomicId(value, label, work);
   }
   assertCompositeId(input.leftInstrumentId, work);
@@ -127,41 +157,38 @@ function validateApproveInput(
     input.effectiveFrom,
     work,
   );
-  for (const approval of input.approvals) {
-    work?.step();
-    assertAtomicId(approval.actorId, "Reviewer ID", work);
-    if (
-      !["MARKET_DATA_REVIEWER", "PRODUCT_REVIEWER", "QUANT_REVIEWER"].includes(
-        approval.role,
-      )
-    )
-      throw new MatchingFailure("INPUT_INVALID", "Reviewer role is invalid.");
-    epoch(approval.recordedAt, work);
-  }
+  validateApprovalInputs(input.approvals, work);
 }
-export function approveCommand(
+
+/** Internal: approve-command construction on the caller's operation budget. */
+export function approveCommandWithBudget(
   input: ApproveCommandInput,
-  work?: WorkBudget,
+  work: WorkBudget,
 ): ApproveMappingCommand {
-  const operation = work ?? new WorkBudget();
-  validateApproveInput(input, operation);
-  const digest = payload(input, operation);
-  chargeCopy(input, operation);
-  const result = Object.freeze({
+  validateApproveInput(input, work);
+  const digest = payload(input, work);
+  chargeCopy(input, work);
+  return Object.freeze({
     ...input,
     kind: "APPROVE_MAPPING",
     approvals: Object.freeze(
       input.approvals.map(
         (a) => (
-          operation.step(),
-          chargeCopy(a, operation),
+          work.step(),
+          chargeCopy(a, work),
           Object.freeze({ ...a, approvedDigest: digest })
         ),
       ),
     ),
     commandDigest: digest,
   });
-  if (work === undefined) operation.beforePublication();
+}
+export function approveCommand(
+  input: ApproveCommandInput,
+): ApproveMappingCommand {
+  const work = new WorkBudget();
+  const result = approveCommandWithBudget(input, work);
+  work.beforePublication();
   return result;
 }
 export function invalidateCommand(
@@ -176,6 +203,7 @@ export function invalidateCommand(
   if (!Number.isSafeInteger(input.affectedVersion) || input.affectedVersion < 1)
     throw new MatchingFailure("INPUT_INVALID", "Affected version is invalid.");
   epoch(input.recordedKnowledgeAt, work);
+  validateApprovalInputs(input.approvals, work);
   const transition = createTransitionRecord(
     {
       transitionId: input.commandId,
@@ -209,30 +237,123 @@ export function invalidateCommand(
   return result;
 }
 
+/**
+ * Bounds every caller-controlled command field before any comparison, hash
+ * or lookup touches it (acceptance-5 H-03). Unknown kinds are rejected.
+ */
+function validateCommandFields(
+  command: MappingCommand,
+  work: WorkBudget,
+): void {
+  work.step();
+  if (command === null || typeof command !== "object")
+    throw new MatchingFailure("INPUT_INVALID", "Command is invalid.");
+  if (command.kind === "APPROVE_MAPPING") {
+    validateApproveInput(command, work);
+    assertAtomicId(command.commandDigest, "Command digest", work);
+    for (const approval of command.approvals) {
+      work.step();
+      assertAtomicId(approval.approvedDigest, "Approval digest", work);
+    }
+    return;
+  }
+  if (command.kind !== "INVALIDATE_MAPPING")
+    throw new MatchingFailure("INPUT_INVALID", "Command kind is invalid.");
+  for (const [value, label] of [
+    [command.commandId, "Command ID"],
+    [command.commandDigest, "Command digest"],
+    [command.mappingId, "Mapping ID"],
+    [command.invalidationReference, "Invalidation reference"],
+    [command.proposedBy, "Proposer ID"],
+    [command.registryRevision, "Registry revision"],
+    [command.evidenceRevision, "Evidence revision"],
+    [command.provenanceDigest, "Provenance digest"],
+  ] as const) {
+    work.step();
+    assertAtomicId(value, label, work);
+  }
+  assertReasonText(command.reasonText, work);
+  assertRevision(command.expectedRevision, "Expected revision");
+  if (
+    !Number.isSafeInteger(command.affectedVersion) ||
+    command.affectedVersion < 1
+  )
+    throw new MatchingFailure("INPUT_INVALID", "Affected version is invalid.");
+  epoch(command.effectiveAt, work);
+  epoch(command.recordedKnowledgeAt, work);
+  validateApprovalInputs(command.approvals, work);
+  const transition = command.transition as unknown;
+  if (
+    transition === null ||
+    typeof transition !== "object" ||
+    !Array.isArray((transition as MappingTransitionRecord).approvals)
+  )
+    throw new MatchingFailure("INPUT_INVALID", "Transition is malformed.");
+}
+
+// Internal construction hand-off: a public caller cannot supply a budget.
+let pendingLedgerBudget: WorkBudget | undefined;
+export function ledgerWithBudget(
+  versions: readonly MappingVersion[],
+  transitions: readonly MappingTransitionRecord[],
+  work: WorkBudget,
+): MappingLedger {
+  pendingLedgerBudget = work;
+  try {
+    return new MappingLedger(versions, transitions);
+  } finally {
+    pendingLedgerBudget = undefined;
+  }
+}
+type LedgerApplication = {
+  readonly ledger: MappingLedger;
+  readonly mapping: MappingVersion;
+  readonly idempotent: boolean;
+};
+// Internal budgeted application, bound in the class static block below.
+// Exported from this module only; the package root does not re-export it.
+export let applyWithBudget: (
+  ledger: MappingLedger,
+  command: MappingCommand,
+  work: WorkBudget,
+) => LedgerApplication;
+
 export class MappingLedger {
+  static {
+    applyWithBudget = (ledger, command, work) => ledger.#apply(command, work);
+  }
   readonly versions: readonly MappingVersion[];
   readonly transitions: readonly MappingTransitionRecord[];
   #commandDigests: Map<string, string>;
   constructor(
     versions: readonly MappingVersion[] = [],
     transitions: readonly MappingTransitionRecord[] = [],
-    work = new WorkBudget(),
   ) {
+    const parent = pendingLedgerBudget;
+    pendingLedgerBudget = undefined;
+    const work = parent ?? new WorkBudget();
     assertCount(
       versions.length,
       MATCHING_LIMITS.mappingEventRecords,
       "Mapping record",
     );
+    assertCount(
+      transitions.length,
+      MATCHING_LIMITS.mappingEventRecords,
+      "Mapping transition",
+    );
     const counts = new Map<string, number>();
     for (const v of versions) {
       work.step();
-      const n = (counts.get(v.mappingId) ?? 0) + 1;
+      // Bound the key before hashing it.
+      assertAtomicId(v.mappingId, "Mapping ID", work);
+      const n = (counts.get(chargeKey(v.mappingId, work)) ?? 0) + 1;
       assertCount(
         n,
         MATCHING_LIMITS.mappingVersionsPerMapping,
         "Mapping history",
       );
-      counts.set(v.mappingId, n);
+      counts.set(chargeKey(v.mappingId, work), n);
     }
     this.versions = Object.freeze(
       versions.map((value) => (work.step(), immutableMapping(value, work))),
@@ -254,11 +375,12 @@ export class MappingLedger {
       }),
     );
     this.#commandDigests = new Map();
+    if (parent === undefined) work.beforePublication();
   }
   commandDigest(commandId: string): string | undefined {
     const work = new WorkBudget();
     assertAtomicId(commandId, "Command ID", work);
-    const result = this.#commandDigests.get(commandId);
+    const result = this.#commandDigests.get(chargeKey(commandId, work));
     work.beforePublication();
     return result;
   }
@@ -281,21 +403,22 @@ export class MappingLedger {
     work.beforePublication();
     return result;
   }
-  apply(
-    command: MappingCommand,
-    operationBudget?: WorkBudget,
-  ): {
-    readonly ledger: MappingLedger;
-    readonly mapping: MappingVersion;
-    readonly idempotent: boolean;
-  } {
-    const work = operationBudget ?? new WorkBudget();
-    work.step();
+  /** Public application: its own operation budget and final check. */
+  apply(command: MappingCommand): LedgerApplication {
+    const work = new WorkBudget();
+    const result = this.#apply(command, work);
+    work.beforePublication();
+    return result;
+  }
+  #apply(command: MappingCommand, work: WorkBudget): LedgerApplication {
+    validateCommandFields(command, work);
     if (command.kind === "INVALIDATE_MAPPING")
-      this.assertInvalidateCommandBinding(command, work);
-    const priorDigest = this.#commandDigests.get(command.commandId);
+      this.#assertInvalidateCommandBinding(command, work);
+    const priorDigest = this.#commandDigests.get(
+      chargeKey(command.commandId, work),
+    );
     if (priorDigest !== undefined) {
-      if (priorDigest !== command.commandDigest)
+      if (!sameText(priorDigest, command.commandDigest, work))
         throw new MatchingFailure(
           "COMMAND_DIGEST_CONFLICT",
           "Command ID reused.",
@@ -303,18 +426,18 @@ export class MappingLedger {
       work.units(2 * this.versions.length + 1);
       const mapping = [...this.versions]
         .reverse()
-        .find((v) => (work.step(), v.mappingId === command.mappingId));
+        .find(
+          (v) => (work.step(), sameText(v.mappingId, command.mappingId, work)),
+        );
       if (!mapping)
         throw new MatchingFailure(
           "TRANSITION_REJECTED",
           "Missing idempotent result.",
         );
-      const result = { ledger: this, mapping, idempotent: true };
-      if (operationBudget === undefined) work.beforePublication();
-      return result;
+      return Object.freeze({ ledger: this, mapping, idempotent: true });
     }
     const revision = this.versions.filter(
-      (v) => (work.step(), v.mappingId === command.mappingId),
+      (v) => (work.step(), sameText(v.mappingId, command.mappingId, work)),
     ).length;
     if (command.expectedRevision !== revision)
       throw new MatchingFailure(
@@ -325,15 +448,15 @@ export class MappingLedger {
     let nextVersions = this.versions;
     let nextTransitions = this.transitions;
     if (command.kind === "APPROVE_MAPPING") {
-      mapping = this.approve(command, revision, work);
+      mapping = this.#approve(command, revision, work);
       work.step(this.versions.length);
       nextVersions = [...this.versions, mapping];
     } else {
-      const transition = this.invalidate(command, revision, work);
+      const transition = this.#invalidate(command, revision, work);
       mapping = this.versions.find(
         (value) =>
           (work.step(), true) &&
-          value.mappingId === command.mappingId &&
+          sameText(value.mappingId, command.mappingId, work) &&
           value.version === command.affectedVersion,
       )!;
       work.step(this.transitions.length);
@@ -342,26 +465,20 @@ export class MappingLedger {
     const commands = new Map<string, string>();
     for (const [commandId, digest] of this.#commandDigests) {
       work.step();
-      commands.set(commandId, digest);
+      commands.set(chargeKey(commandId, work), digest);
     }
-    commands.set(command.commandId, command.commandDigest);
-    const ledger = new MappingLedger(nextVersions, nextTransitions, work);
+    commands.set(chargeKey(command.commandId, work), command.commandDigest);
+    const ledger = ledgerWithBudget(nextVersions, nextTransitions, work);
     ledger.#commandDigests = commands;
-    const result = {
-      ledger,
-      mapping,
-      idempotent: false,
-    };
-    if (operationBudget === undefined) work.beforePublication();
-    return result;
+    return Object.freeze({ ledger, mapping, idempotent: false });
   }
-  private approve(
+  #approve(
     command: ApproveMappingCommand,
     revision: number,
     work: WorkBudget,
   ): MappingVersion {
     assertReasonText(command.reasonText, work);
-    if (command.commandDigest !== payload(command, work))
+    if (!sameText(command.commandDigest, payload(command, work), work))
       throw new MatchingFailure(
         "COMMAND_DIGEST_CONFLICT",
         "Invalid command digest.",
@@ -375,16 +492,19 @@ export class MappingLedger {
     if (
       quant.length !== 1 ||
       md.length !== 1 ||
-      new Set([command.proposedBy, quant[0]!.actorId, md[0]!.actorId]).size !==
-        3
+      new Set([
+        chargeKey(command.proposedBy, work),
+        chargeKey(quant[0]!.actorId, work),
+        chargeKey(md[0]!.actorId, work),
+      ]).size !== 3
     )
       throw new MatchingFailure(
         "REVIEWER_SEPARATION_REQUIRED",
         "Independent reviewers required.",
       );
     if (
-      quant[0]!.approvedDigest !== command.commandDigest ||
-      md[0]!.approvedDigest !== command.commandDigest
+      !sameText(quant[0]!.approvedDigest, command.commandDigest, work) ||
+      !sameText(md[0]!.approvedDigest, command.commandDigest, work)
     )
       throw new MatchingFailure(
         "COMMAND_DIGEST_CONFLICT",
@@ -396,21 +516,18 @@ export class MappingLedger {
       command.effectiveFrom,
       work,
     );
-    const parse = (value: string): number => (
-      chargeTimestamp(value, work),
-      Date.parse(value)
-    );
     const overlap = this.versions.some(
       (v) =>
         (work.step(), true) &&
         v.status === "APPROVED" &&
         [v.leftInstrumentId, v.rightInstrumentId].some(
           (id) =>
-            id === command.leftInstrumentId || id === command.rightInstrumentId,
+            sameText(id, command.leftInstrumentId, work) ||
+            sameText(id, command.rightInstrumentId, work),
         ) &&
-        parse(v.effectiveFrom) < parse(command.effectiveTo) &&
-        parse(command.effectiveFrom) < parse(v.effectiveTo) &&
-        v.exposureKey !== command.exposureKey,
+        epoch(v.effectiveFrom, work) < epoch(command.effectiveTo, work) &&
+        epoch(command.effectiveFrom, work) < epoch(v.effectiveTo, work) &&
+        !sameText(v.exposureKey, command.exposureKey, work),
     );
     if (overlap)
       throw new MatchingFailure(
@@ -438,7 +555,7 @@ export class MappingLedger {
       work,
     );
   }
-  private invalidate(
+  #invalidate(
     command: InvalidateMappingCommand,
     revision: number,
     work: WorkBudget,
@@ -447,7 +564,7 @@ export class MappingLedger {
     const target = this.versions.find(
       (v) =>
         (work.step(), true) &&
-        v.mappingId === command.mappingId &&
+        sameText(v.mappingId, command.mappingId, work) &&
         v.version === command.affectedVersion &&
         v.status === "APPROVED",
     );
@@ -465,7 +582,7 @@ export class MappingLedger {
       this.transitions.some(
         (transition) => (
           work.step(),
-          transition.mappingId === command.mappingId &&
+          sameText(transition.mappingId, command.mappingId, work) &&
             transition.affectedVersion === command.affectedVersion
         ),
       )
@@ -481,34 +598,37 @@ export class MappingLedger {
       work,
     );
   }
-  private assertInvalidateCommandBinding(
+  #assertInvalidateCommandBinding(
     command: InvalidateMappingCommand,
     work: WorkBudget,
   ): void {
     work.step();
     const transition = command.transition;
+    // Every command-side field is already bounded (validateCommandFields), so
+    // each comparison is length-gated and charged before it runs.
+    const same = (left: unknown, right: unknown) => sameText(left, right, work);
     if (
-      command.commandId !== transition.transitionId ||
-      command.commandDigest !== transition.commandDigest ||
-      command.mappingId !== transition.mappingId ||
+      !same(command.commandId, transition.transitionId) ||
+      !same(command.commandDigest, transition.commandDigest) ||
+      !same(command.mappingId, transition.mappingId) ||
       command.affectedVersion !== transition.affectedVersion ||
       command.expectedRevision !== transition.expectedRevision ||
-      command.effectiveAt !== transition.effectiveAt ||
-      command.recordedKnowledgeAt !== transition.recordedKnowledgeAt ||
-      command.invalidationReference !== transition.reference ||
-      command.reasonText !== transition.reasonText ||
-      command.proposedBy !== transition.proposerId ||
-      command.registryRevision !== transition.registryRevision ||
-      command.evidenceRevision !== transition.evidenceRevision ||
-      command.provenanceDigest !== transition.provenanceDigest ||
+      !same(command.effectiveAt, transition.effectiveAt) ||
+      !same(command.recordedKnowledgeAt, transition.recordedKnowledgeAt) ||
+      !same(command.invalidationReference, transition.reference) ||
+      !same(command.reasonText, transition.reasonText) ||
+      !same(command.proposedBy, transition.proposerId) ||
+      !same(command.registryRevision, transition.registryRevision) ||
+      !same(command.evidenceRevision, transition.evidenceRevision) ||
+      !same(command.provenanceDigest, transition.provenanceDigest) ||
       transition.transitionType !== "INVALIDATE" ||
       command.approvals.length !== transition.approvals.length ||
       command.approvals.some(
         (approval, index) => (
           work.step(),
-          approval.actorId !== transition.approvals[index]?.actorId ||
+          !same(approval.actorId, transition.approvals[index]?.actorId) ||
             approval.role !== transition.approvals[index]?.role ||
-            approval.recordedAt !== transition.approvals[index]?.recordedAt
+            !same(approval.recordedAt, transition.approvals[index]?.recordedAt)
         ),
       )
     )
@@ -529,29 +649,42 @@ export type MappingCommandAdmission =
   | {
       readonly status: "QUARANTINED" | "REJECTED";
       readonly ledger: MappingLedger;
-      readonly reason: import("./reasons.js").MatchReasonCode;
+      readonly reason: MatchReasonCode;
     };
 
 export function admitMappingCommand(
   ledger: MappingLedger,
   command: MappingCommand,
-  signal?: import("./bounds.js").CancellationSignal,
+  signal?: CancellationSignal,
 ): MappingCommandAdmission {
   const work = new WorkBudget(signal);
+  let result: MappingCommandAdmission;
   try {
-    const result = {
+    result = Object.freeze({
       status: "APPLIED" as const,
-      ...ledger.apply(command, work),
-    };
-    work.beforePublication();
-    return result;
+      // work: fixed-shape internal result (ledger, mapping, idempotent).
+      ...applyWithBudget(ledger, command, work),
+    });
   } catch (error) {
     if (!(error instanceof MatchingFailure)) throw error;
-    return {
+    // Cancellation and budget exhaustion are operation failures, never
+    // ordinary domain outcomes: they propagate and nothing is published.
+    if (
+      error.code === "EVALUATION_CANCELLED" ||
+      error.code === "MATCHING_BOUND_EXCEEDED"
+    )
+      throw error;
+    result = Object.freeze({
       status:
-        error.code === "MAPPING_INTERVAL_CONFLICT" ? "QUARANTINED" : "REJECTED",
+        error.code === "MAPPING_INTERVAL_CONFLICT"
+          ? ("QUARANTINED" as const)
+          : ("REJECTED" as const),
       ledger,
       reason: error.code,
-    };
+    });
   }
+  // Every typed outcome (APPLIED, REJECTED, QUARANTINED) passes the final
+  // cancellation/budget check before it is returned.
+  work.beforePublication();
+  return result;
 }

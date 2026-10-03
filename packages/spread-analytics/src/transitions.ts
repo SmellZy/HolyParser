@@ -1,5 +1,12 @@
 import type { Timestamp } from "@arbitrage/market-data";
-import { WorkBudget, assertAtomicId, assertReasonText } from "./bounds.js";
+import {
+  WorkBudget,
+  assertAtomicId,
+  assertCount,
+  assertReasonText,
+  chargeKey,
+  sameText,
+} from "./bounds.js";
 import type {
   MappingTransitionRecord,
   MappingTransitionType,
@@ -95,12 +102,13 @@ function validateApprovalActors(
 ): void {
   const quant: ReviewApproval[] = [];
   const marketData: ReviewApproval[] = [];
+  assertCount(approvals.length, 3, "Approval");
   for (const approval of approvals) {
     work.step();
     assertAtomicId(approval.actorId, "Transition reviewer", work);
     assertAtomicId(approval.approvedDigest, "Transition approval digest", work);
     epoch(approval.recordedAt, work);
-    if (approval.approvedDigest !== digest)
+    if (!sameText(approval.approvedDigest, digest, work))
       throw new MatchingFailure(
         "COMMAND_DIGEST_CONFLICT",
         "Transition approval digest mismatch.",
@@ -112,7 +120,11 @@ function validateApprovalActors(
     approvals.length !== 2 ||
     quant.length !== 1 ||
     marketData.length !== 1 ||
-    new Set([proposerId, quant[0]!.actorId, marketData[0]!.actorId]).size !== 3
+    new Set([
+      chargeKey(proposerId, work),
+      chargeKey(quant[0]!.actorId, work),
+      chargeKey(marketData[0]!.actorId, work),
+    ]).size !== 3
   )
     throw new MatchingFailure(
       "REVIEWER_SEPARATION_REQUIRED",
@@ -189,6 +201,9 @@ export function createTransitionRecord(
   operationBudget?: WorkBudget,
 ): MappingTransitionRecord {
   const work = operationBudget ?? new WorkBudget();
+  if (!Array.isArray(input.approvals))
+    throw new MatchingFailure("INPUT_INVALID", "Approvals are invalid.");
+  assertCount(input.approvals.length, 3, "Approval");
   const unsigned = {
     transitionId: input.transitionId,
     mappingId: input.mappingId,
@@ -231,13 +246,15 @@ export function validateTransitionRecord(
   work: WorkBudget,
 ): MappingTransitionRecord {
   validateSemanticFields(input, work);
+  // Transition fields are bounded by validateSemanticFields; every equality
+  // pass below is charged before it runs.
   if (
-    input.mappingId !== target.mappingId ||
+    !sameText(input.mappingId, target.mappingId, work) ||
     input.affectedVersion !== target.version ||
     input.expectedRevision !== target.version ||
-    input.registryRevision !== target.registryRevision ||
-    input.evidenceRevision !== target.evidenceRevision ||
-    input.provenanceDigest !== provenanceDigest
+    !sameText(input.registryRevision, target.registryRevision, work) ||
+    !sameText(input.evidenceRevision, target.evidenceRevision, work) ||
+    !sameText(input.provenanceDigest, provenanceDigest, work)
   )
     throw new MatchingFailure(
       "MAPPING_REVISION_CONFLICT",
@@ -258,7 +275,7 @@ export function validateTransitionRecord(
       "Transition time precedes or falls outside its authority.",
     );
   const expectedDigest = payload(input, work);
-  if (expectedDigest !== input.commandDigest)
+  if (!sameText(expectedDigest, input.commandDigest, work))
     throw new MatchingFailure(
       "COMMAND_DIGEST_CONFLICT",
       "Transition command digest mismatch.",

@@ -1,6 +1,9 @@
 import { canonicalAssetId } from "@arbitrage/market-data";
 import { describe, expect, it } from "vitest";
-import { admitMaterializedMapping } from "./admission.js";
+import {
+  admitMaterializedMapping,
+  admitMaterializedMappingWithBudget,
+} from "./admission.js";
 import { WORK_UNITS_PER_STEP, WorkBudget, parseBoundedJson } from "./bounds.js";
 import {
   generateCandidates,
@@ -10,6 +13,7 @@ import {
 import {
   MappingLedger,
   admitMappingCommand,
+  applyWithBudget,
   approveCommand,
 } from "./commands.js";
 import { evaluateBatch, evaluateMatch } from "./evaluator.js";
@@ -20,7 +24,7 @@ import { MATCHING_LIMITS } from "./policy.js";
 import { admitRegistryRevision } from "./registry.js";
 import { replayMapping } from "./replay.js";
 import {
-  canonicalExposureKey,
+  canonicalExposureKeyWithBudget,
   canonicalSerialize,
   deterministicId,
   sha256,
@@ -249,9 +253,9 @@ describe("independent oracle: actual work never exceeds charged work", () => {
       ],
       [
         "admission",
-        (work) => admitMaterializedMapping(f.input, T30, undefined, work),
+        (work) => admitMaterializedMappingWithBudget(f.input, T30, work),
       ],
-      ["ledger", (work) => f.ledger.apply(f.next, work)],
+      ["ledger", (work) => applyWithBudget(f.ledger, f.next, work)],
     ];
     for (const [name, operation] of measured) {
       let charged = 0;
@@ -303,7 +307,7 @@ describe("independent oracle: actual work never exceeds charged work", () => {
 });
 
 describe("independent oracle: caller-supplied timestamp parsing", () => {
-  it("charges a hostile long timestamp before Date.parse and fails typed", () => {
+  it("rejects a hostile long timestamp by length before any proportional work", () => {
     const base = registry([instrument({ name: "TIME" })]).revision;
     const hostile = `${T0}${" ".repeat(200_000)}`;
     const revision = {
@@ -316,39 +320,27 @@ describe("independent oracle: caller-supplied timestamp parsing", () => {
       admitRegistryRevision(revision, signal),
     );
     expect(trace.error).toMatchObject({ code: "EVIDENCE_TIME_INVALID" });
-    // The parse was charged (hundreds of steps => many checks) before the
-    // atomic native Date.parse ran; interruptible work stays bounded.
-    expect(trace.checks.length).toBeGreaterThan(
-      hostile.length /
-        WORK_UNITS_PER_STEP /
-        MATCHING_LIMITS.cancellationInterval,
-    );
+    // H-04: the strict grammar bounds the length in O(1); no scan, parse or
+    // Date.parse of the 200,000-character value occurs.
+    expect(trace.breakdown.has("Date.parse")).toBe(false);
+    expect(trace.end).toBeLessThan(hostile.length / 10);
     expect(maximumInterruptibleGap(trace)).toBeLessThanOrEqual(
       INTERRUPTIBLE_GAP_CEILING,
     );
   });
 
-  it("charges replay cutoff parsing per comparison", () => {
+  it("rejects a malformed replay cutoff before replay work", () => {
     const f = fixtures();
-    const run = (knowledgeCutoff: string) => {
-      let checks = 0;
+    expect(() =>
       replayMapping({
         mode: "AS_KNOWN",
         history: f.history,
         mappingId: f.history.mappingId,
         evaluationAt: T30,
-        knowledgeCutoff: knowledgeCutoff as typeof T30,
+        knowledgeCutoff: `${T30}${" ".repeat(20_000)}` as typeof T30,
         replayRevision: "timestamp-cost",
-        signal: {
-          get aborted() {
-            checks += 1;
-            return false;
-          },
-        },
-      });
-      return checks;
-    };
-    expect(run(`${T30}${" ".repeat(20_000)}`)).toBeGreaterThan(run(T30) + 10);
+      }),
+    ).toThrowError(expect.objectContaining({ code: "EVIDENCE_TIME_INVALID" }));
   });
 });
 
@@ -364,12 +356,18 @@ describe("independent oracle: negative control", () => {
       base,
     });
     const curated = registry([left, right]);
-    const resolved = resolveExposureIdentity(left, curated, T30, T30);
+    const resolved = resolveExposureIdentity(
+      left,
+      curated,
+      T30,
+      T30,
+      new WorkBudget(),
+    );
     const trace = traceOperation((signal) => {
       const work = new WorkBudget(signal);
       for (let index = 0; index < 1_000; index += 1) {
         work.step();
-        const key = canonicalExposureKey(resolved.identity!);
+        const key = canonicalExposureKeyWithBudget(resolved.identity!);
         const id = deterministicId("control/v1", {
           key,
           provisional: canonicalSerialize({ base, index: String(index) }),

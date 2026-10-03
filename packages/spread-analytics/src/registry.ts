@@ -3,6 +3,8 @@ import {
   WorkBudget,
   assertAtomicId,
   assertCount,
+  chargeKey,
+  sameText,
   type CancellationSignal,
 } from "./bounds.js";
 import { immutableRegistryRevision } from "./immutable.js";
@@ -16,18 +18,10 @@ import type {
 } from "./model.js";
 import { MATCHING_LIMITS } from "./policy.js";
 import { assertClosedKeys } from "./validation.js";
+import { epoch } from "./time.js";
 
-// Date.parse scans its (caller-supplied, possibly long) input once; charge
-// that pass before it runs. Parsing semantics are unchanged.
-export const chargeTimestamp = (value: unknown, work?: WorkBudget): void =>
-  work?.units(typeof value === "string" ? value.length + 1 : 1);
-export const epoch = (value: Timestamp, work?: WorkBudget): bigint => {
-  chargeTimestamp(value, work);
-  const result = Date.parse(value);
-  if (!Number.isFinite(result))
-    throw new MatchingFailure("EVIDENCE_TIME_INVALID", "Invalid timestamp.");
-  return BigInt(result);
-};
+// Strict canonical RFC 3339 UTC timestamps (see time.ts); no Date.parse.
+export { epoch } from "./time.js";
 export function isEffective(
   from: Timestamp,
   to: Timestamp,
@@ -44,12 +38,59 @@ export function isEffective(
     );
   return point >= start && point < end;
 }
+// Internal construction hand-off: a public caller cannot supply a budget. The
+// value is read and cleared at the start of the constructor.
+let pendingRegistryBudget: WorkBudget | undefined;
+export function registryWithBudget(
+  revision: AssetRegistryRevision,
+  work: WorkBudget,
+): CuratedAssetRegistry {
+  pendingRegistryBudget = work;
+  try {
+    return new CuratedAssetRegistry(revision);
+  } finally {
+    pendingRegistryBudget = undefined;
+  }
+}
+type Resolution =
+  | {
+      readonly state: "KNOWN";
+      readonly assetId: CanonicalAssetId;
+      readonly confidence: "EXACT_METADATA" | "REVIEWED_MANUAL";
+    }
+  | { readonly state: "UNKNOWN" | "CONFLICT" };
+// Budgeted internal operations, bound in the class static block below.
+export let resolveWithBudget: (
+  registry: CuratedAssetRegistry,
+  venue: string,
+  group: string,
+  nativeRef: string,
+  role: BindingRole,
+  at: Timestamp,
+  cutoff: Timestamp,
+  work: WorkBudget,
+) => Resolution;
 export class CuratedAssetRegistry {
+  static {
+    resolveWithBudget = (
+      registry,
+      venue,
+      group,
+      nativeRef,
+      role,
+      at,
+      cutoff,
+      work,
+    ) => registry.#resolve(venue, group, nativeRef, role, at, cutoff, work);
+  }
   readonly revision: AssetRegistryRevision;
   readonly #bindingsByKey: ReadonlyMap<string, readonly AssetBinding[]>;
   readonly #aliasesByAsset: ReadonlyMap<string, readonly AssetAlias[]>;
   readonly #assetsById: ReadonlyMap<string, readonly CanonicalAssetRecord[]>;
-  constructor(revision: AssetRegistryRevision, work = new WorkBudget()) {
+  constructor(revision: AssetRegistryRevision) {
+    const parent = pendingRegistryBudget;
+    pendingRegistryBudget = undefined;
+    const work = parent ?? new WorkBudget();
     assertClosedKeys(
       revision,
       ["revision", "recordedAt", "assets", "bindings", "aliases"],
@@ -97,16 +138,16 @@ export class CuratedAssetRegistry {
         work,
       );
       if (
-        alias.aliasAssetId === alias.targetAssetId ||
-        sources.has(alias.aliasAssetId)
+        sameText(alias.aliasAssetId, alias.targetAssetId, work) ||
+        sources.has(chargeKey(alias.aliasAssetId, work))
       )
         throw new MatchingFailure("ALIAS_CHAIN_FORBIDDEN", "Invalid alias.");
-      sources.add(alias.aliasAssetId);
-      targets.add(alias.targetAssetId);
+      sources.add(chargeKey(alias.aliasAssetId, work));
+      targets.add(chargeKey(alias.targetAssetId, work));
     }
     for (const source of sources) {
       work.step();
-      if (targets.has(source))
+      if (targets.has(chargeKey(source, work)))
         throw new MatchingFailure(
           "ALIAS_CHAIN_FORBIDDEN",
           "Alias chain forbidden.",
@@ -208,44 +249,48 @@ export class CuratedAssetRegistry {
         binding.nativeAssetReference,
         binding.role,
       ].join("\u0000");
-      const values = bindingIndex.get(key) ?? [];
+      const values = bindingIndex.get(chargeKey(key, work)) ?? [];
       values.push(binding);
-      bindingIndex.set(key, values);
+      bindingIndex.set(chargeKey(key, work), values);
     }
     this.#bindingsByKey = new Map(
       [...bindingIndex].map(([key, values]) => {
         work.step();
+        chargeKey(key, work);
         return [key, Object.freeze(values)] as const;
       }),
     );
     const aliasIndex = new Map<string, AssetAlias[]>();
     for (const alias of this.revision.aliases) {
       work.step();
-      const values = aliasIndex.get(alias.aliasAssetId) ?? [];
+      const values = aliasIndex.get(chargeKey(alias.aliasAssetId, work)) ?? [];
       values.push(alias);
-      aliasIndex.set(alias.aliasAssetId, values);
+      aliasIndex.set(chargeKey(alias.aliasAssetId, work), values);
     }
     this.#aliasesByAsset = new Map(
       [...aliasIndex].map(([key, values]) => {
         work.step();
+        chargeKey(key, work);
         return [key, Object.freeze(values)] as const;
       }),
     );
     const assetIndex = new Map<string, CanonicalAssetRecord[]>();
     for (const asset of this.revision.assets) {
       work.step();
-      const values = assetIndex.get(asset.assetId) ?? [];
+      const values = assetIndex.get(chargeKey(asset.assetId, work)) ?? [];
       values.push(asset);
-      assetIndex.set(asset.assetId, values);
+      assetIndex.set(chargeKey(asset.assetId, work), values);
     }
     this.#assetsById = new Map(
       [...assetIndex].map(([key, values]) => {
         work.step();
+        chargeKey(key, work);
         return [key, Object.freeze(values)] as const;
       }),
     );
-    work.beforePublication();
+    if (parent === undefined) work.beforePublication();
   }
+  /** Public lookup: its own operation budget and final check. */
   resolve(
     venue: string,
     group: string,
@@ -253,16 +298,35 @@ export class CuratedAssetRegistry {
     role: BindingRole,
     at: Timestamp,
     cutoff: Timestamp,
-    work?: WorkBudget,
-  ):
-    | {
-        readonly state: "KNOWN";
-        readonly assetId: CanonicalAssetId;
-        readonly confidence: "EXACT_METADATA" | "REVIEWED_MANUAL";
-      }
-    | { readonly state: "UNKNOWN" | "CONFLICT" } {
+  ): Resolution {
+    const work = new WorkBudget();
+    const result = this.#resolve(
+      venue,
+      group,
+      nativeRef,
+      role,
+      at,
+      cutoff,
+      work,
+    );
+    work.beforePublication();
+    return result;
+  }
+  #resolve(
+    venue: string,
+    group: string,
+    nativeRef: string,
+    role: BindingRole,
+    at: Timestamp,
+    cutoff: Timestamp,
+    work: WorkBudget,
+  ): Resolution {
+    if (role !== "BASE" && role !== "QUOTE" && role !== "SETTLEMENT")
+      throw new MatchingFailure("INPUT_INVALID", "Binding role is invalid.");
+    assertAtomicId(venue, "Venue", work);
+    assertAtomicId(group, "Product group", work);
     assertAtomicId(nativeRef, "Native asset reference", work);
-    work?.step(
+    work.step(
       Math.max(
         1,
         Math.ceil(
@@ -271,29 +335,33 @@ export class CuratedAssetRegistry {
       ),
     );
     const bindingKey = [venue, group, nativeRef, role].join("\u0000");
-    const found = (this.#bindingsByKey.get(bindingKey) ?? []).filter(
-      (binding) => {
-        work?.step();
-        return (
-          binding.venue === venue &&
-          binding.productGroup === group &&
-          binding.nativeAssetReference === nativeRef &&
-          binding.role === role &&
-          epoch(binding.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
-          isEffective(binding.effectiveFrom, binding.effectiveTo, at, work)
-        );
-      },
-    );
+    const found = (
+      this.#bindingsByKey.get(chargeKey(bindingKey, work)) ?? []
+    ).filter((binding) => {
+      work.step();
+      return (
+        sameText(binding.venue, venue, work) &&
+        sameText(binding.productGroup, group, work) &&
+        sameText(binding.nativeAssetReference, nativeRef, work) &&
+        binding.role === role &&
+        epoch(binding.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
+        isEffective(binding.effectiveFrom, binding.effectiveTo, at, work)
+      );
+    });
     const ids = new Set(
-      found.map((item) => (work?.step(), item.canonicalAssetId)),
+      found.map(
+        (item) => (work.step(), chargeKey(item.canonicalAssetId, work)),
+      ),
     );
     if (ids.size > 1) return { state: "CONFLICT" };
     let asset = found[0]?.canonicalAssetId;
     if (asset === undefined) return { state: "UNKNOWN" };
-    const aliases = (this.#aliasesByAsset.get(asset) ?? []).filter((alias) => {
-      work?.step();
+    const aliases = (
+      this.#aliasesByAsset.get(chargeKey(asset, work)) ?? []
+    ).filter((alias) => {
+      work.step();
       return (
-        alias.aliasAssetId === asset &&
+        sameText(alias.aliasAssetId, asset, work) &&
         epoch(alias.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
         isEffective(alias.effectiveFrom, alias.effectiveTo, at, work)
       );
@@ -301,21 +369,17 @@ export class CuratedAssetRegistry {
     if (aliases.length > 1) return { state: "CONFLICT" };
     const reviewedAlias = aliases[0];
     asset = reviewedAlias?.targetAssetId ?? asset;
-    const definitions = (this.#assetsById.get(asset) ?? []).filter(
-      (definition) => {
-        work?.step();
-        return (
-          definition.assetId === asset &&
-          epoch(definition.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
-          isEffective(
-            definition.effectiveFrom,
-            definition.effectiveTo,
-            at,
-            work,
-          )
-        );
-      },
-    );
+    const resolved = asset;
+    const definitions = (
+      this.#assetsById.get(chargeKey(resolved, work)) ?? []
+    ).filter((definition) => {
+      work.step();
+      return (
+        sameText(definition.assetId, resolved, work) &&
+        epoch(definition.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
+        isEffective(definition.effectiveFrom, definition.effectiveTo, at, work)
+      );
+    });
     if (definitions.length > 1) return { state: "CONFLICT" };
     if (definitions.length === 0) return { state: "UNKNOWN" };
     return {
@@ -325,24 +389,21 @@ export class CuratedAssetRegistry {
     };
   }
 
-  describe(
-    assetId: CanonicalAssetId,
-    at: Timestamp,
-    cutoff: Timestamp,
-    operationBudget?: WorkBudget,
-  ) {
-    const work = operationBudget ?? new WorkBudget();
+  describe(assetId: CanonicalAssetId, at: Timestamp, cutoff: Timestamp) {
+    const work = new WorkBudget();
     assertAtomicId(assetId, "Canonical asset", work);
-    const records = (this.#assetsById.get(assetId) ?? []).filter((record) => {
+    const records = (
+      this.#assetsById.get(chargeKey(assetId, work)) ?? []
+    ).filter((record) => {
       work.step();
       return (
-        record.assetId === assetId &&
+        sameText(record.assetId, assetId, work) &&
         epoch(record.recordedKnowledgeAt, work) <= epoch(cutoff, work) &&
         isEffective(record.effectiveFrom, record.effectiveTo, at, work)
       );
     });
     const result = records.length === 1 ? records[0] : undefined;
-    if (operationBudget === undefined) work.beforePublication();
+    work.beforePublication();
     return result;
   }
 }
@@ -358,17 +419,26 @@ export function admitRegistryRevision(
   revision: AssetRegistryRevision,
   signal?: CancellationSignal,
 ): RegistryAdmission {
+  const work = new WorkBudget(signal);
+  let result: RegistryAdmission;
   try {
-    return {
-      status: "READY",
-      registry: new CuratedAssetRegistry(revision, new WorkBudget(signal)),
-    };
+    result = Object.freeze({
+      status: "READY" as const,
+      registry: registryWithBudget(revision, work),
+    });
   } catch (error) {
     if (
-      error instanceof MatchingFailure &&
-      error.code === "ALIAS_CHAIN_FORBIDDEN"
+      !(error instanceof MatchingFailure) ||
+      error.code !== "ALIAS_CHAIN_FORBIDDEN"
     )
-      return { status: "QUARANTINED", reason: error.code };
-    throw error;
+      throw error;
+    result = Object.freeze({
+      status: "QUARANTINED" as const,
+      reason: error.code,
+    });
   }
+  // Every typed outcome, READY or QUARANTINED, passes the final check; no
+  // work follows it.
+  work.beforePublication();
+  return result;
 }

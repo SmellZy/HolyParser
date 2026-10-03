@@ -3,6 +3,7 @@ import {
   type ExactDecimal,
   type InstrumentMetadataObservation,
 } from "@arbitrage/market-data";
+import { sameText, type WorkBudget } from "./bounds.js";
 import type { NativeEconomicsEvidence } from "./model.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 
@@ -68,6 +69,7 @@ export function compareEconomics(
   left: NativeEconomicsEvidence,
   rightMeta: InstrumentMetadataObservation,
   right: NativeEconomicsEvidence,
+  work: WorkBudget,
 ): MatchReasonCode {
   requireFactor(leftMeta, left);
   requireFactor(rightMeta, right);
@@ -79,7 +81,8 @@ export function compareEconomics(
     right.nativeQuantityUnit.state !== "KNOWN" ||
     left.canonicalBaseUnit.state !== "KNOWN" ||
     right.canonicalBaseUnit.state !== "KNOWN" ||
-    left.canonicalBaseUnit.value !== right.canonicalBaseUnit.value
+    // Unit labels are bounded by validation; charge the equality pass.
+    !sameText(left.canonicalBaseUnit.value, right.canonicalBaseUnit.value, work)
   )
     return "CONTRACT_UNIT_MISMATCH";
   if (!left.collateralVerified || !right.collateralVerified)

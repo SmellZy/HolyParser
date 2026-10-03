@@ -4,9 +4,15 @@ import {
   assertAtomicId,
   assertCompositeId,
   assertCount,
+  chargeKey,
+  inVocabulary,
+  sameText,
   type CancellationSignal,
 } from "./bounds.js";
-import { approveCommand, type ApproveMappingCommand } from "./commands.js";
+import {
+  approveCommandWithBudget,
+  type ApproveMappingCommand,
+} from "./commands.js";
 import {
   chargeCopy,
   immutableCandidate,
@@ -121,13 +127,16 @@ function assertShape(
   optional: readonly string[],
   work: WorkBudget,
 ): void {
+  // Own-key enumeration cannot be bounded before it returns; charge it
+  // immediately and reject an oversized object before further work.
   const keys = Object.keys(value);
   work.step();
+  work.units(keys.length + 1);
   assertCount(keys.length, MATCHING_LIMITS.objectKeys, "Object key");
   const allowed = new Set([...required, ...optional]);
   for (const key of keys) {
     work.step();
-    if (!allowed.has(key))
+    if (!inVocabulary(allowed, key, work))
       throw new MatchingFailure(
         "INPUT_INVALID",
         "Record has an unknown field.",
@@ -155,11 +164,15 @@ function immutableCommand(
     ),
   });
 }
-const sameApproval = (left: ReviewApproval, right: ReviewApproval): boolean =>
-  left.actorId === right.actorId &&
-  left.role === right.role &&
-  left.approvedDigest === right.approvedDigest &&
-  left.recordedAt === right.recordedAt;
+const sameApproval = (
+  left: ReviewApproval,
+  right: ReviewApproval,
+  work: WorkBudget,
+): boolean =>
+  sameText(left.actorId, right.actorId, work) &&
+  sameText(left.role, right.role, work) &&
+  sameText(left.approvedDigest, right.approvedDigest, work) &&
+  sameText(left.recordedAt, right.recordedAt, work);
 function approvalsEqual(
   left: readonly ReviewApproval[],
   right: readonly ReviewApproval[],
@@ -169,13 +182,14 @@ function approvalsEqual(
   const compare = compareUtf8WithBudget(work);
   const sorted = (values: readonly ReviewApproval[]) =>
     (work.units(values.length + 1), [...values]).sort((a, b) =>
+      // work: ropes flattened by the charged UTF-8 comparator.
       compare(`${a.role}:${a.actorId}`, `${b.role}:${b.actorId}`),
     );
   const a = sorted(left),
     b = sorted(right);
   for (let index = 0; index < a.length; index += 1) {
     work.step();
-    if (!sameApproval(a[index]!, b[index]!)) return false;
+    if (!sameApproval(a[index]!, b[index]!, work)) return false;
   }
   return true;
 }
@@ -184,7 +198,7 @@ function expectedCommand(
   work: WorkBudget,
 ): ApproveMappingCommand {
   work.step();
-  return approveCommand(
+  return approveCommandWithBudget(
     {
       commandId: command.commandId,
       candidateId: command.candidateId,
@@ -253,11 +267,23 @@ function candidateEvidenceDigest(
 ): string {
   return sha256(canonicalSerialize(evidenceValue(candidate), work), work);
 }
+/** Public digest helper: its own operation budget and final check. */
 export function candidateProvenanceDigest(
   candidate: InstrumentMatchCandidate,
-  work?: WorkBudget,
 ): string {
-  work?.units(candidate.reasons.length + 1);
+  const work = new WorkBudget();
+  const result = candidateProvenanceDigestWithBudget(candidate, work);
+  work.beforePublication();
+  return result;
+}
+export function candidateProvenanceDigestWithBudget(
+  candidate: InstrumentMatchCandidate,
+  work: WorkBudget,
+): string {
+  if (!Array.isArray(candidate.reasons))
+    throw new MatchingFailure("INPUT_INVALID", "Candidate reasons invalid.");
+  assertCount(candidate.reasons.length, MATCH_REASON_CODES.length, "Reason");
+  work.units(candidate.reasons.length + 1);
   return deterministicId(
     "materialized-match-candidate/v1",
     {
@@ -443,8 +469,11 @@ function validateRecord(
       );
   }
   const expected = expectedCommand(command, work);
+  // Both sides of every comparison below are validated and bounded first;
+  // each equality pass is charged before it runs (acceptance-5 H-03).
+  const same = (left: unknown, right: unknown) => sameText(left, right, work);
   if (
-    expected.commandDigest !== command.commandDigest ||
+    !same(expected.commandDigest, command.commandDigest) ||
     !approvalsEqual(expected.approvals, command.approvals, work)
   )
     throw new MatchingFailure(
@@ -452,35 +481,41 @@ function validateRecord(
       "Command digest mismatch.",
     );
   if (
-    candidate.evidenceSetDigest !== candidateEvidenceDigest(candidate, work) ||
-    candidate.candidateId !== expectedCandidateId(candidate, work) ||
-    command.candidateId !== candidate.candidateId ||
-    command.candidateDigest !== candidateProvenanceDigest(candidate, work)
+    !same(
+      candidate.evidenceSetDigest,
+      candidateEvidenceDigest(candidate, work),
+    ) ||
+    !same(candidate.candidateId, expectedCandidateId(candidate, work)) ||
+    !same(command.candidateId, candidate.candidateId) ||
+    !same(
+      command.candidateDigest,
+      candidateProvenanceDigestWithBudget(candidate, work),
+    )
   )
     throw new MatchingFailure(
       "COMMAND_DIGEST_CONFLICT",
       "Candidate provenance mismatch.",
     );
   if (
-    command.mappingId !== mapping.mappingId ||
+    !same(command.mappingId, mapping.mappingId) ||
     command.expectedRevision !== mapping.version - 1 ||
-    command.leftInstrumentId !== mapping.leftInstrumentId ||
-    command.rightInstrumentId !== mapping.rightInstrumentId ||
-    command.exposureKey !== mapping.exposureKey ||
-    command.effectiveFrom !== mapping.effectiveFrom ||
-    command.effectiveTo !== mapping.effectiveTo ||
-    command.recordedKnowledgeAt !== mapping.recordedKnowledgeAt ||
-    command.registryRevision !== mapping.registryRevision ||
-    command.evidenceRevision !== mapping.evidenceRevision
+    !same(command.leftInstrumentId, mapping.leftInstrumentId) ||
+    !same(command.rightInstrumentId, mapping.rightInstrumentId) ||
+    !same(command.exposureKey, mapping.exposureKey) ||
+    !same(command.effectiveFrom, mapping.effectiveFrom) ||
+    !same(command.effectiveTo, mapping.effectiveTo) ||
+    !same(command.recordedKnowledgeAt, mapping.recordedKnowledgeAt) ||
+    !same(command.registryRevision, mapping.registryRevision) ||
+    !same(command.evidenceRevision, mapping.evidenceRevision)
   )
     throw new MatchingFailure(
       "MAPPING_REVISION_CONFLICT",
       "Mapping command mismatch.",
     );
   if (
-    review.candidateId !== candidate.candidateId ||
-    review.proposerId !== command.proposedBy ||
-    review.commandDigest !== command.commandDigest ||
+    !same(review.candidateId, candidate.candidateId) ||
+    !same(review.proposerId, command.proposedBy) ||
+    !same(review.commandDigest, command.commandDigest) ||
     review.expectedRevision !== command.expectedRevision
   )
     throw new MatchingFailure(
@@ -504,8 +539,11 @@ function validateRecord(
   if (
     quant.length !== 1 ||
     marketData.length !== 1 ||
-    new Set([review.proposerId, quant[0]!.actorId, marketData[0]!.actorId])
-      .size !== 3
+    new Set([
+      chargeKey(review.proposerId, work),
+      chargeKey(quant[0]!.actorId, work),
+      chargeKey(marketData[0]!.actorId, work),
+    ]).size !== 3
   )
     throw new MatchingFailure(
       "REVIEWER_SEPARATION_REQUIRED",
@@ -518,11 +556,11 @@ function validateRecord(
   )
     throw new MatchingFailure("MAPPING_UNAPPROVED", "Candidate is incomplete.");
   if (
-    candidate.leftInstrumentId !== mapping.leftInstrumentId ||
-    candidate.rightInstrumentId !== mapping.rightInstrumentId ||
-    candidate.exposureKey !== mapping.exposureKey ||
-    candidate.registryRevision !== mapping.registryRevision ||
-    candidate.evidenceSetDigest !== mapping.evidenceRevision
+    !same(candidate.leftInstrumentId, mapping.leftInstrumentId) ||
+    !same(candidate.rightInstrumentId, mapping.rightInstrumentId) ||
+    !same(candidate.exposureKey, mapping.exposureKey) ||
+    !same(candidate.registryRevision, mapping.registryRevision) ||
+    !same(candidate.evidenceSetDigest, mapping.evidenceRevision)
   )
     throw new MatchingFailure(
       "DUPLICATE_EXPOSURE_CONFLICT",
@@ -567,12 +605,16 @@ function recordDigest(
   return deterministicId(
     "admitted-mapping-version/v1",
     {
-      candidateDigest: candidateProvenanceDigest(record.candidate, work),
+      candidateDigest: candidateProvenanceDigestWithBudget(
+        record.candidate,
+        work,
+      ),
       commandDigest: record.command.commandDigest,
       mapping: {
         approvals: record.mapping.approvals.map(
           (item) => (
             work.step(),
+            // work: bounded rope; flattened by the charged canonical encoder.
             `${item.role}:${item.actorId}:${item.approvedDigest}:${item.recordedAt}`
           ),
         ),
@@ -602,6 +644,7 @@ function recordDigest(
           approvals: record.review.approvals.map(
             (item) => (
               work.step(),
+              // work: bounded rope; flattened by the charged canonical encoder.
               `${item.role}:${item.actorId}:${item.approvedDigest}:${item.recordedAt}`
             ),
           ),
@@ -623,19 +666,23 @@ function validateBaseHistory(
   work: WorkBudget,
 ): void {
   const first = records[0]!.mapping;
+  const same = (left: unknown, right: unknown) => sameText(left, right, work);
   for (let index = 0; index < records.length; index += 1) {
     work.step();
     const current = records[index]!.mapping,
       previous = records[index - 1]?.mapping;
-    if (current.mappingId !== first.mappingId || current.version !== index + 1)
+    if (
+      !same(current.mappingId, first.mappingId) ||
+      current.version !== index + 1
+    )
       throw new MatchingFailure(
         "MAPPING_REVISION_CONFLICT",
         "History version continuity failed.",
       );
     if (
-      current.leftInstrumentId !== first.leftInstrumentId ||
-      current.rightInstrumentId !== first.rightInstrumentId ||
-      current.exposureKey !== first.exposureKey
+      !same(current.leftInstrumentId, first.leftInstrumentId) ||
+      !same(current.rightInstrumentId, first.rightInstrumentId) ||
+      !same(current.exposureKey, first.exposureKey)
     )
       throw new MatchingFailure(
         "DUPLICATE_EXPOSURE_CONFLICT",
@@ -703,6 +750,18 @@ function validateTransitionGraph(
     work.step();
     byVersion.set(record.mapping.version, record);
   }
+  // Bound every transition ID before it is compared, sorted or hashed.
+  for (const raw of rawTransitions) {
+    work.step();
+    if (raw === null || typeof raw !== "object")
+      throw new MatchingFailure("INPUT_INVALID", "Transition is malformed.");
+    assertAtomicId(raw.transitionId, "Transition ID", work);
+    if (!Number.isSafeInteger(raw.affectedVersion))
+      throw new MatchingFailure(
+        "MAPPING_REVISION_CONFLICT",
+        "Affected version invalid.",
+      );
+  }
   work.units(rawTransitions.length + 1);
   const ordered = [...rawTransitions].sort((left, right) => {
     work.step();
@@ -718,11 +777,11 @@ function validateTransitionGraph(
   for (const raw of ordered) {
     work.step();
     validateTransitionShape(raw, work);
-    if (transitionIds.has(raw.transitionId))
+    if (transitionIds.has(chargeKey(raw.transitionId, work)))
       throw new MatchingFailure("TRANSITION_REJECTED", "Duplicate transition.");
-    transitionIds.add(raw.transitionId);
+    transitionIds.add(chargeKey(raw.transitionId, work));
     const target = byVersion.get(raw.affectedVersion);
-    if (!target || raw.mappingId !== target.mapping.mappingId)
+    if (!target || !sameText(raw.mappingId, target.mapping.mappingId, work))
       throw new MatchingFailure(
         "TRANSITION_REJECTED",
         "Transition target missing.",
@@ -836,18 +895,28 @@ function materializeHistory(
   admittedHistories.add(result);
   return result;
 }
+/**
+ * Public standalone admission. The operation budget is always created here;
+ * a caller cannot supply budget authority (acceptance-5 M-02). Every typed
+ * outcome, VALID or not, passes the final cancellation check.
+ */
 export function admitMaterializedMapping(
   input: MappingAdmissionInput,
   evaluationAt: Timestamp,
   signal?: CancellationSignal,
-  operationBudget?: WorkBudget,
 ): MappingAdmissionResult {
-  const work = operationBudget ?? new WorkBudget(signal);
+  const work = new WorkBudget(signal);
   const result = admitWithBudget(input, evaluationAt, work);
-  // Every standalone outcome, including typed non-VALID results, is published
-  // only after the final cancellation check; a parent operation checks later.
-  if (operationBudget === undefined) work.beforePublication();
+  work.beforePublication();
   return result;
+}
+/** Internal: admission on a parent operation's budget (it checks later). */
+export function admitMaterializedMappingWithBudget(
+  input: MappingAdmissionInput,
+  evaluationAt: Timestamp,
+  work: WorkBudget,
+): MappingAdmissionResult {
+  return admitWithBudget(input, evaluationAt, work);
 }
 function admitWithBudget(
   input: MappingAdmissionInput,
@@ -856,6 +925,8 @@ function admitWithBudget(
 ): MappingAdmissionResult {
   try {
     work.step();
+    // H-04: a malformed evaluation time is a typed invalid interval.
+    epoch(evaluationAt, work);
     if (
       input === null ||
       typeof input !== "object" ||
@@ -913,7 +984,11 @@ function admitWithBudget(
       });
     if (
       requested === undefined ||
-      recordDigest(inputRecord, work) !== recordDigest(requested, work)
+      !sameText(
+        recordDigest(inputRecord, work),
+        recordDigest(requested, work),
+        work,
+      )
     )
       return failure("REVISION_MISMATCH", "MAPPING_REVISION_CONFLICT");
     const history = materializeHistory(
@@ -936,12 +1011,14 @@ function admitWithBudget(
       return Object.freeze({
         state: "SUPERSEDED",
         reason: "MAPPING_SUPERSEDED",
+        // work: fixed-shape internal record (four admitted references).
         ...common,
       });
     if (transition?.transitionType === "INVALIDATE")
       return Object.freeze({
         state: "INVALIDATED",
         reason: "MAPPING_INVALIDATED",
+        // work: fixed-shape internal record (four admitted references).
         ...common,
       });
     if (
@@ -956,6 +1033,7 @@ function admitWithBudget(
     return Object.freeze({
       state: "VALID" as const,
       reason: "COMPATIBLE_APPROVED" as const,
+      // work: fixed-shape internal record (four admitted references).
       ...common,
     });
   } catch (error) {

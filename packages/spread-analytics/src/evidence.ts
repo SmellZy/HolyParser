@@ -4,6 +4,8 @@ import {
   assertCount,
   assertEvidenceRecord,
   assertReasonText,
+  chargeKey,
+  inVocabulary,
   type CancellationSignal,
 } from "./bounds.js";
 import type { EvidenceRecord } from "./model.js";
@@ -64,13 +66,13 @@ export function validateEvidenceBundle(
     ]);
     for (const key of Object.keys(record)) {
       work.step();
-      if (!allowed.has(key))
+      if (!inVocabulary(allowed, key, work))
         throw new MatchingFailure(
           "INPUT_INVALID",
           "Evidence record has an unknown field.",
         );
     }
-    if (!evidenceClasses.has(record.evidenceClass))
+    if (!inVocabulary(evidenceClasses, record.evidenceClass, work))
       throw new MatchingFailure("INPUT_INVALID", "Evidence class is invalid.");
     assertAtomicId(record.evidenceId, "Evidence ID", work);
     assertAtomicId(record.sourceId, "Evidence source", work);
@@ -116,12 +118,12 @@ export function validateEvidenceBundle(
         "INPUT_INVALID",
         "Evidence policy revision is invalid.",
       );
-    if (ids.has(record.evidenceId))
+    if (ids.has(chargeKey(record.evidenceId, work)))
       throw new MatchingFailure(
         "METADATA_EVIDENCE_CONFLICT",
         "Duplicate evidence ID.",
       );
-    ids.add(record.evidenceId);
+    ids.add(chargeKey(record.evidenceId, work));
     epoch(record.recordedAt, work);
     isEffective(record.validFrom, record.validTo, record.validFrom, work);
     if (record.description !== undefined)
@@ -144,7 +146,7 @@ export function validateEvidenceBundle(
     for (const evidenceId of subject.evidenceIds) {
       work.step();
       assertAtomicId(evidenceId, "Evidence reference", work);
-      if (!ids.has(evidenceId))
+      if (!ids.has(chargeKey(evidenceId, work)))
         throw new MatchingFailure(
           "INPUT_INVALID",
           "Unknown evidence reference.",

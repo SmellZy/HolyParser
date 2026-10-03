@@ -3,10 +3,11 @@ import {
   WorkBudget,
   assertCount,
   assertOutputBound,
+  sameText,
   type CancellationSignal,
 } from "./bounds.js";
 import {
-  admitMaterializedMapping,
+  admitMaterializedMappingWithBudget,
   type MappingAdmissionInput,
   type MappingAdmissionResult,
 } from "./admission.js";
@@ -20,10 +21,10 @@ import type {
   VenueInstrumentEvidence,
 } from "./model.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
-import { CuratedAssetRegistry, epoch, isEffective } from "./registry.js";
+import { CuratedAssetRegistry, epoch } from "./registry.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import {
-  canonicalExposureKey,
+  canonicalExposureKeyWithBudget,
   canonicalSerialize,
   compareUtf8WithBudget,
   deterministicId,
@@ -92,6 +93,7 @@ function result(
             }
           ),
         ),
+        // work: bounded rope; flattened by the charged canonical encoder.
         mapping: mapping ? `${mapping.mappingId}:${mapping.version}` : null,
         outcome,
         reasons: ordered,
@@ -156,9 +158,16 @@ function evaluateMatchWithBudget(
       work,
     );
   work.step();
+  // H-04: evaluation and knowledge times are strict canonical UTC instants,
+  // validated before any outcome (including early exclusions) is formed.
+  epoch(at, work);
+  epoch(cutoff, work);
   validateVenueInstrumentEvidence(left, work);
   validateVenueInstrumentEvidence(right, work);
-  if (left.metadata.venue === right.metadata.venue)
+  // Every identity field compared below was bounded by validation or by the
+  // registry; each equality pass is charged before it runs.
+  const same = (a: unknown, b: unknown) => sameText(a, b, work);
+  if (same(left.metadata.venue, right.metadata.venue))
     return emit("NOT_MATCHED", ["SAME_VENUE_EXCLUDED"], candidate, undefined);
   const scopeReasons = [
     classifyProductScope(left),
@@ -175,11 +184,18 @@ function evaluateMatchWithBudget(
     return emit("QUARANTINED", identityReasons, candidate, undefined);
   if (identityReasons.length)
     return emit("AMBIGUOUS", identityReasons, candidate, undefined);
-  if (l.provisionalIdentity!.baseAssetId !== r.provisionalIdentity!.baseAssetId)
+  if (
+    !same(
+      l.provisionalIdentity!.baseAssetId,
+      r.provisionalIdentity!.baseAssetId,
+    )
+  )
     return emit("NOT_MATCHED", ["BASE_ASSET_MISMATCH"], candidate, undefined);
   if (
-    l.provisionalIdentity!.settlementAssetId !==
-    r.provisionalIdentity!.settlementAssetId
+    !same(
+      l.provisionalIdentity!.settlementAssetId,
+      r.provisionalIdentity!.settlementAssetId,
+    )
   )
     return emit(
       "NOT_MATCHED",
@@ -188,14 +204,21 @@ function evaluateMatchWithBudget(
       undefined,
     );
   if (
-    l.provisionalIdentity!.quoteAssetId !== r.provisionalIdentity!.quoteAssetId
+    !same(
+      l.provisionalIdentity!.quoteAssetId,
+      r.provisionalIdentity!.quoteAssetId,
+    )
   )
     return emit("NOT_MATCHED", ["QUOTE_ASSET_MISMATCH"], candidate, undefined);
   if (
-    l.provisionalIdentity!.quoteAssetId !==
-      l.provisionalIdentity!.settlementAssetId ||
-    r.provisionalIdentity!.quoteAssetId !==
-      r.provisionalIdentity!.settlementAssetId
+    !same(
+      l.provisionalIdentity!.quoteAssetId,
+      l.provisionalIdentity!.settlementAssetId,
+    ) ||
+    !same(
+      r.provisionalIdentity!.quoteAssetId,
+      r.provisionalIdentity!.settlementAssetId,
+    )
   )
     return emit(
       "NOT_MATCHED",
@@ -215,6 +238,7 @@ function evaluateMatchWithBudget(
       left.economics,
       right.metadata,
       right.economics,
+      work,
     );
     if (economic !== "COMPATIBLE_APPROVED")
       return emit("NOT_MATCHED", [economic], candidate, undefined);
@@ -235,7 +259,7 @@ function evaluateMatchWithBudget(
   );
   if (fresh.length) return emit("UNAVAILABLE", fresh, candidate, undefined);
   const admission = mapping
-    ? admitMaterializedMapping(mapping, at, undefined, work)
+    ? admitMaterializedMappingWithBudget(mapping, at, work)
     : undefined;
   const admittedMapping =
     admission?.state === "VALID" ? admission.mapping : undefined;
@@ -244,7 +268,7 @@ function evaluateMatchWithBudget(
   if (
     admittedCandidate &&
     candidate &&
-    (candidate.candidateId !== admittedCandidate.candidateId ||
+    (!same(candidate.candidateId, admittedCandidate.candidateId) ||
       candidate.completeness !== "COMPLETE_APPROVED")
   )
     return emit(
@@ -266,23 +290,38 @@ function evaluateMatchWithBudget(
       admittedMapping.rightInstrumentId,
     ].sort(compareUtf8WithBudget(work));
     if (
-      expectedPair[0] !== mappingPair[0] ||
-      expectedPair[1] !== mappingPair[1] ||
-      admittedMapping.exposureKey !== canonicalExposureKey(l.identity!, work) ||
-      admittedMapping.registryRevision !== registry.revision.revision ||
+      !same(expectedPair[0], mappingPair[0]) ||
+      !same(expectedPair[1], mappingPair[1]) ||
+      !same(
+        admittedMapping.exposureKey,
+        canonicalExposureKeyWithBudget(l.identity!, work),
+      ) ||
+      !same(admittedMapping.registryRevision, registry.revision.revision) ||
       admittedCandidate === undefined ||
-      admittedCandidate.leftMetadataRevision !==
-        expectedLegs[0]!.metadataRevision ||
-      admittedCandidate.rightMetadataRevision !==
-        expectedLegs[1]!.metadataRevision ||
-      admittedCandidate.leftMetadataDigest !==
-        expectedLegs[0]!.metadataDigest ||
-      admittedCandidate.rightMetadataDigest !==
-        expectedLegs[1]!.metadataDigest ||
-      admittedCandidate.leftEconomicsRevision !==
-        expectedLegs[0]!.economics.evidenceRevision ||
-      admittedCandidate.rightEconomicsRevision !==
-        expectedLegs[1]!.economics.evidenceRevision
+      !same(
+        admittedCandidate.leftMetadataRevision,
+        expectedLegs[0]!.metadataRevision,
+      ) ||
+      !same(
+        admittedCandidate.rightMetadataRevision,
+        expectedLegs[1]!.metadataRevision,
+      ) ||
+      !same(
+        admittedCandidate.leftMetadataDigest,
+        expectedLegs[0]!.metadataDigest,
+      ) ||
+      !same(
+        admittedCandidate.rightMetadataDigest,
+        expectedLegs[1]!.metadataDigest,
+      ) ||
+      !same(
+        admittedCandidate.leftEconomicsRevision,
+        expectedLegs[0]!.economics.evidenceRevision,
+      ) ||
+      !same(
+        admittedCandidate.rightEconomicsRevision,
+        expectedLegs[1]!.economics.evidenceRevision,
+      )
     )
       return emit(
         "QUARANTINED",

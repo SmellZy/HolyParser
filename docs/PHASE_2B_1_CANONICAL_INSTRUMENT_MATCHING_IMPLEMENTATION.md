@@ -1470,12 +1470,22 @@ checksum-verified distribution.
 
 ### 19.10 Limitations and capacity observation
 
-Honest charging makes the 100,000-step cap, not the 8,192-pair count, the
-binding limit: about 1,100–1,250 valid pairs with fixture-sized identifiers,
-and fewer with near-maximum identifiers. This is the conservative direction
-("stricter wins"), and D-064 §3 already lists measured budget exhaustion as a
-trigger for a new scoped resource version with Product/Market Data/SRE
-review. No bound, rate or policy was widened to compensate. Cancellation
+**Corrected in the fifth remediation (section 20.9).** The earlier
+statement here ("about 1,100–1,250 valid pairs with fixture-sized
+identifiers") is withdrawn. It was measured with dense 33-instrument groups,
+and the fifth acceptance showed it overstated three-venue capacity. Under the
+[D-064 capacity-semantics decision](PHASE_2B_D064_CAPACITY_SEMANTICS_DECISION.md)
+(Option A):
+
+- structural caps (1,024 instruments, 8,192 pairs and the others) are
+  ceilings only;
+- all limits compose, and the stricter cumulative 100,000-step work bound may
+  reject an operation below any structural ceiling, fail-closed;
+- there is no minimum guaranteed capacity;
+- measured capacity depends on the implementation and the workload, and is
+  not normative policy.
+
+No bound, rate or policy was widened to compensate. Cancellation
 remains cooperative: a single atomic native call is charged in full before it
 starts but cannot be interrupted mid-call, and no wall-clock latency is
 claimed. There is zero approved real venue pair.
@@ -1513,3 +1523,351 @@ Recommended next task:
 > frozen-boundary checks. Write a new fifth acceptance report without
 > modifying implementation, D-055, D-064, manifests, the lockfile, frozen
 > scopes or prior reports. Do not commit and do not begin Phase 2B.2.
+
+## 20. Fifth acceptance-remediation evidence — H-03, H-04, M-02
+
+Remediation date: 2026-10-03. Governing finding:
+[fifth independent acceptance](PHASE_2B_1_CANONICAL_INSTRUMENT_MATCHING_ACCEPTANCE_5.md)
+— **FAIL**, BLOCKER 0, unresolved HIGH 2 (H-03 residual, H-04), MEDIUM M-02.
+M-01 was resolved separately as accepted semantics by the
+[D-064 capacity-semantics decision](PHASE_2B_D064_CAPACITY_SEMANTICS_DECISION.md)
+(Option A, commit `8f35571`). B-01, B-02, H-01 and H-02 were not reopened.
+
+This section is implementation-produced evidence. It is not formal
+acceptance, a Phase 2B.1 freeze or Phase 2B.2 authorization. The following are
+all unchanged:
+
+- D-055 (`60d00b8e…6d97931`), `instrument-matching-pilot/v1`,
+  `instrument-matching-resources/v1` and every D-064 numeric limit;
+- the 100,000-step budget and the ≤128-step cancellation interval;
+- the 44 reason codes and the 22 runtime exports;
+- the manifests, lockfile and dependencies;
+- every frozen scope and every prior acceptance report.
+
+### 20.1 H-03 residual: root causes and fixes
+
+| Acceptance-5 defect                                                                                                                | Fix                                                                                                                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unvalidated caller strings compared with native `!==` in `MappingLedger` invalidation binding; uncharged `#commandDigests` hashing | `validateCommandFields` bounds every command field (atomic IDs, reason text, strict timestamps, approvals ≤3) before any comparison or lookup. Equality goes through the charged `sameText`; key hashing goes through `chargeKey`.                                                                 |
+| Same pattern elsewhere (admission record and history chains, transitions, evaluator, registry, replay, economics unit labels)      | Every comparison of two open strings now uses `sameText(a, b, work)`, which charges length + 1 for equal lengths before comparing. Sidecar unit labels are bounded (atomic/composite). Transition IDs are bounded before they are sorted or hashed.                                                |
+| Uncharged hashing of caller strings in `Map`/`Set` operations                                                                      | Every string key passes `chargeKey`. Fixed vocabularies use `inVocabulary`, which rejects non-strings and strings longer than 64 code units in O(1) before charging the hash.                                                                                                                      |
+| Proportional scans before a size check                                                                                             | `assertAtomicId`, `assertCompositeId` and `assertReasonText` reject over-length values in O(1) before scanning. Composite scans add a fine-grained charge on top of the accepted 256-code-unit step rate (stricter).                                                                               |
+| Post-measured key enumeration                                                                                                      | `Object.keys` of a caller object is the only native pass whose size cannot be known in advance (no JavaScript primitive bounds it). It is charged immediately (`units(n + 1)`), and the object is rejected at more than 64 keys before any further work. This exception is documented, not hidden. |
+| Evidence `JSON.stringify` before the 8 KiB check                                                                                   | See 20.4.                                                                                                                                                                                                                                                                                          |
+
+No rate was weakened. Accounting only became stricter. Measured with
+identical fixtures on `018593d` against this remediation:
+
+| Measurement                       | Before |  After |
+| --------------------------------- | -----: | -----: |
+| `makeCandidate`, 10-unit base ID  |     65 |     65 |
+| `makeCandidate`, 155-unit base ID |     83 |     83 |
+| 496-pair generation (steps)       | 39,906 | 42,233 |
+| 64-version admission (checks)     |    333 |    355 |
+
+### 20.2 Final pre-publication checks
+
+Every public operation follows: authoritative work → cumulative accounting →
+final check → return.
+
+- `admitRegistryRevision` now applies `beforePublication()` to both READY and
+  QUARANTINED, and freezes the result before the check.
+- `admitMappingCommand` now applies it to APPLIED, REJECTED and QUARANTINED.
+  `EVALUATION_CANCELLED` and `MATCHING_BOUND_EXCEEDED` are rethrown as
+  operation failures and are never returned as `REJECTED` results.
+- Public `MappingLedger.apply`, `CuratedAssetRegistry#resolve` and `#describe`,
+  `candidateProvenanceDigest` and `canonicalExposureKey` create their own
+  operation budget and check before returning.
+- The new suite checks 18 typed outcomes. For each one it asserts a
+  publication tail of 0 oracle units, and that cancellation requested at the
+  final check throws `EVALUATION_CANCELLED` with nothing published. The
+  outcomes are:
+  - registry READY and QUARANTINED;
+  - command APPLIED, REJECTED and QUARANTINED;
+  - admission VALID, REVISION_MISMATCH, INVALID_INTERVAL and QUARANTINED;
+  - evaluation MATCHED, NOT_MATCHED, UNAVAILABLE and AMBIGUOUS;
+  - batch;
+  - replay MATCHED and UNAVAILABLE;
+  - candidates;
+  - evidence.
+
+### 20.3 M-02: no caller-supplied budget authority
+
+**Before:** these public signatures accepted an optional duck-typed budget:
+
+- `admitMaterializedMapping`, `approveCommand`;
+- the `MappingLedger` constructor and `apply`;
+- the `CuratedAssetRegistry` constructor, `resolve` and `describe`;
+- `candidateProvenanceDigest`, `canonicalExposureKey`.
+
+**After:**
+
+- Public arities are:
+  - `admitMaterializedMapping(input, at, signal?)`;
+  - `approveCommand(input)`, `MappingLedger#apply(command)`,
+    `candidateProvenanceDigest(candidate)`, `canonicalExposureKey(identity)`;
+  - `new CuratedAssetRegistry(revision)`, `resolve` with 6 parameters and
+    `describe` with 3.
+- Internal budgeted entry points (`…WithBudget`, `registryWithBudget`,
+  `ledgerWithBudget`, `applyWithBudget`) live in their modules only. The
+  package root still exports exactly the same 22 names.
+- Constructors receive a parent budget only through a module-private hand-off
+  that is cleared on entry.
+- Ledger internals are true private methods (`#apply`, `#approve`,
+  `#invalidate`).
+- A tripwire proxy passed as an extra argument to every public entry point is
+  never read.
+- The acceptance-5 regression is covered: a fake budget plus an always-aborted
+  signal now throws `EVALUATION_CANCELLED` and cannot publish `VALID`.
+- `canonicalExposureKey` validates the closed identity and bounds asset IDs:
+  a 5,000,000-character field is rejected with `INPUT_INVALID`.
+
+### 20.4 Evidence validation ordering
+
+`assertEvidenceRecord` walks the record before serializing it:
+
+1. The walk accepts plain data only: no custom prototype, no `toJSON`.
+2. It accumulates a lower bound on the serialized UTF-8 size from O(1)
+   lengths, before each proportional scan.
+3. It throws `MATCHING_BOUND_EXCEEDED` as soon as that bound exceeds 8 KiB.
+4. Evidence-mode string scans are additionally charged at the fine-grained
+   rate.
+5. Only a record within the bound is serialized. The atomic `JSON.stringify` is
+   precharged at its six-character escape worst case, and every prior charge
+   is kept.
+
+Regression: the acceptance-5 record with a 4,000,000-character `sourceDigest`
+is now rejected with a largest native call below 1,000 units and total work
+below 10,000 units (previously one 4,000,387-unit call). It makes no
+`JSON.stringify` call. A valid boundary record is still accepted. The 8 KiB
+boundary and one-over tests pass.
+
+### 20.5 H-04: strict deterministic timestamps
+
+`time.ts` accepts exactly one grammar: canonical RFC 3339 UTC with
+milliseconds, `YYYY-MM-DDTHH:mm:ss.sssZ` (24 code units, years 0000–9999). The
+grammar follows D-055 §13 "validated UTC millisecond".
+
+- The length is checked before any scan; the fixed scan is charged first.
+- The calendar is validated (leap years, month and day ranges, hour ≤23,
+  minute and second ≤59).
+- The instant is computed with integer arithmetic. `Date.parse`, `new Date`
+  and `Date.UTC` no longer appear in runtime sources; the source audit
+  enforces this.
+
+Rejected forms:
+
+- offsets, including `+00:00`, and lowercase `z`;
+- missing or different fractional digits;
+- zone-less, date-only, space-separated and legacy forms;
+- leading or trailing junk;
+- invalid calendar dates and times;
+- non-ASCII digits;
+- the 100,023-character legacy string, which is rejected by length with 0
+  oracle units.
+
+Evaluation and knowledge times are validated up front in `generateCandidates`,
+`evaluateMatch`/`evaluateBatch`, `replayMapping` and admission (as a typed
+`INVALID_INTERVAL`).
+
+TZ matrix:
+
+- **In-process:** the tests switch `process.env.TZ` across UTC,
+  `America/New_York` and `Asia/Tokyo` and verify three distinct local offsets.
+  Each zone rejects `"2026-09-15 00:00:30"`, `"2026-09-15T00:00:30"` and the
+  legacy string with `EVIDENCE_TIME_INVALID`. The canonical `T30` gives
+  identical `MATCHED` result IDs in all three zones.
+- **Separate processes:** the whole spread-analytics suite was additionally
+  run as separate processes with `TZ=UTC`, `TZ=America/New_York` and
+  `TZ=Asia/Tokyo`. All three were 19/19 files and 266/266 tests.
+
+### 20.6 Work oracle and static audit
+
+`work-oracle.ts` (test-only, build-excluded) now also instruments:
+
+- `Map`/`Set` `get`/`has`/`set`/`add`/`delete`, costed by key length;
+- traversing `String.prototype` methods;
+- `Object.assign`.
+
+Its own bookkeeping uses unpatched primitives. `traceBudgeted` and
+`maximumDeficit` record charged steps alongside actual units at every check,
+and assert that actual work never runs ahead of charges (deficit ≤ 0). This
+holds for registry construction, candidate generation with 160-unit assets,
+64→8-version admission, command application and 100 evidence records.
+
+Native string equality, template concatenation and object spreads cannot be
+patched. A new TypeScript-checker source audit
+(`work-accounting-source-audit.test.ts`) therefore requires, across every
+runtime module:
+
+- zero comparisons of two open strings outside `sameText`;
+- zero uncharged string-keyed `Map`/`Set` operations;
+- every spread of a caller object preceded by `chargeCopy` (or annotated as a
+  fixed-shape internal record);
+- every template outside error messages justified by a `// work:` annotation;
+- no host `Date`.
+
+A control module containing one violation of each class is detected, so the
+audit is not vacuous. The oracle and the audit are evidence, paired with the
+direct adversarial and public-operation tests below. They are not authority.
+
+### 20.7 Exact acceptance-5 regressions
+
+1. Forged invalidate command, seven 8,000,000-character fields:
+   `REJECTED/INPUT_INVALID`.
+   - No transition field is read. A tripwire proxy proves no comparison ran,
+     and a bounded control does read them.
+   - Charged steps do not grow with field size.
+   - Total oracle work is below 10,000 units, and there is a final check.
+2. Registry admission with cancellation requested after the first check:
+   throws `EVALUATION_CANCELLED`. Tail 0.
+3. Command admission with cancellation requested after the first check:
+   throws `EVALUATION_CANCELLED`. Tail 0.
+4. Mid-operation cancellation (200-version ledger) propagates as
+   `EVALUATION_CANCELLED`. Budget exhaustion propagates as
+   `MATCHING_BOUND_EXCEEDED`, never as a `REJECTED` reason.
+5. Oversized evidence record: rejected before `JSON.stringify` (20.4).
+6. Local timestamp `"2026-09-15 00:00:30"`: rejected identically in all three
+   zones. The canonical timestamp gives an identical result in all three.
+7. 100,023-character legacy date: rejected in O(1).
+8. Fake caller budget plus already-aborted signal: throws
+   `EVALUATION_CANCELLED`, so no `VALID` is published.
+
+### 20.8 Changed files
+
+- **Runtime:** `packages/spread-analytics/src/{admission,bounds,candidates,commands,diagnostics,economics,evaluator,evidence,registry,replay,serialization,transitions,validation}.ts`
+  and new `time.ts`. `diagnostics.ts` changed by comment annotation only.
+  `index.ts`, `policy.ts`, `reasons.ts` and `model.ts` are unchanged.
+- **Test-only support:** `work-oracle.ts`.
+- **Tests:**
+  - new `fifth-acceptance-remediation.test.ts` (40 tests);
+  - new `work-accounting-source-audit.test.ts` (7 tests);
+  - updated `fourth-acceptance-remediation.test.ts` and
+    `work-accounting-oracle.test.ts`, to the internal budgeted entry points and
+    the strict-timestamp behaviour;
+  - updated `third-acceptance-remediation.test.ts`, whose exact cap test is
+    re-derived from the stricter composite rate rather than a hard-coded
+    prefill.
+  - `d055-scenarios.test.ts` and `serialization.test.ts` are unchanged.
+- **Documentation:** this section and the §19.10 correction.
+
+### 20.9 Capacity (M-01 reliance conditions)
+
+Measured after remediation with fixture identifiers, informational only and not
+normative:
+
+- 1,023 instruments with zero pairs fail at 100,000 steps;
+- the largest fully matchable three-venue universe is 447 instruments / 447
+  pairs (99,403 steps), and 450 fails;
+- the largest zero-pair three-venue universe is 564 instruments;
+- the 496-pair dense batch publishes at 42,233 steps.
+
+The lower figures follow from the stricter accounting. This is permitted under
+Option A, and no bound was widened.
+
+Public-operation regressions assert typed `MATCHING_BOUND_EXCEEDED` with no
+publication, and unchanged inputs and registry revision, for:
+
+- 1,024 instruments;
+- 1,023 instruments with zero pairs.
+
+1,025 instruments remains a structural one-over rejection. A small 60-pair
+universe still publishes completely.
+
+The reliance conditions are met as follows:
+
+1. §19.10 is corrected.
+2. The regressions above are in place.
+3. Rates are internal and no less conservative (20.1).
+4. H-03 is technically remediated (20.1–20.7).
+
+### 20.10 Regression gates and verification record
+
+- **B-01, B-02, H-01:** the third-remediation, governance and
+  second-remediation suites all pass.
+- **H-02:** 22 runtime exports; no wildcard export.
+- **D-055:** 40/40 scenario cases, covering 29/29 groups.
+- **Reason codes:** 44 unique, none new.
+- **Golden vectors:** the serialization golden vector is unchanged. A
+  cross-version probe gives combined digest
+  `abba05409b74fb53d3d87d99db66c71c85b0a2fcdbcbe58e862accaf2c871f90` for
+  candidate IDs, evidence digests, exposure keys, history digest, replay
+  revision and batch result IDs. That is identical to `018593d` and `e3aa20e`.
+- **Real venues:**
+  - OKX/Binance: `UNAVAILABLE` with `MULTIPLIER_UNKNOWN` and
+    `VALUE_CONVENTION_UNVERIFIED`;
+  - OKX/Bybit: `UNAVAILABLE` with `MULTIPLIER_UNKNOWN`;
+  - Binance/Bybit: `UNAVAILABLE` with `MULTIPLIER_UNKNOWN` and
+    `VALUE_CONVENTION_UNVERIFIED`;
+  - zero approved real pairs.
+- **spread-analytics:** **19 files, 266/266 tests**.
+
+The full-repository verification record is section 20.12.
+
+### 20.11 Limitations
+
+- Cancellation is cooperative. One atomic native call cannot be interrupted
+  mid-call, and no wall-clock latency is claimed.
+- Caller-object own-key enumeration is charged immediately after its single
+  native pass. It is the documented exception (20.1).
+- The oracle and the source audit are evidence, not proof.
+- Measured capacity is lower than before and is not guaranteed (Option A).
+- Phase 2B.1 is ready for a sixth independent acceptance review. It is not
+  frozen, and Phase 2B.2 is not authorized.
+
+### 20.12 Verification record
+
+The verification ran in a fresh copy of the exact working tree, with tracked
+and new files byte-identical and without `node_modules` or `dist`. The runtime
+was Node **v24.18.1** and npm **11.16.0**, checksum-verified against the
+official `SHASUMS256.txt`.
+
+**Install:**
+
+- `npm ci` exit 0: 450 added / 459 audited.
+- `npm audit` reports 13 pre-existing advisories (2 moderate, 10 high,
+  1 critical), against 8 on 2026-10-02. The lockfile is byte-identical, so the
+  difference is audit-database drift. No dependency changed.
+- `npm query`: 451 packages; 8 workspaces.
+
+**Quality and tests:**
+
+- `format:check`, `lint`, `typecheck`, full `npm test` and `npm run build`:
+  all exit 0.
+- Full default suite: **54 source test files** (51 passed, 3 opt-in
+  live-canary files skipped); **526 passed, 0 failed, 3 skipped**.
+  - contracts 4;
+  - market-data 57;
+  - spread-analytics 266;
+  - OKX 52 (+1 skipped);
+  - Binance 72 (+1 skipped);
+  - Bybit 69 (+1 skipped);
+  - web 6.
+- Build: six static routes (`/`, `/_not-found`, `/forgot-password`, `/login`,
+  `/register`, `/verify-email`).
+- Focused run: fifth-remediation, source audit, oracle, D-055 scenarios,
+  bounds and candidate bounds give 6 files, **132/132** tests.
+- TZ matrix as separate processes (`TZ=UTC`, `America/New_York`,
+  `Asia/Tokyo`): 19/19 files and 266/266 tests each.
+
+**Public surface (fresh `dist/index.js`):**
+
+- 22 runtime exports and no wildcard;
+- deep imports, including `dist/time.js`, return
+  `ERR_PACKAGE_PATH_NOT_EXPORTED`;
+- the oracle is absent from `dist`;
+- 44 unique reason codes.
+
+**Repository checks:**
+
+- Markdown local links: 76 files, 96 links, 74 local, 1 anchor, 0 broken.
+- `git diff --check` and `git fsck --full` pass.
+- Root `package.json` is `6282c135…776ad5` and `package-lock.json` is
+  `810aaa67…ee3d59`, both unchanged.
+- D-055 (`60d00b8e…6d97931`), D-064 (`85fb7792…5e8fbe8`), the
+  capacity-semantics decision (`98552f5d…aa47bab`) and acceptance reports 1–5
+  are unchanged.
+- Brand hashes are unchanged: dark `e4a53ef9…0dbe08`, design system
+  `459f2354…68c54`, logo `5050e13e…82a8c`.
+- The diff from `8f35571` is empty for every frozen package, `apps`, `infra`
+  and `docs/brand`.

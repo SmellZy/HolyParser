@@ -110,6 +110,11 @@ export function assertAtomicId(
 ): void {
   if (typeof value !== "string")
     throw new MatchingFailure("INPUT_INVALID", `${label} is invalid.`);
+  // O(1) length gate before any proportional scan, encode or comparison.
+  if (value.length === 0 || value.length > MATCHING_LIMITS.atomicIdUtf16)
+    throw new MatchingFailure("INPUT_INVALID", `${label} is invalid.`);
+  // The 32-code-unit step (4 units per code unit) already covers the scan
+  // and the UTF-8 length pass below.
   const scan = scanText(value, work, 32);
   if (
     value.length === 0 ||
@@ -123,6 +128,13 @@ export function assertAtomicId(
 export function assertCompositeId(value: string, work?: WorkBudget): void {
   if (typeof value !== "string")
     throw new MatchingFailure("INPUT_INVALID", "Composite ID is invalid.");
+  // Every UTF-16 code unit encodes to at least one UTF-8 byte, so a longer
+  // string cannot fit the byte bound; reject it before any proportional work.
+  if (value.length === 0 || value.length > MATCHING_LIMITS.compositeIdUtf8)
+    throw new MatchingFailure("INPUT_INVALID", "Composite ID is invalid.");
+  // The accepted 256-code-unit step rate is kept; the scan and UTF-8 length
+  // passes are additionally charged at the fine-grained rate (stricter).
+  work?.units(2 * value.length + 1);
   const scan = scanText(value, work, 256);
   if (
     !value ||
@@ -134,6 +146,8 @@ export function assertCompositeId(value: string, work?: WorkBudget): void {
 }
 export function assertReasonText(value: string, work?: WorkBudget): void {
   if (typeof value !== "string")
+    throw new MatchingFailure("INPUT_INVALID", "Reason text is invalid.");
+  if (value.length > MATCHING_LIMITS.reasonTextUtf8)
     throw new MatchingFailure("INPUT_INVALID", "Reason text is invalid.");
   const scan = scanText(value, work, 64);
   work?.units(value.length);
@@ -153,10 +167,27 @@ export function assertReasonText(value: string, work?: WorkBudget): void {
   if (/<[^>]*>|(?:javascript|data|blob):|https?:\/\//iu.test(value))
     throw new MatchingFailure("INPUT_INVALID", "Reason text is invalid.");
 }
+interface WalkState {
+  nodes: number;
+  // Evidence mode: a lower bound on the JSON serialization's UTF-8 bytes is
+  // accumulated from O(1) lengths *before* each proportional scan, so an
+  // oversized record is rejected without scanning or serializing it.
+  minimumBytes?: number;
+  readonly byteLimit?: number;
+}
+function addMinimumBytes(state: WalkState, bytes: number): void {
+  if (state.byteLimit === undefined) return;
+  state.minimumBytes = (state.minimumBytes ?? 0) + bytes;
+  if (state.minimumBytes > state.byteLimit)
+    throw new MatchingFailure(
+      "MATCHING_BOUND_EXCEEDED",
+      "Evidence record byte bound exceeded.",
+    );
+}
 function walk(
   value: unknown,
   depth: number,
-  state: { nodes: number },
+  state: WalkState,
   work: WorkBudget,
 ): void {
   ++state.nodes;
@@ -174,21 +205,49 @@ function walk(
       "INPUT_INVALID",
       "Financial JSON numbers are prohibited.",
     );
-  if (
-    typeof value === "string" &&
-    (() => {
-      const scan = scanText(value, work);
-      return scan.control || scan.unpairedSurrogate;
-    })()
-  )
-    throw new MatchingFailure("INPUT_INVALID", "Invalid JSON string.");
+  if (typeof value === "string") {
+    // Quotes plus at least one UTF-8 byte per code unit.
+    addMinimumBytes(state, value.length + 2);
+    // Evidence mode charges the scan at the fine-grained rate as well; the
+    // standalone 16 MiB parser keeps its approved bulk rate.
+    if (state.byteLimit !== undefined) work.units(value.length + 1);
+    const scan = scanText(value, work);
+    if (scan.control || scan.unpairedSurrogate)
+      throw new MatchingFailure("INPUT_INVALID", "Invalid JSON string.");
+    return;
+  }
+  if (typeof value === "boolean" || value === null) {
+    addMinimumBytes(state, 4);
+    return;
+  }
   if (Array.isArray(value)) {
     assertCount(value.length, MATCHING_LIMITS.genericArray, "Array");
+    if (state.byteLimit !== undefined) {
+      if (Object.getPrototypeOf(value) !== Array.prototype)
+        throw new MatchingFailure("INPUT_INVALID", "Evidence must be data.");
+      // Brackets plus at least one byte per element (values or separators).
+      addMinimumBytes(state, value.length + 2);
+    }
     for (const item of value) walk(item, depth + 1, state, work);
   } else if (value !== null && typeof value === "object") {
+    if (state.byteLimit !== undefined) {
+      const prototype = Object.getPrototypeOf(value) as unknown;
+      // Plain data only: no custom toJSON or prototype-supplied serialization.
+      if (prototype !== Object.prototype && prototype !== null)
+        throw new MatchingFailure("INPUT_INVALID", "Evidence must be data.");
+      if (Object.hasOwn(value, "toJSON"))
+        throw new MatchingFailure("INPUT_INVALID", "Evidence must be data.");
+      addMinimumBytes(state, 2);
+    }
+    // Own-key enumeration is the one native pass whose size is unknown until
+    // it returns (no JavaScript primitive can bound it earlier); it is charged
+    // immediately and the object is rejected before any further work.
     const keys = Object.keys(value);
+    work.units(keys.length + 1);
     assertCount(keys.length, MATCHING_LIMITS.objectKeys, "Object key");
     for (const key of keys) {
+      addMinimumBytes(state, key.length + 3);
+      if (state.byteLimit !== undefined) work.units(key.length + 1);
       const scan = scanText(key, work);
       if (scan.control || scan.unpairedSurrogate)
         throw new MatchingFailure("INPUT_INVALID", "Invalid JSON key.");
@@ -284,10 +343,19 @@ export function assertOperationResourceCounts(
 }
 
 export function assertEvidenceRecord(value: unknown, work?: WorkBudget): void {
-  // JSON.stringify performs a repeated authoritative traversal. Preflight that
-  // traversal on the same operation budget before constructing the byte string.
+  // Bound before serializing: the walk accumulates a lower bound on the
+  // serialized UTF-8 size from O(1) lengths and rejects an oversized record
+  // before scanning its oversized parts or calling JSON.stringify.
   const authority = work ?? new WorkBudget();
-  walk(value, 1, { nodes: 0 }, authority);
+  const state: WalkState = {
+    nodes: 0,
+    minimumBytes: 0,
+    byteLimit: MATCHING_LIMITS.evidenceRecordBytes,
+  };
+  walk(value, 1, state, authority);
+  // Precharge the atomic serialization at its worst case: every character of
+  // the bounded minimum may expand to a six-character escape.
+  authority.units(6 * (state.minimumBytes ?? 0) + 2);
   let serialized: string;
   try {
     serialized = JSON.stringify(value);
@@ -303,5 +371,51 @@ export function assertEvidenceRecord(value: unknown, work?: WorkBudget): void {
     bytes,
     MATCHING_LIMITS.evidenceRecordBytes,
     "Evidence record byte",
+  );
+}
+
+/**
+ * Native string equality compares every code unit when the lengths match;
+ * charge that pass (plus one) before comparing. Different lengths or a
+ * non-string operand compare in O(1).
+ */
+export function sameText(
+  left: unknown,
+  right: unknown,
+  work: WorkBudget,
+): boolean {
+  work.units(
+    (typeof left === "string" &&
+    typeof right === "string" &&
+    left.length === right.length
+      ? left.length
+      : 0) + 1,
+  );
+  return left === right;
+}
+
+/** Hashing a string key (Map/Set lookup or insertion) reads every code unit. */
+export function chargeKey<T extends string>(key: T, work?: WorkBudget): T {
+  work?.units(key.length + 1);
+  return key;
+}
+
+// No closed-schema field name, enumeration value or reason code is longer;
+// a longer caller string is rejected in O(1) before it is hashed.
+export const MAXIMUM_SCHEMA_TOKEN = 64;
+
+/**
+ * Membership of a caller-supplied value in a fixed vocabulary: non-strings
+ * and over-long strings are rejected in O(1); otherwise the hash is charged.
+ */
+export function inVocabulary(
+  vocabulary: ReadonlySet<string>,
+  value: unknown,
+  work?: WorkBudget,
+): boolean {
+  return (
+    typeof value === "string" &&
+    value.length <= MAXIMUM_SCHEMA_TOKEN &&
+    vocabulary.has(chargeKey(value, work))
   );
 }

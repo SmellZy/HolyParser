@@ -3,6 +3,7 @@ import {
   WorkBudget,
   assertAtomicId,
   assertCount,
+  sameText,
   type CancellationSignal,
 } from "./bounds.js";
 import {
@@ -13,7 +14,8 @@ import {
 } from "./admission.js";
 import type { MappingVersion, ReplayMode, ReplayResult } from "./model.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
-import { chargeTimestamp, isEffective } from "./registry.js";
+import { isEffective } from "./registry.js";
+import { epoch } from "./time.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 
@@ -35,7 +37,7 @@ export function replayMapping(input: {
     );
   assertAtomicId(input.mappingId, "Mapping ID", work);
   assertAtomicId(input.replayRevision, "Replay revision", work);
-  if (input.mappingId !== input.history.mappingId)
+  if (!sameText(input.mappingId, input.history.mappingId, work))
     throw new MatchingFailure(
       "MAPPING_REVISION_CONFLICT",
       "Replay mapping ID mismatch.",
@@ -47,12 +49,11 @@ export function replayMapping(input: {
     MATCHING_LIMITS.mappingVersionsPerMapping,
     "Mapping history",
   );
-  // Date.parse semantics (including NaN comparisons) are preserved; each
-  // native parse of a caller-supplied timestamp is charged before it runs.
-  const parse = (value: string): number => (
-    chargeTimestamp(value, work),
-    Date.parse(value)
-  );
+  // Strict canonical UTC timestamps (time.ts): the caller's evaluation and
+  // knowledge times are validated up front; invalid times reject the replay.
+  epoch(input.evaluationAt, work);
+  epoch(input.knowledgeCutoff, work);
+  const parse = (value: string): bigint => epoch(value, work);
   const versions = records.map((record) => (work.step(), record.mapping));
   const known = versions
     .filter((version) => {

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { CanonicalAssetId } from "@arbitrage/market-data";
-import type { WorkBudget } from "./bounds.js";
+import { WorkBudget, assertAtomicId } from "./bounds.js";
+import { MatchingFailure } from "./reasons.js";
 import { EXPOSURE_KEY_VERSION, MATCHING_LIMITS } from "./policy.js";
 
 export type CanonicalValue =
@@ -45,6 +46,7 @@ function encode(value: CanonicalValue, work?: WorkBudget): string {
       joinedLength += part.length + 1;
     }
     work?.units(joinedLength + 2);
+    // work: rope build; the join was charged (joinedLength + 2) above.
     return `[${encoded.join(",")}]`;
   }
   const record = value as Readonly<Record<string, CanonicalValue>>;
@@ -59,11 +61,13 @@ function encode(value: CanonicalValue, work?: WorkBudget): string {
   let joinedLength = 0;
   for (const key of keys) {
     work?.units(1);
+    // work: rope; flattened by the join charged via joinedLength below.
     const part = `${quote(key, work)}:${encode(record[key]!, work)}`;
     encoded.push(part);
     joinedLength += part.length + 1;
   }
   work?.units(joinedLength + 2);
+  // work: rope build; the join was charged (joinedLength + 2) above.
   return `{${encoded.join(",")}}`;
 }
 export const canonicalSerialize = (
@@ -74,6 +78,7 @@ export const canonicalSerialize = (
   // Appending the newline builds a rope; its flattening is charged by the
   // consumer that copies or hashes the result.
   work?.units(1);
+  // work: rope; its flattening is charged by the consuming hash/compare.
   return `${encoded}\n`;
 };
 export const sha256 = (
@@ -96,6 +101,7 @@ export const deterministicId = (
   const canonical = canonicalSerialize(value, work);
   // Domain concatenation is flattened (copied) before encoding.
   work?.units(domain.length + canonical.length + 1);
+  // work: concatenation charged (domain + canonical + 1) just above.
   return sha256(`${domain}\n${canonical}`, work);
 };
 export interface CanonicalExposureIdentity {
@@ -108,8 +114,31 @@ export interface CanonicalExposureIdentity {
   readonly exposureUnit: "BASE_UNIT";
 }
 const lp = (value: string): string =>
+  // work: charged by the caller (2 x length + 12 per field).
   `${Buffer.byteLength(value, "utf8")}:${value}`;
-export function canonicalExposureKey(
+/**
+ * Public key helper: validates the closed identity and bounds every asset ID
+ * before any proportional work, on its own operation budget (M-02).
+ */
+export function canonicalExposureKey(value: CanonicalExposureIdentity): string {
+  const work = new WorkBudget();
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    value.productClass !== "DERIVATIVE" ||
+    value.contractType !== "PERPETUAL" ||
+    value.valueConvention !== "LINEAR" ||
+    value.exposureUnit !== "BASE_UNIT"
+  )
+    throw new MatchingFailure("INPUT_INVALID", "Exposure identity is invalid.");
+  assertAtomicId(value.baseAssetId, "Base asset", work);
+  assertAtomicId(value.quoteAssetId, "Quote asset", work);
+  assertAtomicId(value.settlementAssetId, "Settlement asset", work);
+  const result = canonicalExposureKeyWithBudget(value, work);
+  work.beforePublication();
+  return result;
+}
+export function canonicalExposureKeyWithBudget(
   value: CanonicalExposureIdentity,
   work?: WorkBudget,
 ): string {
@@ -133,5 +162,6 @@ export function canonicalExposureKey(
     joinedLength += part.length;
   }
   work?.units(joinedLength + EXPOSURE_KEY_VERSION.length + 1);
+  // work: join charged (joinedLength + version + 1) just above.
   return `${EXPOSURE_KEY_VERSION}|${encoded.join("")}`;
 }

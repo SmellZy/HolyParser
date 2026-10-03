@@ -11,6 +11,7 @@
 // standalone 16 MiB input parser (TextDecoder, JSON.parse) are weighted by
 // their approved rate of 4,096 bytes per logical step (1/32 unit per byte).
 import { createHash } from "node:crypto";
+import { WORK_UNITS_PER_STEP, WorkBudget } from "./bounds.js";
 
 export interface WorkOracle {
   readonly units: () => number;
@@ -27,10 +28,17 @@ export function installWorkOracle(): WorkOracle {
   let total = 0;
   let largest = 0;
   const tally = new Map<string, number>();
+  // The oracle's own bookkeeping must not use (or count) patched primitives.
+  const mapGet = Map.prototype.get;
+  const mapSet = Map.prototype.set;
   const add = (name: string, cost: number): void => {
     total += cost;
     largest = Math.max(largest, cost);
-    tally.set(name, (tally.get(name) ?? 0) + cost);
+    Reflect.apply(mapSet, tally, [
+      name,
+      ((Reflect.apply(mapGet, tally, [name]) as number | undefined) ?? 0) +
+        cost,
+    ]);
   };
   const restores: (() => void)[] = [];
   const ownKeys = Reflect.ownKeys;
@@ -137,6 +145,49 @@ export function installWorkOracle(): WorkOracle {
           method,
           (self) => (self as Map<unknown, unknown>).size + 1,
         );
+  // Fifth remediation: hashing a key reads it (string keys are hashed over
+  // every code unit unless already internalized; counted conservatively).
+  const keyCost = (_self: unknown, args: unknown[]) =>
+    (typeof args[0] === "string" ? args[0].length : 1) + 1;
+  for (const method of ["get", "has", "set", "delete"] as const)
+    patch(Map.prototype, method, keyCost);
+  for (const method of ["has", "add", "delete"] as const)
+    patch(Set.prototype, method, keyCost);
+  // String methods that traverse their receiver (or build a result).
+  for (const method of [
+    "concat",
+    "slice",
+    "substring",
+    "includes",
+    "indexOf",
+    "lastIndexOf",
+    "startsWith",
+    "endsWith",
+    "split",
+    "replace",
+    "replaceAll",
+    "toLowerCase",
+    "toUpperCase",
+    "trim",
+    "normalize",
+    "localeCompare",
+    "match",
+    "search",
+  ] as const)
+    patch(String.prototype, method, (self) => String(self).length + 1);
+  for (const method of ["padStart", "padEnd", "repeat"] as const)
+    patch(String.prototype, method, (_self, _args, result) =>
+      typeof result === "string" ? result.length + 1 : 1,
+    );
+  patch(Object, "assign", (_self, args) => {
+    let sum = 1;
+    for (let index = 1; index < args.length; index += 1) {
+      const item = args[index];
+      if (typeof item === "object" && item !== null)
+        sum += ownKeys(item).length;
+    }
+    return sum;
+  });
   for (const [prototype, key] of [
     [Map.prototype, Symbol.iterator],
     [Set.prototype, Symbol.iterator],
@@ -262,4 +313,47 @@ export function maximumInterruptibleGap(trace: OracleTrace<unknown>): number {
 /** Actual work after the last check (publication tail). */
 export function publicationTail(trace: OracleTrace<unknown>): number {
   return trace.end - (trace.checks.at(-1) ?? 0);
+}
+
+export interface BudgetedTrace<T> extends OracleTrace<T> {
+  /** Charged logical steps observed at each cancellation check. */
+  readonly charged: readonly number[];
+  /** Charged steps when the operation returned or threw. */
+  readonly chargedEnd: number;
+}
+
+/**
+ * Runs an internal budgeted operation under the oracle and records, at every
+ * cancellation check, both the actual work so far and the charged steps so
+ * far. Used to verify precharge: actual work never runs ahead of charges.
+ */
+export function traceBudgeted<T>(
+  operation: (work: WorkBudget) => T,
+  abortAfterChecks = Number.POSITIVE_INFINITY,
+): BudgetedTrace<T> {
+  const charged: number[] = [];
+  let work: WorkBudget | undefined;
+  const trace = traceOperation((signal) => {
+    work = new WorkBudget(signal, {
+      checked(_gap, total) {
+        charged.push(total);
+      },
+    });
+    const result = operation(work);
+    work.beforePublication();
+    return result;
+  }, abortAfterChecks);
+  return { ...trace, charged, chargedEnd: work?.steps ?? 0 };
+}
+
+/**
+ * Largest excess of actual work over charged work (in oracle units) at any
+ * check or at the end. A value <= 0 means every native pass was charged
+ * no later than the next cancellation check.
+ */
+export function maximumDeficit(trace: BudgetedTrace<unknown>): number {
+  const at = trace.checks.map(
+    (actual, index) => actual - trace.charged[index]! * WORK_UNITS_PER_STEP,
+  );
+  return Math.max(...at, trace.end - trace.chargedEnd * WORK_UNITS_PER_STEP);
 }

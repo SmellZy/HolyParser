@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   admitMaterializedMapping,
+  admitMaterializedMappingWithBudget,
   type MappingAdmissionInput,
 } from "./admission.js";
 import {
@@ -401,10 +402,9 @@ describe("third remediation H-03 cumulative operation accounting", () => {
     });
     for (let index = 0; index < 64; index += 1)
       validateVenueInstrumentEvidence(fixture.left, work);
-    const admitted = admitMaterializedMapping(
+    const admitted = admitMaterializedMappingWithBudget(
       fixture.input,
       T30,
-      undefined,
       work,
     );
     expect(admitted.state).toBe("VALID");
@@ -420,10 +420,21 @@ describe("third remediation H-03 cumulative operation accounting", () => {
   });
 
   it("enforces the cumulative 100,000-step cap across distributed helpers", () => {
+    // Composite scans are charged per chunk and (fifth remediation, stricter)
+    // per code unit; measure one helper and prefill to land exactly on 100,000.
+    const composites = Array.from(
+      { length: 100 },
+      (_, index) => `${String(index).padStart(2, "0")}:${"x".repeat(4090)}`,
+    );
+    const probe = new WorkBudget();
+    assertCompositeId(composites[0]!, probe);
+    probe.beforePublication();
     const work = new WorkBudget();
-    work.step(98_400);
-    for (let index = 0; index < 100; index += 1)
-      assertCompositeId(`${index}:${"x".repeat(4090)}`, work);
+    work.step(100_000 - 100 * probe.steps);
+    for (const composite of composites) {
+      assertCompositeId(composite, work);
+      work.beforePublication();
+    }
     expect(work.steps).toBe(100_000);
     expect(() =>
       validateVenueInstrumentEvidence(instrument({ name: "OVER" }), work),

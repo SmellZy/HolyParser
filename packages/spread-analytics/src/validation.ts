@@ -3,8 +3,11 @@ import {
   WorkBudget,
   assertAtomicId,
   assertCompositeId,
+  assertCount,
   assertReasonText,
+  inVocabulary,
 } from "./bounds.js";
+import { MATCHING_LIMITS } from "./policy.js";
 import type {
   NativeEconomicsEvidence,
   VenueInstrumentEvidence,
@@ -27,11 +30,15 @@ export function assertClosedKeys(
 ): void {
   const input = record(value, label);
   const allowedSet = new Set(allowed);
+  // Own-key enumeration cannot be bounded before it returns; charge it
+  // immediately and reject an oversized object before further work.
   const keys = Object.keys(input);
+  work?.units(keys.length + 1);
+  assertCount(keys.length, MATCHING_LIMITS.objectKeys, "Object key");
   for (let index = 0; index < keys.length; index += 1) {
     if (index % 16 === 0) work?.step();
     const key = keys[index]!;
-    if (!allowedSet.has(key))
+    if (!inVocabulary(allowedSet, key, work))
       throw new MatchingFailure(
         "INPUT_INVALID",
         `${label} has an unknown field.`,
@@ -56,10 +63,7 @@ function validateKnowledge(
   const input = record(value, "Knowledge");
   if (input.state === "KNOWN") {
     assertClosedKeys(input, ["state", "value"], "Known value", work);
-    if (
-      knownValues &&
-      (typeof input.value !== "string" || !knownValues.has(input.value))
-    )
+    if (knownValues && !inVocabulary(knownValues, input.value, work))
       throw new MatchingFailure("INPUT_INVALID", "Known enum is invalid.");
     return;
   }
@@ -199,14 +203,16 @@ function validateEconomics(
   const validateSidecar = (
     input: unknown,
     knownValues?: ReadonlySet<string>,
+    bound?: "ATOMIC" | "COMPOSITE",
   ) => {
     const item = record(input, "Sidecar knowledge");
     if (item.state === "KNOWN") {
       assertClosedKeys(item, ["state", "value"], "Known sidecar value", work);
-      if (
-        knownValues &&
-        (typeof item.value !== "string" || !knownValues.has(item.value))
-      )
+      // Unit labels are later compared; bound them before any comparison.
+      if (bound === "ATOMIC")
+        assertAtomicId(item.value as string, "Sidecar unit", work);
+      if (bound === "COMPOSITE") assertCompositeId(item.value as string, work);
+      if (knownValues && !inVocabulary(knownValues, item.value, work))
         throw new MatchingFailure("INPUT_INVALID", "Sidecar enum is invalid.");
     } else {
       if (!["UNKNOWN", "UNVERIFIED"].includes(String(item.state)))
@@ -217,18 +223,15 @@ function validateEconomics(
         "Unavailable sidecar value",
         work,
       );
-      if (
-        typeof item.reasonCode !== "string" ||
-        !matchReasonCodes.has(item.reasonCode)
-      )
+      if (!inVocabulary(matchReasonCodes, item.reasonCode, work))
         throw new MatchingFailure(
           "INPUT_INVALID",
           "Sidecar reason code is invalid.",
         );
     }
   };
-  validateSidecar(value.nativeQuantityUnit);
-  validateSidecar(value.canonicalBaseUnit);
+  validateSidecar(value.nativeQuantityUnit, undefined, "ATOMIC");
+  validateSidecar(value.canonicalBaseUnit, undefined, "COMPOSITE");
   validateSidecar(value.baseUnitsPerNativeQuantity);
   validateSidecar(value.payoff, new Set(["LINEAR", "INVERSE", "QUANTO"]));
   if (typeof value.collateralVerified !== "boolean")
