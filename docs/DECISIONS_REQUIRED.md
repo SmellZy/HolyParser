@@ -824,6 +824,18 @@ An unresolved item must not be converted into an implementation default.
   validity at most 30 days; all D-055 section-13 limits unchanged. Processing
   guard = 100,000 logical steps; cooperative cancellation polls at most 128
   steps plus pre-publication checks, not a wall-clock abort/latency guarantee.
+- **Capacity semantics — 2026-10-03:**
+  [`PHASE_2B_D064_CAPACITY_SEMANTICS_DECISION.md`](PHASE_2B_D064_CAPACITY_SEMANTICS_DECISION.md)
+  records explicit Product, Market Data and SRE APPROVE of interpretation A for
+  `instrument-matching-resources/v1`. Every listed value is an independent hard
+  ceiling and the strictest applicable bound wins. 1,024 instruments and 8,192
+  pairs are ceilings, not guaranteed reachable workloads. The 100,000-step
+  budget is unchanged and may fail closed below them. No minimum capacity is
+  guaranteed. The internal logical-step accounting granularity is an
+  implementation detail that must not become less conservative. No numeric
+  version change; the approval record is unchanged. This resolves acceptance-5
+  M-01 as accepted semantics. It does not resolve H-03/H-04/M-02 or authorize
+  a freeze.
 - **Implementation gate:** matching resource/freshness authority is complete;
   independent formal D-055 acceptance and separate Phase 2B.1 Product Owner
   authorization still required. No implementation begins here.

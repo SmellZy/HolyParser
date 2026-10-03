@@ -189,7 +189,11 @@ all-or-nothing rejection, with finite diagnostics and cancellation work chunks.
 Detect count/byte/work overflow; reject the batch while preserving the prior
 accepted immutable state. Analytics/Security/SRE own the applicable D-064
 review. Legitimate larger inputs may still be unavailable; limits cannot be
-raised through a manual mapping or silently truncated candidate set.
+raised through a manual mapping or silently truncated candidate set. The
+[D-064 capacity-semantics decision](PHASE_2B_D064_CAPACITY_SEMANTICS_DECISION.md)
+(2026-10-03) confirms that the limits are composing ceilings. The 100,000-step
+work budget may reject inputs below the instrument/pair maxima, and no minimum
+capacity is guaranteed.
 
 ## 6. Position, alert, notification, and Telegram additions — 2026-07-26
 
