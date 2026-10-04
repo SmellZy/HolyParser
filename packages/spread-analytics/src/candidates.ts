@@ -19,7 +19,12 @@ import {
   MATCHING_POLICY_VERSION,
   isSpecialNativeFamily,
 } from "./policy.js";
-import { CuratedAssetRegistry, resolveWithBudget } from "./registry.js";
+import {
+  CuratedAssetRegistry,
+  isCuratedAssetRegistry,
+  resolveWithBudget,
+} from "./registry.js";
+import { inputBoundary, snapshotInput } from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import {
   canonicalExposureKeyWithBudget,
@@ -332,7 +337,16 @@ export function generateCandidates(
   signal?: CancellationSignal,
 ): readonly InstrumentMatchCandidate[] {
   const work = new WorkBudget(signal);
-  return generateCandidatesWithBudget(instruments, registry, at, cutoff, work);
+  // N-01: one passive frozen snapshot of the caller instruments; the registry
+  // must be a genuine instance (L-03); malformed shapes are typed (L-04).
+  return inputBoundary(() => {
+    if (!isCuratedAssetRegistry(registry))
+      throw new MatchingFailure("INPUT_INVALID", "Registry is not authentic.");
+    const snapshot = snapshotInput(instruments, work);
+    if (!Array.isArray(snapshot))
+      throw new MatchingFailure("INPUT_INVALID", "Instruments are invalid.");
+    return generateCandidatesWithBudget(snapshot, registry, at, cutoff, work);
+  });
 }
 
 export function generateCandidatesWithBudget(

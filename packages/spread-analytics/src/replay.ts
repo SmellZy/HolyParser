@@ -18,8 +18,20 @@ import { isEffective } from "./registry.js";
 import { epoch } from "./time.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
+import { inputBoundary, readOwnData, snapshotRecord } from "./snapshot.js";
 
-export function replayMapping(input: {
+const REPLAY_FIELDS = [
+  "mode",
+  "history",
+  "mappingId",
+  "evaluationAt",
+  "knowledgeCutoff",
+  "replayRevision",
+  "signal",
+] as const;
+const REPLAY_MODES: readonly string[] = ["AS_KNOWN", "CORRECTED"];
+
+interface ReplayInput {
   readonly mode: ReplayMode;
   readonly history: AdmittedMappingHistory;
   readonly mappingId: string;
@@ -27,9 +39,33 @@ export function replayMapping(input: {
   readonly knowledgeCutoff: Timestamp;
   readonly replayRevision: string;
   readonly signal?: CancellationSignal;
-}): ReplayResult {
-  const work = new WorkBudget(input.signal);
+}
+export function replayMapping(callerInput: ReplayInput): ReplayResult {
+  const work = new WorkBudget(
+    inputBoundary(() => readOwnData(callerInput, "signal")) as
+      CancellationSignal | undefined,
+  );
+  const result = inputBoundary(() =>
+    replayWithBudget(
+      // N-01: one passive snapshot; the admitted history and signal are
+      // trusted handles (the history is authenticated below).
+      snapshotRecord(
+        callerInput,
+        REPLAY_FIELDS,
+        ["history", "signal"],
+        work,
+      ) as unknown as ReplayInput,
+      work,
+    ),
+  );
+  work.beforePublication();
+  return result;
+}
+function replayWithBudget(input: ReplayInput, work: WorkBudget): ReplayResult {
   work.step();
+  // L-02: only the approved replay modes are accepted at runtime.
+  if (typeof input.mode !== "string" || !REPLAY_MODES.includes(input.mode))
+    throw new MatchingFailure("INPUT_INVALID", "Replay mode is invalid.");
   if (!isAdmittedMappingHistory(input.history))
     throw new MatchingFailure(
       "INPUT_INVALID",
@@ -157,6 +193,5 @@ export function replayMapping(input: {
     evaluationAt: input.evaluationAt,
     knowledgeCutoff: input.knowledgeCutoff,
   });
-  work.beforePublication();
   return result;
 }

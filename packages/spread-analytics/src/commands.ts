@@ -18,6 +18,7 @@ import { chargeCopy, immutableMapping } from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { isEffective } from "./registry.js";
 import { epoch } from "./time.js";
+import { inputBoundary, snapshotInput } from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 import {
@@ -162,9 +163,11 @@ function validateApproveInput(
 
 /** Internal: approve-command construction on the caller's operation budget. */
 export function approveCommandWithBudget(
-  input: ApproveCommandInput,
+  callerInput: ApproveCommandInput,
   work: WorkBudget,
 ): ApproveMappingCommand {
+  // N-01: validate and publish only one passive frozen snapshot.
+  const input = snapshotInput(callerInput, work);
   validateApproveInput(input, work);
   const digest = payload(input, work);
   chargeCopy(input, work);
@@ -187,14 +190,24 @@ export function approveCommand(
   input: ApproveCommandInput,
 ): ApproveMappingCommand {
   const work = new WorkBudget();
-  const result = approveCommandWithBudget(input, work);
+  const result = inputBoundary(() => approveCommandWithBudget(input, work));
   work.beforePublication();
   return result;
 }
 export function invalidateCommand(
-  input: InvalidateCommandInput,
+  callerInput: InvalidateCommandInput,
 ): InvalidateMappingCommand {
   const work = new WorkBudget();
+  const result = inputBoundary(() =>
+    invalidateWithBudget(snapshotInput(callerInput, work), work),
+  );
+  work.beforePublication();
+  return result;
+}
+function invalidateWithBudget(
+  input: InvalidateCommandInput,
+  work: WorkBudget,
+): InvalidateMappingCommand {
   assertAtomicId(input.commandId, "Command ID", work);
   assertAtomicId(input.mappingId, "Mapping ID", work);
   assertAtomicId(input.invalidationReference, "Invalidation reference", work);
@@ -227,14 +240,12 @@ export function invalidateCommand(
     work,
   );
   chargeCopy(input, work);
-  const result = Object.freeze({
+  return Object.freeze({
     ...input,
     kind: "INVALIDATE_MAPPING",
     transition,
     commandDigest: transition.commandDigest,
   });
-  work.beforePublication();
-  return result;
 }
 
 /**
@@ -318,20 +329,46 @@ export let applyWithBudget: (
   work: WorkBudget,
 ) => LedgerApplication;
 
+/** Brand check: only a genuine ledger instance is trusted (L-03). */
+export let isMappingLedger: (value: unknown) => value is MappingLedger;
 export class MappingLedger {
   static {
     applyWithBudget = (ledger, command, work) => ledger.#apply(command, work);
+    isMappingLedger = (value: unknown): value is MappingLedger =>
+      typeof value === "object" && value !== null && #commandDigests in value;
   }
   readonly versions: readonly MappingVersion[];
   readonly transitions: readonly MappingTransitionRecord[];
   #commandDigests: Map<string, string>;
   constructor(
-    versions: readonly MappingVersion[] = [],
-    transitions: readonly MappingTransitionRecord[] = [],
+    callerVersions: readonly MappingVersion[] = [],
+    callerTransitions: readonly MappingTransitionRecord[] = [],
   ) {
     const parent = pendingLedgerBudget;
     pendingLedgerBudget = undefined;
     const work = parent ?? new WorkBudget();
+    const state = inputBoundary(() =>
+      MappingLedger.#build(
+        snapshotInput(callerVersions, work),
+        snapshotInput(callerTransitions, work),
+        work,
+      ),
+    );
+    this.versions = state.versions;
+    this.transitions = state.transitions;
+    this.#commandDigests = new Map();
+    if (parent === undefined) work.beforePublication();
+  }
+  static #build(
+    versions: readonly MappingVersion[],
+    transitions: readonly MappingTransitionRecord[],
+    work: WorkBudget,
+  ) {
+    if (
+      !Array.isArray(versions as unknown) ||
+      !Array.isArray(transitions as unknown)
+    )
+      throw new MatchingFailure("INPUT_INVALID", "Ledger input is invalid.");
     assertCount(
       versions.length,
       MATCHING_LIMITS.mappingEventRecords,
@@ -355,10 +392,10 @@ export class MappingLedger {
       );
       counts.set(chargeKey(v.mappingId, work), n);
     }
-    this.versions = Object.freeze(
+    const frozenVersions = Object.freeze(
       versions.map((value) => (work.step(), immutableMapping(value, work))),
     );
-    this.transitions = Object.freeze(
+    const frozenTransitions = Object.freeze(
       transitions.map((transition) => {
         work.step();
         chargeCopy(transition, work);
@@ -374,8 +411,7 @@ export class MappingLedger {
         });
       }),
     );
-    this.#commandDigests = new Map();
-    if (parent === undefined) work.beforePublication();
+    return { versions: frozenVersions, transitions: frozenTransitions };
   }
   commandDigest(commandId: string): string | undefined {
     const work = new WorkBudget();
@@ -406,11 +442,13 @@ export class MappingLedger {
   /** Public application: its own operation budget and final check. */
   apply(command: MappingCommand): LedgerApplication {
     const work = new WorkBudget();
-    const result = this.#apply(command, work);
+    const result = inputBoundary(() => this.#apply(command, work));
     work.beforePublication();
     return result;
   }
-  #apply(command: MappingCommand, work: WorkBudget): LedgerApplication {
+  #apply(callerCommand: MappingCommand, work: WorkBudget): LedgerApplication {
+    // N-01: one passive frozen snapshot; nothing below rereads the caller.
+    const command = snapshotInput(callerCommand, work);
     validateCommandFields(command, work);
     if (command.kind === "INVALIDATE_MAPPING")
       this.#assertInvalidateCommandBinding(command, work);
@@ -658,6 +696,8 @@ export function admitMappingCommand(
   signal?: CancellationSignal,
 ): MappingCommandAdmission {
   const work = new WorkBudget(signal);
+  if (!isMappingLedger(ledger))
+    throw new MatchingFailure("INPUT_INVALID", "Ledger is not authentic.");
   let result: MappingCommandAdmission;
   try {
     result = Object.freeze({
@@ -665,7 +705,12 @@ export function admitMappingCommand(
       // work: fixed-shape internal result (ledger, mapping, idempotent).
       ...applyWithBudget(ledger, command, work),
     });
-  } catch (error) {
+  } catch (caught) {
+    // L-04: a malformed caller shape is the typed INPUT_INVALID rejection.
+    const error =
+      caught instanceof TypeError || caught instanceof RangeError
+        ? new MatchingFailure("INPUT_INVALID", "Malformed input.")
+        : caught;
     if (!(error instanceof MatchingFailure)) throw error;
     // Cancellation and budget exhaustion are operation failures, never
     // ordinary domain outcomes: they propagate and nothing is published.

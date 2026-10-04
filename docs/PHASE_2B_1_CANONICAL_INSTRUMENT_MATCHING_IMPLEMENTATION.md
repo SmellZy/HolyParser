@@ -1871,3 +1871,284 @@ official `SHASUMS256.txt`.
   `459f2354…68c54`, logo `5050e13e…82a8c`.
 - The diff from `8f35571` is empty for every frozen package, `apps`, `infra`
   and `docs/brand`.
+
+## 21. Pre-freeze hardening evidence — N-01, L-02, L-03, L-04
+
+Hardening date: 2026-10-04. Governing review:
+[sixth independent acceptance](PHASE_2B_1_CANONICAL_INSTRUMENT_MATCHING_ACCEPTANCE_6.md)
+gave **PASS_WITH_WARNINGS**, BLOCKER 0 and unresolved HIGH 0. It said
+Phase 2B.1 may freeze, with open warnings N-01 (MEDIUM) and L-01 to L-04 (LOW).
+Product explicitly chose **HARDEN FIRST**: no freeze tag before this hardening
+and a fresh independent re-acceptance (ACCEPTANCE_7).
+
+This section is implementation evidence only. It is not acceptance and not a
+freeze. The following are unchanged:
+
+- D-055, D-064 and the capacity-semantics decision (Option A);
+- the 100,000-step budget and the ≤128-step cancellation interval;
+- the 44 reason codes and the 22 runtime exports;
+- the manifests, lockfile and dependencies;
+- every frozen scope and acceptance reports 1–6.
+
+L-01 (historic Markdown hard-break spaces) is out of scope.
+
+### 21.1 N-01 root cause
+
+Validation read caller-owned properties. Later code then reread the same
+caller objects: spreads for the frozen copies, index-based `map`, iterators
+and repeated property access. An accessor property, an own
+`Symbol.iterator` or a duck-typed decimal could therefore show one value to
+validation and another to matching, hashing or publication. In the worst
+case, admission returned `VALID` and `evaluateMatch` returned
+`MATCHED/COMPATIBLE_APPROVED` for a pair that was never approved.
+
+### 21.2 Snapshot boundary design
+
+New module `snapshot.ts`. At every public operation, before any validation,
+the caller input is turned into exactly one deep, passive, frozen snapshot.
+All later authoritative work uses only that snapshot: validation, identity,
+lookup, approvals, comparison, economics, serialization, hashing, evidence,
+returned fields and publication.
+
+| Public operation                                                   | Boundary                                                                                                                                                           |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `generateCandidates`                                               | Snapshot of the instrument list. Registry brand check.                                                                                                             |
+| `evaluateMatch` / `evaluateBatch`                                  | `snapshotRecord` of each evaluation input; `snapshotList` of the batch, read by index. Registry brand check. A supplied candidate is validated before use or echo. |
+| `admitMaterializedMapping` (and inside evaluation)                 | Snapshot of the whole admission input at the start of `admitWithBudget`.                                                                                           |
+| `admitRegistryRevision` / `new CuratedAssetRegistry`               | Snapshot of the revision inside the constructor; state is built only from it.                                                                                      |
+| `admitMappingCommand` / `MappingLedger#apply`, `new MappingLedger` | Ledger brand check; snapshot of the command, versions and transitions.                                                                                             |
+| `approveCommand` / `invalidateCommand`                             | Snapshot of the input.                                                                                                                                             |
+| `validateEvidenceBundle`                                           | Snapshot of records and subjects.                                                                                                                                  |
+| `replayMapping`                                                    | `snapshotRecord`. The admitted history is a trusted, authenticated handle.                                                                                         |
+| `candidateProvenanceDigest`, `canonicalExposureKey`, `normalize*`  | Snapshot, or authentic-decimal materialization.                                                                                                                    |
+
+The trusted handles are a genuine registry, a genuine ledger, an admitted
+history and a cancellation signal. They are taken by reference and
+authenticated with private brand checks. A cancellation signal is read once as
+an own data property. It remains the caller's live cancellation source by
+design.
+
+### 21.3 Descriptor, prototype, iterator and decimal policy
+
+- **Accessors:** every own property is read once, through its descriptor.
+  Accessor descriptors, non-enumerable keys and symbol keys are rejected with
+  the existing typed `INPUT_INVALID`. Getters are never executed. Regressions
+  record zero getter invocations.
+- **Prototypes:** only plain objects (prototype `Object.prototype` or `null`),
+  genuine arrays and genuine decimals are accepted. Class instances,
+  functions, symbols, bigints and Map/Set/Date objects are rejected. The
+  snapshot's own objects are created with non-writable, non-configurable,
+  enumerable own properties and are frozen.
+- **Arrays:** the array must have the `Array.prototype` prototype. Its own keys
+  must be exactly its indices plus `length`, so an own iterator, extra keys or
+  holes are rejected. It is copied by index through descriptors, and no
+  caller iterator is ever invoked.
+- **Decimals:** the value must have the exact `ExactDecimal.prototype` and
+  exactly two own data fields: `coefficient` (bigint) and `scale` (safe
+  integer).
+  - It is rebuilt with `ExactDecimal.fromParts`, which re-validates the frozen
+    domain bounds, and frozen.
+  - Non-normalized parts are refused as forged, since genuine decimals are
+    always normalized.
+  - Duck-typed objects, prototype spoofs with accessors or extra behaviour,
+    and strings are refused.
+  - No floating point is introduced.
+- **Proxies:** a Proxy is not detected. Correctness does not depend on
+  detecting one, because its descriptor trap is consulted once per property
+  and only the snapshot is used afterwards. The regression demonstrates this.
+- **Depth:** depth is bounded at 16 with `MATCHING_BOUND_EXCEEDED`, which
+  also bounds cycles. Arrays and objects keep their existing count limits.
+
+### 21.4 L-02, L-03, L-04
+
+- **L-02:** `replayMapping` validates `mode` at runtime against the closed set
+  `AS_KNOWN` and `CORRECTED`. Any other string, number, object, array, `null`,
+  `undefined` or accessor-backed mode fails with `INPUT_INVALID`. No new mode
+  and no new code.
+- **L-03:**
+  - `evaluateMatch` validates a supplied candidate before using it: closed
+    shape, bounded identifiers, strict timestamps, closed reasons, current
+    policy. It echoes only the frozen snapshot, never the caller object.
+  - A registry or ledger that is not a genuine instance (a plain object, a
+    prototype spoof or a Proxy) is refused before any exit. A forged revision
+    can therefore never be published, including on the earliest
+    `NOT_MATCHED` exit.
+- **L-04:** with passive snapshots in place, a `TypeError`/`RangeError` raised
+  while consuming caller input comes only from a malformed caller shape. It
+  becomes the existing typed `INPUT_INVALID`:
+  - a thrown failure at throwing operations;
+  - `INVALID_PROVENANCE/INPUT_INVALID` from admission;
+  - `REJECTED/INPUT_INVALID` from command admission.
+
+  `MatchingFailure`, including `EVALUATION_CANCELLED` and
+  `MATCHING_BOUND_EXCEEDED`, and every other error propagate unchanged. A
+  regression asserts that cancellation and budget exhaustion are not
+  swallowed.
+
+### 21.5 Work accounting
+
+Snapshot work is charged to the operation budget as it happens:
+
+- 4 units per node;
+- 3 units per property or element, covering the descriptor read, definition
+  and freeze;
+- the own-key enumeration (accepted limitation A-02);
+- 8 units per decimal.
+
+There is no budget reset; snapshots use the parent operation budget. All
+snapshot work precedes the final check: publication-tail and final-check
+regressions pass for every typed outcome. Accounting only became stricter.
+Measured with identical fixtures against `1e091f9`:
+
+| Measurement                   | Before | After |
+| ----------------------------- | -----: | ----: |
+| 496-pair generation (checks)  |    331 |   333 |
+| 64-version admission (checks) |    356 |   361 |
+
+The precharge-deficit tests (actual work never ahead of charges) and the
+source audit (which now covers `snapshot.ts`) pass.
+
+### 21.6 Exact adversarial regressions
+
+New `sixth-acceptance-hardening.test.ts` (15 tests) covers the following.
+
+**N-01 vectors:**
+
+- **The material case**, with accessors on mapping instrument IDs and six
+  candidate revision/digest fields, swept over 7 switch points: evaluation
+  throws `INPUT_INVALID`, admission returns `INVALID_PROVENANCE/INPUT_INVALID`
+  with no history, and getter reads are 0. It can never be `MATCHED`.
+- **A Proxy that answers differently on later descriptor reads:** each field
+  is read exactly once, with no `get`-trap reads, and the result is not
+  `MATCHED`.
+- **Identity and canonical-asset getters:** refused, with 0 reads.
+- **Mapping and approval identifier getters:** refused.
+- **The exposure-key getter** (which used to give a 2,000,106-character key):
+  refused, with 0 reads.
+- **Economics:** a getter on the payoff and four fake decimals are refused:
+  - a duck-typed object;
+  - a prototype spoof with accessor fields;
+  - a prototype spoof with forged non-normalized parts;
+  - a prototype spoof with extra behaviour.
+- **Registry getters and own custom iterators** (the acceptance-6 vector): 0
+  getter reads and 0 iterations. Own iterators, holes and extra keys in
+  candidate and batch lists are refused.
+- **Caller mutation mid-operation** (rewriting every caller object at the
+  second poll): the result ID is identical to the honest run, and the
+  published candidate and mapping are frozen trusted copies.
+- **Evidence and command getters**, including the 4,000,000-character
+  `sourceDigest` switch: refused with 0 reads, so no stringify runs.
+
+**L-02:** two valid modes; eight invalid modes; an accessor-backed mode.
+
+**L-03:**
+
+- the echoed candidate is a frozen copy that is not the caller object and
+  cannot be changed by later mutation;
+- malformed candidates are refused;
+- candidate timestamps are strict;
+- fake registries (plain object, prototype spoof, Proxy) and a fake ledger
+  are refused.
+
+**L-04:**
+
+- 33 malformed-input calls across every public operation give typed
+  `INPUT_INVALID`, never a raw `TypeError`;
+- five typed-outcome cases return typed rejections;
+- cancellation and budget exhaustion still propagate;
+- passive frozen and plain-cloned inputs give identical result IDs.
+
+**Updated authored tests:**
+
+- `fifth-acceptance-remediation.test.ts`: the forged-command proxy now
+  verifies exactly one descriptor read per field and zero `get` reads.
+- `fourth-acceptance-remediation.test.ts`: the WorkBudget-root inventory text
+  for the evaluator and replay entries.
+
+### 21.7 Results, files and limitations
+
+**Results:**
+
+- spread-analytics: **20 files, 281/281 tests**.
+- D-055: 40/40 cases, 29/29 groups.
+- Reason codes: 44, none new.
+- Exports: 22, with `index.ts` unchanged.
+- The cross-version digest probe still gives `abba0540…1f90`, identical to
+  `1e091f9`, `018593d` and `e3aa20e`. The golden vector is unchanged.
+- Real venues are unchanged, with zero approved pairs.
+
+**Changed files:**
+
+- **Runtime:** `packages/spread-analytics/src/{admission,candidates,commands,economics,evaluator,evidence,registry,replay,serialization}.ts`
+  and new `snapshot.ts`.
+- **Tests:** new `sixth-acceptance-hardening.test.ts`; updated
+  `fifth-acceptance-remediation.test.ts` and
+  `fourth-acceptance-remediation.test.ts`.
+- **Documentation:** this section.
+
+**Remaining accepted limitations:**
+
+- A-01: cooperative cancellation.
+- A-02: own-key enumeration is charged immediately after its single native
+  pass.
+- A-03: zero approved real pairs.
+- Proxies are not detected. They are neutralized by single reads.
+- Globally patched built-ins (for example `WeakSet.prototype.has`) remain
+  outside any in-library control.
+
+The full-repository verification record is section 21.8.
+
+### 21.8 Verification record
+
+The verification ran in a fresh copy of the exact working tree, byte-identical
+and without `node_modules` or `dist`. The runtime was Node **v24.18.1** and
+npm **11.16.0** (checksum-verified official build).
+
+**Install:**
+
+- `npm ci` exit 0: 450 added / 459 audited.
+- 13 pre-existing advisories (2 moderate, 10 high, 1 critical). The lockfile is
+  byte-identical, so this is audit-database drift, not a dependency change.
+- `npm query`: 451 packages.
+
+**Quality and tests:**
+
+- `format:check`, `lint`, `typecheck`, `npm test` and `npm run build`: all
+  exit 0.
+- Full default suite: **55 source test files** (52 passed, 3 opt-in
+  live-canary files skipped); **541 passed, 0 failed, 3 skipped**.
+  - contracts 4;
+  - market-data 57;
+  - spread-analytics 281;
+  - OKX 52 (+1 skipped);
+  - Binance 72 (+1 skipped);
+  - Bybit 69 (+1 skipped);
+  - web 6.
+- Build: six static routes.
+- TZ matrix as separate processes (`UTC`, `America/New_York`, `Asia/Tokyo`):
+  281/281 each.
+- Focused suites: 181/181. They cover:
+  - sixth hardening, fifth remediation and third remediation;
+  - the source audit and the oracle;
+  - D-055 scenarios, bounds, candidate bounds, governance, reasons and
+    serialization.
+
+**Public surface (fresh `dist/index.js`):**
+
+- 22 runtime exports;
+- 44 unique reason codes;
+- deep imports, including `dist/snapshot.js`, return
+  `ERR_PACKAGE_PATH_NOT_EXPORTED`;
+- the oracle is absent from `dist`.
+
+**Repository checks:**
+
+- Markdown local links: 77 files, 107 links, 85 local, 1 anchor, 0 broken.
+- `git diff --check` and `git fsck --full` pass.
+- These are unchanged:
+  - `package.json` (`6282c135…`) and `package-lock.json` (`810aaa67…`);
+  - D-055 (`60d00b8e…`), D-064 (`85fb7792…`) and the capacity decision
+    (`98552f5d…`);
+  - acceptance reports 1–6 (ACCEPTANCE_6 `7d4d8773…`);
+  - the brand hashes.
+- The diff from `4becf10` is empty for every frozen scope.

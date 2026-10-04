@@ -40,6 +40,7 @@ import {
   sha256,
 } from "./serialization.js";
 import { transitionDigest, validateTransitionRecord } from "./transitions.js";
+import { inputBoundary, snapshotInput } from "./snapshot.js";
 
 export interface MappingAdmissionRecord {
   readonly mapping: MappingVersion;
@@ -272,7 +273,9 @@ export function candidateProvenanceDigest(
   candidate: InstrumentMatchCandidate,
 ): string {
   const work = new WorkBudget();
-  const result = candidateProvenanceDigestWithBudget(candidate, work);
+  const result = inputBoundary(() =>
+    candidateProvenanceDigestWithBudget(snapshotInput(candidate, work), work),
+  );
   work.beforePublication();
   return result;
 }
@@ -330,6 +333,79 @@ function validateApprovals(
     assertAtomicId(approval.actorId, "Reviewer ID", work);
     assertAtomicId(approval.approvedDigest, "Approval digest", work);
     epoch(approval.recordedAt, work);
+  }
+}
+const CANDIDATE_REQUIRED = [
+  "candidateId",
+  "leftInstrumentId",
+  "rightInstrumentId",
+  "leftMetadataRevision",
+  "rightMetadataRevision",
+  "leftMetadataDigest",
+  "rightMetadataDigest",
+  "leftEconomicsRevision",
+  "rightEconomicsRevision",
+  "registryRevision",
+  "evidenceSetDigest",
+  "proposerId",
+  "createdAt",
+  "effectiveAt",
+  "evaluationAt",
+  "knowledgeCutoff",
+  "policyRevision",
+  "completeness",
+  "confidence",
+  "reasons",
+] as const;
+const CANDIDATE_OPTIONAL = ["provisionalIdentity", "exposureKey"] as const;
+/**
+ * L-03: a caller-supplied candidate snapshot is validated (closed shape,
+ * bounded identifiers, closed reason codes, current policy) before it can be
+ * compared or echoed in an evaluation result.
+ */
+export function validateCandidateSnapshot(
+  candidate: InstrumentMatchCandidate,
+  work: WorkBudget,
+): void {
+  if (
+    candidate === null ||
+    typeof candidate !== "object" ||
+    !Array.isArray(candidate.reasons)
+  )
+    throw new MatchingFailure("INPUT_INVALID", "Candidate is malformed.");
+  assertShape(candidate, CANDIDATE_REQUIRED, CANDIDATE_OPTIONAL, work);
+  assertAtomicId(candidate.candidateId, "Candidate ID", work);
+  assertAtomicId(candidate.registryRevision, "Candidate registry", work);
+  assertAtomicId(candidate.evidenceSetDigest, "Candidate evidence", work);
+  for (const value of [
+    candidate.leftMetadataRevision,
+    candidate.rightMetadataRevision,
+    candidate.leftMetadataDigest,
+    candidate.rightMetadataDigest,
+    candidate.leftEconomicsRevision,
+    candidate.rightEconomicsRevision,
+  ]) {
+    work.step();
+    assertAtomicId(value, "Candidate revision", work);
+  }
+  assertCompositeId(candidate.leftInstrumentId, work);
+  assertCompositeId(candidate.rightInstrumentId, work);
+  if (candidate.exposureKey !== undefined)
+    assertCompositeId(candidate.exposureKey, work);
+  for (const time of [
+    candidate.createdAt,
+    candidate.effectiveAt,
+    candidate.evaluationAt,
+    candidate.knowledgeCutoff,
+  ])
+    epoch(time, work);
+  if (candidate.policyRevision !== MATCHING_POLICY_VERSION)
+    throw new MatchingFailure("INPUT_INVALID", "Candidate policy invalid.");
+  assertCount(candidate.reasons.length, MATCH_REASON_CODES.length, "Reason");
+  for (const reason of candidate.reasons) {
+    work.step();
+    if (!MATCH_REASON_CODES.includes(reason))
+      throw new MatchingFailure("INPUT_INVALID", "Candidate reason invalid.");
   }
 }
 function validateRecord(
@@ -919,12 +995,14 @@ export function admitMaterializedMappingWithBudget(
   return admitWithBudget(input, evaluationAt, work);
 }
 function admitWithBudget(
-  input: MappingAdmissionInput,
+  callerInput: MappingAdmissionInput,
   evaluationAt: Timestamp,
   work: WorkBudget,
 ): MappingAdmissionResult {
   try {
     work.step();
+    // N-01: every later read uses this one passive frozen snapshot.
+    const input = snapshotInput(callerInput, work);
     // H-04: a malformed evaluation time is a typed invalid interval.
     epoch(evaluationAt, work);
     if (
@@ -1036,7 +1114,12 @@ function admitWithBudget(
       // work: fixed-shape internal record (four admitted references).
       ...common,
     });
-  } catch (error) {
+  } catch (caught) {
+    // L-04: malformed caller shapes become the typed INPUT_INVALID outcome.
+    const error =
+      caught instanceof TypeError || caught instanceof RangeError
+        ? new MatchingFailure("INPUT_INVALID", "Malformed input.")
+        : caught;
     if (!(error instanceof MatchingFailure)) throw error;
     if (
       error.code === "EVALUATION_CANCELLED" ||

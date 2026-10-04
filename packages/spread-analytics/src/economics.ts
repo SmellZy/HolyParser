@@ -5,6 +5,7 @@ import {
 } from "@arbitrage/market-data";
 import { sameText, type WorkBudget } from "./bounds.js";
 import type { NativeEconomicsEvidence } from "./model.js";
+import { trustedDecimal } from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 
 export function economicsAvailability(
@@ -93,9 +94,12 @@ export function compareEconomics(
   return "COMPATIBLE_APPROVED";
 }
 export function normalizeBaseExposure(
-  quantity: ExactDecimal,
-  factor: ExactDecimal,
+  callerQuantity: ExactDecimal,
+  callerFactor: ExactDecimal,
 ): ExactDecimal {
+  // N-01: only authentic decimals cross the boundary, each read once.
+  const quantity = trustedDecimal(callerQuantity);
+  const factor = trustedDecimal(callerFactor);
   if (factor.isZero() || factor.isNegative())
     throw new MatchingFailure("MULTIPLIER_INVALID", "Multiplier invalid.");
   try {
@@ -108,9 +112,11 @@ export function normalizeBaseExposure(
 }
 
 export function normalizeQuoteNotional(
-  baseExposure: ExactDecimal,
-  price: ExactDecimal,
+  callerExposure: ExactDecimal,
+  callerPrice: ExactDecimal,
 ): ExactDecimal {
+  const baseExposure = trustedDecimal(callerExposure);
+  const price = trustedDecimal(callerPrice);
   if (baseExposure.isNegative() || price.isNegative())
     throw new MatchingFailure(
       "INPUT_INVALID",

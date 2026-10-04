@@ -19,6 +19,7 @@ import type {
 import { MATCHING_LIMITS } from "./policy.js";
 import { assertClosedKeys } from "./validation.js";
 import { epoch } from "./time.js";
+import { inputBoundary, snapshotInput } from "./snapshot.js";
 
 // Strict canonical RFC 3339 UTC timestamps (see time.ts); no Date.parse.
 export { epoch } from "./time.js";
@@ -70,8 +71,14 @@ export let resolveWithBudget: (
   cutoff: Timestamp,
   work: WorkBudget,
 ) => Resolution;
+/** Brand check (L-03): only a genuine registry instance is trusted. */
+export let isCuratedAssetRegistry: (
+  value: unknown,
+) => value is CuratedAssetRegistry;
 export class CuratedAssetRegistry {
   static {
+    isCuratedAssetRegistry = (value: unknown): value is CuratedAssetRegistry =>
+      typeof value === "object" && value !== null && #bindingsByKey in value;
     resolveWithBudget = (
       registry,
       venue,
@@ -91,6 +98,18 @@ export class CuratedAssetRegistry {
     const parent = pendingRegistryBudget;
     pendingRegistryBudget = undefined;
     const work = parent ?? new WorkBudget();
+    // N-01: one passive frozen snapshot of the caller revision; malformed
+    // shapes surface as typed INPUT_INVALID (L-04).
+    const state = inputBoundary(() =>
+      CuratedAssetRegistry.#build(snapshotInput(revision, work), work),
+    );
+    this.revision = state.revision;
+    this.#bindingsByKey = state.bindingsByKey;
+    this.#aliasesByAsset = state.aliasesByAsset;
+    this.#assetsById = state.assetsById;
+    if (parent === undefined) work.beforePublication();
+  }
+  static #build(revision: AssetRegistryRevision, work: WorkBudget) {
     assertClosedKeys(
       revision,
       ["revision", "recordedAt", "assets", "bindings", "aliases"],
@@ -227,9 +246,9 @@ export class CuratedAssetRegistry {
         work,
       );
     }
-    this.revision = immutableRegistryRevision(revision, work);
+    const frozenRevision = immutableRegistryRevision(revision, work);
     const bindingIndex = new Map<string, AssetBinding[]>();
-    for (const binding of this.revision.bindings) {
+    for (const binding of frozenRevision.bindings) {
       work.step();
       work.step(
         Math.max(
@@ -253,7 +272,7 @@ export class CuratedAssetRegistry {
       values.push(binding);
       bindingIndex.set(chargeKey(key, work), values);
     }
-    this.#bindingsByKey = new Map(
+    const bindingsByKey = new Map(
       [...bindingIndex].map(([key, values]) => {
         work.step();
         chargeKey(key, work);
@@ -261,13 +280,13 @@ export class CuratedAssetRegistry {
       }),
     );
     const aliasIndex = new Map<string, AssetAlias[]>();
-    for (const alias of this.revision.aliases) {
+    for (const alias of frozenRevision.aliases) {
       work.step();
       const values = aliasIndex.get(chargeKey(alias.aliasAssetId, work)) ?? [];
       values.push(alias);
       aliasIndex.set(chargeKey(alias.aliasAssetId, work), values);
     }
-    this.#aliasesByAsset = new Map(
+    const aliasesByAsset = new Map(
       [...aliasIndex].map(([key, values]) => {
         work.step();
         chargeKey(key, work);
@@ -275,20 +294,25 @@ export class CuratedAssetRegistry {
       }),
     );
     const assetIndex = new Map<string, CanonicalAssetRecord[]>();
-    for (const asset of this.revision.assets) {
+    for (const asset of frozenRevision.assets) {
       work.step();
       const values = assetIndex.get(chargeKey(asset.assetId, work)) ?? [];
       values.push(asset);
       assetIndex.set(chargeKey(asset.assetId, work), values);
     }
-    this.#assetsById = new Map(
+    const assetsById = new Map(
       [...assetIndex].map(([key, values]) => {
         work.step();
         chargeKey(key, work);
         return [key, Object.freeze(values)] as const;
       }),
     );
-    if (parent === undefined) work.beforePublication();
+    return {
+      revision: frozenRevision,
+      bindingsByKey,
+      aliasesByAsset,
+      assetsById,
+    };
   }
   /** Public lookup: its own operation budget and final check. */
   resolve(

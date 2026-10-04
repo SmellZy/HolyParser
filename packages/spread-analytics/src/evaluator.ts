@@ -8,6 +8,7 @@ import {
 } from "./bounds.js";
 import {
   admitMaterializedMappingWithBudget,
+  validateCandidateSnapshot,
   type MappingAdmissionInput,
   type MappingAdmissionResult,
 } from "./admission.js";
@@ -21,7 +22,17 @@ import type {
   VenueInstrumentEvidence,
 } from "./model.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
-import { CuratedAssetRegistry, epoch } from "./registry.js";
+import {
+  CuratedAssetRegistry,
+  epoch,
+  isCuratedAssetRegistry,
+} from "./registry.js";
+import {
+  inputBoundary,
+  readOwnData,
+  snapshotList,
+  snapshotRecord,
+} from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import {
   canonicalExposureKeyWithBudget,
@@ -124,6 +135,39 @@ export interface MatchEvaluationInput {
   readonly candidate?: InstrumentMatchCandidate;
   readonly mapping?: MappingAdmissionInput;
   readonly signal?: CancellationSignal;
+}
+
+const EVALUATION_FIELDS = [
+  "left",
+  "right",
+  "registry",
+  "evaluationAt",
+  "knowledgeCutoff",
+  "candidate",
+  "mapping",
+  "signal",
+] as const;
+/**
+ * N-01/L-03: one passive frozen snapshot of the caller's evaluation input.
+ * The registry and signal are trusted handles (the registry is brand-checked;
+ * the signal is the caller's live cancellation source); everything else is
+ * deep-copied once, and a supplied candidate is validated before use.
+ */
+function snapshotEvaluationInput(
+  raw: unknown,
+  work: WorkBudget,
+): MatchEvaluationInput {
+  const input = snapshotRecord(
+    raw,
+    EVALUATION_FIELDS,
+    ["registry", "signal"],
+    work,
+  ) as unknown as MatchEvaluationInput;
+  if (!isCuratedAssetRegistry(input.registry))
+    throw new MatchingFailure("INPUT_INVALID", "Registry is not authentic.");
+  if (input.candidate !== undefined)
+    validateCandidateSnapshot(input.candidate, work);
+  return input;
 }
 
 function evaluateMatchWithBudget(
@@ -346,8 +390,14 @@ function evaluateMatchWithBudget(
   );
 }
 export function evaluateMatch(input: MatchEvaluationInput): MatchEvaluation {
-  const work = new WorkBudget(input.signal);
-  const value = evaluateMatchWithBudget(input, work);
+  // The signal is read once, as an own data property, to create the budget.
+  const work = new WorkBudget(
+    inputBoundary(() => readOwnData(input, "signal")) as
+      MatchEvaluationInput["signal"] | undefined,
+  );
+  const value = inputBoundary(() =>
+    evaluateMatchWithBudget(snapshotEvaluationInput(input, work), work),
+  );
   work.beforePublication();
   return value;
 }
@@ -355,13 +405,18 @@ export function evaluateBatch(
   inputs: readonly MatchEvaluationInput[],
   signal?: CancellationSignal,
 ): readonly MatchEvaluation[] {
-  assertCount(inputs.length, MATCHING_LIMITS.candidatePairs, "Evaluation");
   const work = new WorkBudget(signal);
   const staged: MatchEvaluation[] = [];
-  for (const input of inputs) {
-    work.step();
-    staged.push(evaluateMatchWithBudget(input, work));
-  }
+  inputBoundary(() => {
+    const list = snapshotList(inputs, work);
+    assertCount(list.length, MATCHING_LIMITS.candidatePairs, "Evaluation");
+    for (const raw of list) {
+      work.step();
+      staged.push(
+        evaluateMatchWithBudget(snapshotEvaluationInput(raw, work), work),
+      );
+    }
+  });
   const conflicts = staged.filter((v) => {
     work.step();
     return v.outcome === "QUARANTINED";

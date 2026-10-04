@@ -14,6 +14,7 @@ import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { epoch, isEffective } from "./registry.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget } from "./serialization.js";
+import { inputBoundary, snapshotInput } from "./snapshot.js";
 
 const evidenceClasses = new Set<string>([
   "CURATED_ASSET_BINDING",
@@ -28,11 +29,26 @@ export interface EvidenceSubjectReferences {
 }
 
 export function validateEvidenceBundle(
-  records: readonly EvidenceRecord[],
-  subjects: readonly EvidenceSubjectReferences[],
+  callerRecords: readonly EvidenceRecord[],
+  callerSubjects: readonly EvidenceSubjectReferences[],
   signal?: CancellationSignal,
 ): readonly EvidenceRecord[] {
   const work = new WorkBudget(signal);
+  // N-01: validate and publish only one passive frozen snapshot (no getter
+  // runs, nothing is reread); malformed shapes are typed (L-04).
+  return inputBoundary(() => {
+    const records = snapshotInput(callerRecords, work);
+    const subjects = snapshotInput(callerSubjects, work);
+    if (!Array.isArray(records) || !Array.isArray(subjects))
+      throw new MatchingFailure("INPUT_INVALID", "Evidence input is invalid.");
+    return validateBundleWithBudget(records, subjects, work);
+  });
+}
+function validateBundleWithBudget(
+  records: readonly EvidenceRecord[],
+  subjects: readonly EvidenceSubjectReferences[],
+  work: WorkBudget,
+): readonly EvidenceRecord[] {
   assertCount(
     records.length,
     MATCHING_LIMITS.evidenceReferences,

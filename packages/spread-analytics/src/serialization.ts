@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { CanonicalAssetId } from "@arbitrage/market-data";
 import { WorkBudget, assertAtomicId } from "./bounds.js";
 import { MatchingFailure } from "./reasons.js";
+import { inputBoundary, snapshotInput } from "./snapshot.js";
 import { EXPOSURE_KEY_VERSION, MATCHING_LIMITS } from "./policy.js";
 
 export type CanonicalValue =
@@ -120,8 +121,21 @@ const lp = (value: string): string =>
  * Public key helper: validates the closed identity and bounds every asset ID
  * before any proportional work, on its own operation budget (M-02).
  */
-export function canonicalExposureKey(value: CanonicalExposureIdentity): string {
+export function canonicalExposureKey(
+  callerValue: CanonicalExposureIdentity,
+): string {
   const work = new WorkBudget();
+  return inputBoundary(() => {
+    const value = snapshotInput(callerValue, work);
+    const result = exposureKeyFromSnapshot(value, work);
+    work.beforePublication();
+    return result;
+  });
+}
+function exposureKeyFromSnapshot(
+  value: CanonicalExposureIdentity,
+  work: WorkBudget,
+): string {
   if (
     value === null ||
     typeof value !== "object" ||
@@ -134,9 +148,7 @@ export function canonicalExposureKey(value: CanonicalExposureIdentity): string {
   assertAtomicId(value.baseAssetId, "Base asset", work);
   assertAtomicId(value.quoteAssetId, "Quote asset", work);
   assertAtomicId(value.settlementAssetId, "Settlement asset", work);
-  const result = canonicalExposureKeyWithBudget(value, work);
-  work.beforePublication();
-  return result;
+  return canonicalExposureKeyWithBudget(value, work);
 }
 export function canonicalExposureKeyWithBudget(
   value: CanonicalExposureIdentity,

@@ -117,9 +117,12 @@ function forgedInvalidate(size: number, validTimes = false) {
     provenanceDigest: big("d"),
     invalidationReference: big("i"),
   };
-  // Every transition field is a distinct equal-content copy; any access to
-  // the transition is recorded, so a comparison would be observable.
+  // Every transition field is a distinct equal-content copy. Direct property
+  // reads (`get`) and descriptor reads are recorded separately: the caller
+  // boundary must read each field exactly once, by descriptor, and never
+  // through a getter path.
   const reads: string[] = [];
+  const descriptorReads: string[] = [];
   const copy = (value: string) => value.split("").join("");
   const values: Record<string, unknown> = {
     transitionId: "cmd-1",
@@ -140,8 +143,12 @@ function forgedInvalidate(size: number, validTimes = false) {
   };
   const transition = new Proxy(values, {
     get(target, key) {
-      if (typeof key === "string" && key !== "approvals") reads.push(key);
+      if (typeof key === "string") reads.push(key);
       return target[key as string];
+    },
+    getOwnPropertyDescriptor(target, key) {
+      if (typeof key === "string") descriptorReads.push(key);
+      return Reflect.getOwnPropertyDescriptor(target, key);
     },
   });
   const command = {
@@ -156,29 +163,43 @@ function forgedInvalidate(size: number, validTimes = false) {
     transition,
     ...fields,
   };
-  return { command, reads };
+  return {
+    command,
+    reads,
+    descriptorReads,
+    fieldCount: Object.keys(values).length,
+  };
 }
 
 describe("fifth acceptance: exact acceptance-5 counterexamples", () => {
   it("1. forged invalidate command with seven ~8M-character strings is rejected before any comparison", () => {
     const steps = (size: number, validTimes = false) => {
-      const { command, reads } = forgedInvalidate(size, validTimes);
+      const forged = forgedInvalidate(size, validTimes);
       const work = new WorkBudget();
       const { error } = capture(() =>
-        applyWithBudget(new MappingLedger(), command as never, work),
+        applyWithBudget(new MappingLedger(), forged.command as never, work),
       );
-      return { steps: work.steps, error: code(error), reads: reads.length };
+      return {
+        steps: work.steps,
+        error: code(error),
+        reads: forged.reads.length,
+        descriptorReads: forged.descriptorReads.length,
+        fieldCount: forged.fieldCount,
+      };
     };
-    // Non-vacuous control: a bounded forged command does reach the
-    // command/transition binding comparison (transition fields are read).
+    // Non-vacuous control: a bounded forged command passes validation and
+    // reaches the command/transition binding (then fails on the target).
     const control = steps(10, true);
-    expect(control.reads).toBeGreaterThan(0);
     expect(control.error).toBe("TRANSITION_REJECTED");
+    // Sixth-remediation N-01: the boundary reads every field exactly once,
+    // by descriptor; no getter path ever runs.
+    expect(control.reads).toBe(0);
+    expect(control.descriptorReads).toBe(control.fieldCount);
     const huge = steps(8_000_000);
     // Rejected by the O(1) length gate of the first oversized field.
     expect(huge.error).toBe("INPUT_INVALID");
-    // No transition field was read, so no proportional comparison happened.
     expect(huge.reads).toBe(0);
+    expect(huge.descriptorReads).toBe(huge.fieldCount);
     // Charged work does not grow with the hostile field length.
     expect(huge.steps).toBeLessThanOrEqual(control.steps);
     const { command } = forgedInvalidate(8_000_000);
