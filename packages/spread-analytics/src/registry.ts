@@ -7,7 +7,7 @@ import {
   sameText,
   type CancellationSignal,
 } from "./bounds.js";
-import { immutableRegistryRevision } from "./immutable.js";
+import { frozenRecord, immutableRegistryRevision } from "./immutable.js";
 import { MatchingFailure } from "./reasons.js";
 import type {
   AssetAlias,
@@ -75,10 +75,32 @@ export let resolveWithBudget: (
 export let isCuratedAssetRegistry: (
   value: unknown,
 ) => value is CuratedAssetRegistry;
+// Trusted revision read (seventh-acceptance N-02), bound below. It reads only
+// the private revision captured at construction; the public `revision` field
+// is never consulted by any operation.
+let privateRevisionId: (registry: CuratedAssetRegistry) => string;
+/**
+ * The operation-local registry revision snapshot: authenticates the handle,
+ * reads its private revision exactly once, re-validates and bounds it (an
+ * atomic identifier, charged to the operation budget), and returns the
+ * immutable string that the rest of the operation uses for comparison,
+ * hashing and publication.
+ */
+export function trustedRegistryRevision(
+  registry: unknown,
+  work: WorkBudget,
+): string {
+  if (!isCuratedAssetRegistry(registry))
+    throw new MatchingFailure("INPUT_INVALID", "Registry is not authentic.");
+  const revision = privateRevisionId(registry);
+  assertAtomicId(revision, "Registry revision", work);
+  return revision;
+}
 export class CuratedAssetRegistry {
   static {
     isCuratedAssetRegistry = (value: unknown): value is CuratedAssetRegistry =>
       typeof value === "object" && value !== null && #bindingsByKey in value;
+    privateRevisionId = (registry) => registry.#revisionId;
     resolveWithBudget = (
       registry,
       venue,
@@ -90,7 +112,11 @@ export class CuratedAssetRegistry {
       work,
     ) => registry.#resolve(venue, group, nativeRef, role, at, cutoff, work);
   }
-  readonly revision: AssetRegistryRevision;
+  // N-02: the public view is a non-writable, non-configurable own data
+  // property defined once in the constructor (no TypeScript-only readonly).
+  // Authority lives in the private fields below.
+  declare readonly revision: AssetRegistryRevision;
+  readonly #revisionId: string;
   readonly #bindingsByKey: ReadonlyMap<string, readonly AssetBinding[]>;
   readonly #aliasesByAsset: ReadonlyMap<string, readonly AssetAlias[]>;
   readonly #assetsById: ReadonlyMap<string, readonly CanonicalAssetRecord[]>;
@@ -103,10 +129,21 @@ export class CuratedAssetRegistry {
     const state = inputBoundary(() =>
       CuratedAssetRegistry.#build(snapshotInput(revision, work), work),
     );
-    this.revision = state.revision;
+    this.#revisionId = state.revision.revision;
     this.#bindingsByKey = state.bindingsByKey;
     this.#aliasesByAsset = state.aliasesByAsset;
     this.#assetsById = state.assetsById;
+    // work: fixed-shape definition and freeze of the instance (O(1)).
+    Object.defineProperty(this, "revision", {
+      value: state.revision,
+      enumerable: true,
+      writable: false,
+      configurable: false,
+    });
+    // A direct instance is frozen outright. A subclass instance cannot be
+    // frozen here (its own fields are defined after this constructor), but
+    // its `revision` is already non-redefinable and no operation reads it.
+    if (new.target === CuratedAssetRegistry) Object.freeze(this);
     if (parent === undefined) work.beforePublication();
   }
   static #build(revision: AssetRegistryRevision, work: WorkBudget) {
@@ -377,9 +414,9 @@ export class CuratedAssetRegistry {
         (item) => (work.step(), chargeKey(item.canonicalAssetId, work)),
       ),
     );
-    if (ids.size > 1) return { state: "CONFLICT" };
+    if (ids.size > 1) return frozenRecord({ state: "CONFLICT" as const });
     let asset = found[0]?.canonicalAssetId;
-    if (asset === undefined) return { state: "UNKNOWN" };
+    if (asset === undefined) return frozenRecord({ state: "UNKNOWN" as const });
     const aliases = (
       this.#aliasesByAsset.get(chargeKey(asset, work)) ?? []
     ).filter((alias) => {
@@ -390,7 +427,7 @@ export class CuratedAssetRegistry {
         isEffective(alias.effectiveFrom, alias.effectiveTo, at, work)
       );
     });
-    if (aliases.length > 1) return { state: "CONFLICT" };
+    if (aliases.length > 1) return frozenRecord({ state: "CONFLICT" as const });
     const reviewedAlias = aliases[0];
     asset = reviewedAlias?.targetAssetId ?? asset;
     const resolved = asset;
@@ -404,13 +441,17 @@ export class CuratedAssetRegistry {
         isEffective(definition.effectiveFrom, definition.effectiveTo, at, work)
       );
     });
-    if (definitions.length > 1) return { state: "CONFLICT" };
-    if (definitions.length === 0) return { state: "UNKNOWN" };
-    return {
-      state: "KNOWN",
+    if (definitions.length > 1)
+      return frozenRecord({ state: "CONFLICT" as const });
+    if (definitions.length === 0)
+      return frozenRecord({ state: "UNKNOWN" as const });
+    return frozenRecord({
+      state: "KNOWN" as const,
       assetId: asset,
-      confidence: reviewedAlias ? "REVIEWED_MANUAL" : "EXACT_METADATA",
-    };
+      confidence: reviewedAlias
+        ? ("REVIEWED_MANUAL" as const)
+        : ("EXACT_METADATA" as const),
+    });
   }
 
   describe(assetId: CanonicalAssetId, at: Timestamp, cutoff: Timestamp) {
@@ -446,7 +487,7 @@ export function admitRegistryRevision(
   const work = new WorkBudget(signal);
   let result: RegistryAdmission;
   try {
-    result = Object.freeze({
+    result = frozenRecord({
       status: "READY" as const,
       registry: registryWithBudget(revision, work),
     });
@@ -456,7 +497,7 @@ export function admitRegistryRevision(
       error.code !== "ALIAS_CHAIN_FORBIDDEN"
     )
       throw error;
-    result = Object.freeze({
+    result = frozenRecord({
       status: "QUARANTINED" as const,
       reason: error.code,
     });
@@ -466,3 +507,8 @@ export function admitRegistryRevision(
   work.beforePublication();
   return result;
 }
+
+// N-02: the class surface is immutable too; replacing a prototype method or
+// static member of the trusted class is refused.
+Object.freeze(CuratedAssetRegistry.prototype);
+Object.freeze(CuratedAssetRegistry);

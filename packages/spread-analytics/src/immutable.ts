@@ -12,22 +12,31 @@ import type { WorkBudget } from "./bounds.js";
 
 // Copy/freeze accounting: an own-key enumeration of a caller object is the
 // only native pass that runs before its size is known; its size is charged
-// immediately after and before the spread copy and freeze (two more passes).
+// immediately after and before the spread copy, the null-prototype copy and
+// the freeze (three more passes).
 export function chargeCopy(value: object, work?: WorkBudget): void {
   if (work === undefined) return;
-  work.units(3 * Reflect.ownKeys(value).length + 1);
+  work.units(4 * Reflect.ownKeys(value).length + 1);
 }
+
+// L-05: every trusted record is a frozen own-property copy with a null
+// prototype. An absent optional field therefore reads as undefined and can
+// never be answered by an inherited (for example polluted) Object.prototype
+// property. The copy pass is charged by chargeCopy for caller-sized records;
+// every other use is a fixed internal shape.
+export const frozenRecord = <T extends object>(value: T): T =>
+  Object.freeze(Object.assign(Object.create(null) as T, value));
 const freezeApproval = (
   value: ReviewApproval,
   work?: WorkBudget,
-): ReviewApproval => (chargeCopy(value, work), Object.freeze({ ...value }));
+): ReviewApproval => (chargeCopy(value, work), frozenRecord({ ...value }));
 
 export function immutableMapping(
   value: MappingVersion,
   work?: WorkBudget,
 ): MappingVersion {
   chargeCopy(value, work);
-  return Object.freeze({
+  return frozenRecord({
     ...value,
     approvals: Object.freeze(
       value.approvals.map(
@@ -42,7 +51,7 @@ export function immutableReview(
   work?: WorkBudget,
 ): ReviewRecord {
   chargeCopy(value, work);
-  return Object.freeze({
+  return frozenRecord({
     ...value,
     approvals: Object.freeze(
       value.approvals.map(
@@ -59,10 +68,10 @@ export function immutableCandidate(
   chargeCopy(value, work);
   if (value.provisionalIdentity) chargeCopy(value.provisionalIdentity, work);
   work?.units(2 * value.reasons.length + 1);
-  return Object.freeze({
+  return frozenRecord({
     ...value,
     provisionalIdentity: value.provisionalIdentity
-      ? Object.freeze({ ...value.provisionalIdentity })
+      ? frozenRecord({ ...value.provisionalIdentity })
       : undefined,
     reasons: Object.freeze([...value.reasons]),
   });
@@ -73,22 +82,22 @@ const freezeAsset = (
   work?: WorkBudget,
 ): CanonicalAssetRecord => (
   chargeCopy(value, work),
-  Object.freeze({ ...value })
+  frozenRecord({ ...value })
 );
 const freezeBinding = (
   value: AssetBinding,
   work?: WorkBudget,
-): AssetBinding => (chargeCopy(value, work), Object.freeze({ ...value }));
+): AssetBinding => (chargeCopy(value, work), frozenRecord({ ...value }));
 const freezeAlias = (value: AssetAlias, work?: WorkBudget): AssetAlias => (
   chargeCopy(value, work),
-  Object.freeze({ ...value })
+  frozenRecord({ ...value })
 );
 
 export function immutableRegistryRevision(
   value: AssetRegistryRevision,
   work?: WorkBudget,
 ): AssetRegistryRevision {
-  return Object.freeze({
+  return frozenRecord({
     revision: value.revision,
     recordedAt: value.recordedAt,
     assets: Object.freeze(

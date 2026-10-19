@@ -13,6 +13,7 @@ import {
   type MappingAdmissionResult,
 } from "./admission.js";
 import { classifyProductScope, resolveExposureIdentity } from "./candidates.js";
+import { frozenRecord } from "./immutable.js";
 import { compareEconomics, economicsAvailability } from "./economics.js";
 import type {
   InstrumentMatchCandidate,
@@ -23,9 +24,9 @@ import type {
 } from "./model.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import {
-  CuratedAssetRegistry,
+  type CuratedAssetRegistry,
   epoch,
-  isCuratedAssetRegistry,
+  trustedRegistryRevision,
 } from "./registry.js";
 import {
   inputBoundary,
@@ -74,7 +75,7 @@ function result(
   reasons: readonly MatchReasonCode[],
   left: VenueInstrumentEvidence,
   right: VenueInstrumentEvidence,
-  registry: CuratedAssetRegistry,
+  registryRevision: string,
   at: Timestamp,
   cutoff: Timestamp,
   candidate?: InstrumentMatchCandidate,
@@ -88,7 +89,7 @@ function result(
       b.metadata.instrumentId,
     );
   });
-  return Object.freeze({
+  return frozenRecord({
     resultId: deterministicId(
       "instrument-match-result/v1",
       {
@@ -108,7 +109,7 @@ function result(
         mapping: mapping ? `${mapping.mappingId}:${mapping.version}` : null,
         outcome,
         reasons: ordered,
-        registry: registry.revision.revision,
+        registry: registryRevision,
       },
       work,
     ),
@@ -116,7 +117,7 @@ function result(
     reasons: Object.freeze(ordered),
     candidate,
     mappingVersion: mapping,
-    registryRevision: registry.revision.revision,
+    registryRevision,
     evidenceRevisions: [
       legs[0]!.economics.evidenceRevision,
       legs[1]!.economics.evidenceRevision,
@@ -147,31 +148,37 @@ const EVALUATION_FIELDS = [
   "mapping",
   "signal",
 ] as const;
+interface EvaluationSnapshot {
+  readonly input: MatchEvaluationInput;
+  /** Operation-local registry revision, read once from trusted state. */
+  readonly registryRevision: string;
+}
 /**
  * N-01/L-03: one passive frozen snapshot of the caller's evaluation input.
  * The registry and signal are trusted handles (the registry is brand-checked;
  * the signal is the caller's live cancellation source); everything else is
  * deep-copied once, and a supplied candidate is validated before use.
+ * N-02: the registry revision is read once from the registry's private state,
+ * validated and bounded here, before any exit can publish it.
  */
 function snapshotEvaluationInput(
   raw: unknown,
   work: WorkBudget,
-): MatchEvaluationInput {
+): EvaluationSnapshot {
   const input = snapshotRecord(
     raw,
     EVALUATION_FIELDS,
     ["registry", "signal"],
     work,
   ) as unknown as MatchEvaluationInput;
-  if (!isCuratedAssetRegistry(input.registry))
-    throw new MatchingFailure("INPUT_INVALID", "Registry is not authentic.");
+  const registryRevision = trustedRegistryRevision(input.registry, work);
   if (input.candidate !== undefined)
     validateCandidateSnapshot(input.candidate, work);
-  return input;
+  return frozenRecord({ input, registryRevision });
 }
 
 function evaluateMatchWithBudget(
-  input: MatchEvaluationInput,
+  { input, registryRevision }: EvaluationSnapshot,
   work: WorkBudget,
 ): MatchEvaluation {
   const {
@@ -194,7 +201,7 @@ function evaluateMatchWithBudget(
       reasons,
       left,
       right,
-      registry,
+      registryRevision,
       at,
       cutoff,
       emittedCandidate,
@@ -340,7 +347,7 @@ function evaluateMatchWithBudget(
         admittedMapping.exposureKey,
         canonicalExposureKeyWithBudget(l.identity!, work),
       ) ||
-      !same(admittedMapping.registryRevision, registry.revision.revision) ||
+      !same(admittedMapping.registryRevision, registryRevision) ||
       admittedCandidate === undefined ||
       !same(
         admittedCandidate.leftMetadataRevision,

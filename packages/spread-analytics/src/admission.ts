@@ -15,6 +15,7 @@ import {
 } from "./commands.js";
 import {
   chargeCopy,
+  frozenRecord,
   immutableCandidate,
   immutableMapping,
   immutableReview,
@@ -120,7 +121,7 @@ export function materializedHistoryTransitions(
 const failure = (
   state: Exclude<MappingAdmissionState, "VALID">,
   reason: MatchReasonCode,
-): MappingAdmissionResult => Object.freeze({ state, reason });
+): MappingAdmissionResult => frozenRecord({ state, reason });
 
 function assertShape(
   value: object,
@@ -145,7 +146,8 @@ function assertShape(
   }
   for (const key of required) {
     work.step();
-    if (!(key in value))
+    // L-05: own fields only; an inherited (polluted) key never satisfies it.
+    if (!Object.hasOwn(value, key))
       throw new MatchingFailure("INPUT_INVALID", "Record is incomplete.");
   }
 }
@@ -154,13 +156,13 @@ function immutableCommand(
   work: WorkBudget,
 ): ApproveMappingCommand {
   chargeCopy(value, work);
-  return Object.freeze({
+  return frozenRecord({
     ...value,
     approvals: Object.freeze(
       value.approvals.map((item) => {
         work.step();
         chargeCopy(item, work);
-        return Object.freeze({ ...item });
+        return frozenRecord({ ...item });
       }),
     ),
   });
@@ -667,7 +669,7 @@ function validateRecord(
       "COMMAND_DIGEST_CONFLICT",
       "Approved mapping record contains mutable transition fields.",
     );
-  return Object.freeze({
+  return frozenRecord({
     mapping: immutableMapping(mapping, work),
     candidate: immutableCandidate(candidate, work),
     review: immutableReview(review, work),
@@ -944,19 +946,19 @@ function materializeHistory(
     transitions.map((transition) => {
       work.step();
       chargeCopy(transition, work);
-      return Object.freeze({
+      return frozenRecord({
         ...transition,
         approvals: Object.freeze(
           transition.approvals.map((approval) => {
             work.step();
             chargeCopy(approval, work);
-            return Object.freeze({ ...approval });
+            return frozenRecord({ ...approval });
           }),
         ),
       });
     }),
   );
-  const result = Object.freeze({
+  const result = frozenRecord({
     mappingId: versions[0]!.mappingId,
     digest: deterministicId(
       "admitted-mapping-history/v1",
@@ -1086,14 +1088,14 @@ function admitWithBudget(
       transition?.transitionType === "SUPERSEDE" ||
       transition?.transitionType === "CORRECT"
     )
-      return Object.freeze({
+      return frozenRecord({
         state: "SUPERSEDED",
         reason: "MAPPING_SUPERSEDED",
         // work: fixed-shape internal record (four admitted references).
         ...common,
       });
     if (transition?.transitionType === "INVALIDATE")
-      return Object.freeze({
+      return frozenRecord({
         state: "INVALIDATED",
         reason: "MAPPING_INVALIDATED",
         // work: fixed-shape internal record (four admitted references).
@@ -1108,7 +1110,7 @@ function admitWithBudget(
       )
     )
       return failure("INVALID_INTERVAL", "MAPPING_EXPIRED");
-    return Object.freeze({
+    return frozenRecord({
       state: "VALID" as const,
       reason: "COMPATIBLE_APPROVED" as const,
       // work: fixed-shape internal record (four admitted references).

@@ -1,4 +1,6 @@
-export const MATCH_REASON_CODES = [
+// L-06: the closed catalogue is frozen at runtime; push, splice and index
+// replacement cannot add, remove or rename a code.
+export const MATCH_REASON_CODES = Object.freeze([
   "ALIAS_CHAIN_FORBIDDEN",
   "ASSET_BINDING_CONFLICT",
   "ASSET_IDENTITY_UNKNOWN",
@@ -43,7 +45,7 @@ export const MATCH_REASON_CODES = [
   "TRANSITION_REJECTED",
   "VALUE_CONVENTION_MISMATCH",
   "VALUE_CONVENTION_UNVERIFIED",
-] as const;
+] as const);
 export type MatchReasonCode = (typeof MATCH_REASON_CODES)[number];
 export class MatchingFailure extends Error {
   constructor(

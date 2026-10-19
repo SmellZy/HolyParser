@@ -14,7 +14,7 @@ import type {
   MappingVersion,
   ReviewApproval,
 } from "./model.js";
-import { chargeCopy, immutableMapping } from "./immutable.js";
+import { chargeCopy, frozenRecord, immutableMapping } from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { isEffective } from "./registry.js";
 import { epoch } from "./time.js";
@@ -171,7 +171,7 @@ export function approveCommandWithBudget(
   validateApproveInput(input, work);
   const digest = payload(input, work);
   chargeCopy(input, work);
-  return Object.freeze({
+  return frozenRecord({
     ...input,
     kind: "APPROVE_MAPPING",
     approvals: Object.freeze(
@@ -179,7 +179,7 @@ export function approveCommandWithBudget(
         (a) => (
           work.step(),
           chargeCopy(a, work),
-          Object.freeze({ ...a, approvedDigest: digest })
+          frozenRecord({ ...a, approvedDigest: digest })
         ),
       ),
     ),
@@ -240,7 +240,7 @@ function invalidateWithBudget(
     work,
   );
   chargeCopy(input, work);
-  return Object.freeze({
+  return frozenRecord({
     ...input,
     kind: "INVALIDATE_MAPPING",
     transition,
@@ -302,18 +302,24 @@ function validateCommandFields(
     throw new MatchingFailure("INPUT_INVALID", "Transition is malformed.");
 }
 
-// Internal construction hand-off: a public caller cannot supply a budget.
+// Internal construction hand-off: a public caller cannot supply a budget or
+// command-digest state. Both are read and cleared at the start of the
+// constructor.
 let pendingLedgerBudget: WorkBudget | undefined;
+let pendingLedgerCommands: ReadonlyMap<string, string> | undefined;
 export function ledgerWithBudget(
   versions: readonly MappingVersion[],
   transitions: readonly MappingTransitionRecord[],
   work: WorkBudget,
+  commands?: ReadonlyMap<string, string>,
 ): MappingLedger {
   pendingLedgerBudget = work;
+  pendingLedgerCommands = commands;
   try {
     return new MappingLedger(versions, transitions);
   } finally {
     pendingLedgerBudget = undefined;
+    pendingLedgerCommands = undefined;
   }
 }
 type LedgerApplication = {
@@ -337,15 +343,23 @@ export class MappingLedger {
     isMappingLedger = (value: unknown): value is MappingLedger =>
       typeof value === "object" && value !== null && #commandDigests in value;
   }
-  readonly versions: readonly MappingVersion[];
-  readonly transitions: readonly MappingTransitionRecord[];
-  #commandDigests: Map<string, string>;
+  // N-02: authoritative state is private and immutable after construction.
+  // The public views are non-writable, non-configurable own data properties
+  // over the same deeply frozen arrays (no TypeScript-only readonly); no
+  // operation reads them.
+  declare readonly versions: readonly MappingVersion[];
+  declare readonly transitions: readonly MappingTransitionRecord[];
+  readonly #versions: readonly MappingVersion[];
+  readonly #transitions: readonly MappingTransitionRecord[];
+  readonly #commandDigests: ReadonlyMap<string, string>;
   constructor(
     callerVersions: readonly MappingVersion[] = [],
     callerTransitions: readonly MappingTransitionRecord[] = [],
   ) {
     const parent = pendingLedgerBudget;
+    const commands = pendingLedgerCommands;
     pendingLedgerBudget = undefined;
+    pendingLedgerCommands = undefined;
     const work = parent ?? new WorkBudget();
     const state = inputBoundary(() =>
       MappingLedger.#build(
@@ -354,9 +368,23 @@ export class MappingLedger {
         work,
       ),
     );
-    this.versions = state.versions;
-    this.transitions = state.transitions;
-    this.#commandDigests = new Map();
+    this.#versions = state.versions;
+    this.#transitions = state.transitions;
+    this.#commandDigests = commands ?? new Map();
+    // work: fixed-shape definitions and freeze of the instance (O(1)).
+    for (const [key, value] of [
+      ["versions", state.versions],
+      ["transitions", state.transitions],
+    ] as const)
+      Object.defineProperty(this, key, {
+        value,
+        enumerable: true,
+        writable: false,
+        configurable: false,
+      });
+    // A direct instance is frozen outright; a subclass instance keeps the
+    // non-redefinable views above, and no operation reads them.
+    if (new.target === MappingLedger) Object.freeze(this);
     if (parent === undefined) work.beforePublication();
   }
   static #build(
@@ -399,13 +427,13 @@ export class MappingLedger {
       transitions.map((transition) => {
         work.step();
         chargeCopy(transition, work);
-        return Object.freeze({
+        return frozenRecord({
           ...transition,
           approvals: Object.freeze(
             transition.approvals.map((approval) => {
               work.step();
               chargeCopy(approval, work);
-              return Object.freeze({ ...approval });
+              return frozenRecord({ ...approval });
             }),
           ),
         });
@@ -433,7 +461,7 @@ export class MappingLedger {
         })
         .map(([commandId, digest]) => {
           work.step();
-          return Object.freeze({ commandId, digest });
+          return frozenRecord({ commandId, digest });
         }),
     );
     work.beforePublication();
@@ -449,20 +477,22 @@ export class MappingLedger {
   #apply(callerCommand: MappingCommand, work: WorkBudget): LedgerApplication {
     // N-01: one passive frozen snapshot; nothing below rereads the caller.
     const command = snapshotInput(callerCommand, work);
+    // N-02: the ledger's authoritative state, read once from private fields.
+    const versions = this.#versions,
+      transitions = this.#transitions,
+      digests = this.#commandDigests;
     validateCommandFields(command, work);
     if (command.kind === "INVALIDATE_MAPPING")
       this.#assertInvalidateCommandBinding(command, work);
-    const priorDigest = this.#commandDigests.get(
-      chargeKey(command.commandId, work),
-    );
+    const priorDigest = digests.get(chargeKey(command.commandId, work));
     if (priorDigest !== undefined) {
       if (!sameText(priorDigest, command.commandDigest, work))
         throw new MatchingFailure(
           "COMMAND_DIGEST_CONFLICT",
           "Command ID reused.",
         );
-      work.units(2 * this.versions.length + 1);
-      const mapping = [...this.versions]
+      work.units(2 * versions.length + 1);
+      const mapping = [...versions]
         .reverse()
         .find(
           (v) => (work.step(), sameText(v.mappingId, command.mappingId, work)),
@@ -472,9 +502,11 @@ export class MappingLedger {
           "TRANSITION_REJECTED",
           "Missing idempotent result.",
         );
-      return Object.freeze({ ledger: this, mapping, idempotent: true });
+      // The idempotent result is the ledger's internal frozen record, never a
+      // caller object (N-02).
+      return frozenRecord({ ledger: this, mapping, idempotent: true });
     }
-    const revision = this.versions.filter(
+    const revision = versions.filter(
       (v) => (work.step(), sameText(v.mappingId, command.mappingId, work)),
     ).length;
     if (command.expectedRevision !== revision)
@@ -483,32 +515,39 @@ export class MappingLedger {
         "Stale expected revision.",
       );
     let mapping: MappingVersion;
-    let nextVersions = this.versions;
-    let nextTransitions = this.transitions;
+    let nextVersions = versions;
+    let nextTransitions = transitions;
     if (command.kind === "APPROVE_MAPPING") {
       mapping = this.#approve(command, revision, work);
-      work.step(this.versions.length);
-      nextVersions = [...this.versions, mapping];
+      work.step(versions.length);
+      nextVersions = [...versions, mapping];
     } else {
       const transition = this.#invalidate(command, revision, work);
-      mapping = this.versions.find(
+      mapping = versions.find(
         (value) =>
           (work.step(), true) &&
           sameText(value.mappingId, command.mappingId, work) &&
           value.version === command.affectedVersion,
       )!;
-      work.step(this.transitions.length);
-      nextTransitions = [...this.transitions, transition];
+      work.step(transitions.length);
+      nextTransitions = [...transitions, transition];
     }
     const commands = new Map<string, string>();
-    for (const [commandId, digest] of this.#commandDigests) {
+    for (const [commandId, digest] of digests) {
       work.step();
       commands.set(chargeKey(commandId, work), digest);
     }
     commands.set(chargeKey(command.commandId, work), command.commandDigest);
-    const ledger = ledgerWithBudget(nextVersions, nextTransitions, work);
-    ledger.#commandDigests = commands;
-    return Object.freeze({ ledger, mapping, idempotent: false });
+    const ledger = ledgerWithBudget(
+      nextVersions,
+      nextTransitions,
+      work,
+      commands,
+    );
+    // An approval returns the new ledger's own frozen record, so the returned
+    // mapping is exactly the ledger's authoritative state.
+    if (command.kind === "APPROVE_MAPPING") mapping = ledger.#versions.at(-1)!;
+    return frozenRecord({ ledger, mapping, idempotent: false });
   }
   #approve(
     command: ApproveMappingCommand,
@@ -554,7 +593,7 @@ export class MappingLedger {
       command.effectiveFrom,
       work,
     );
-    const overlap = this.versions.some(
+    const overlap = this.#versions.some(
       (v) =>
         (work.step(), true) &&
         v.status === "APPROVED" &&
@@ -599,7 +638,7 @@ export class MappingLedger {
     work: WorkBudget,
   ): MappingTransitionRecord {
     assertReasonText(command.reasonText, work);
-    const target = this.versions.find(
+    const target = this.#versions.find(
       (v) =>
         (work.step(), true) &&
         sameText(v.mappingId, command.mappingId, work) &&
@@ -617,7 +656,7 @@ export class MappingLedger {
         "Stale transition revision.",
       );
     if (
-      this.transitions.some(
+      this.#transitions.some(
         (transition) => (
           work.step(),
           sameText(transition.mappingId, command.mappingId, work) &&
@@ -700,7 +739,7 @@ export function admitMappingCommand(
     throw new MatchingFailure("INPUT_INVALID", "Ledger is not authentic.");
   let result: MappingCommandAdmission;
   try {
-    result = Object.freeze({
+    result = frozenRecord({
       status: "APPLIED" as const,
       // work: fixed-shape internal result (ledger, mapping, idempotent).
       ...applyWithBudget(ledger, command, work),
@@ -719,7 +758,7 @@ export function admitMappingCommand(
       error.code === "MATCHING_BOUND_EXCEEDED"
     )
       throw error;
-    result = Object.freeze({
+    result = frozenRecord({
       status:
         error.code === "MAPPING_INTERVAL_CONFLICT"
           ? ("QUARANTINED" as const)
@@ -733,3 +772,7 @@ export function admitMappingCommand(
   work.beforePublication();
   return result;
 }
+
+// N-02: the trusted class surface is immutable too.
+Object.freeze(MappingLedger.prototype);
+Object.freeze(MappingLedger);

@@ -2152,3 +2152,461 @@ npm **11.16.0** (checksum-verified official build).
   - acceptance reports 1–6 (ACCEPTANCE_6 `7d4d8773…`);
   - the brand hashes.
 - The diff from `4becf10` is empty for every frozen scope.
+
+## 22. Authority-boundary hardening evidence — N-02, N-03, L-05, L-06
+
+Hardening date: 2026-10-19. Governing review:
+[seventh independent acceptance](PHASE_2B_1_CANONICAL_INSTRUMENT_MATCHING_ACCEPTANCE_7.md)
+(review of `18e2772`, recorded at `8d17682`) gave **FAIL**, BLOCKER 0 and
+unresolved HIGH 0. N-01 and L-03 stayed open because of N-02. It also opened
+N-03 (MEDIUM), L-05 (LOW) and L-06 (LOW).
+
+This section is implementation evidence only. It is not acceptance and not a
+freeze. Its claims are to be tested by a fresh independent ACCEPTANCE_8. The
+following are unchanged:
+
+- D-055, D-064 and the capacity-semantics decision (Option A);
+- the 100,000-step budget and the ≤128-step cancellation interval
+  (`policy.ts` and `bounds.ts` are byte-identical);
+- the 44 reason codes (same order and contents) and the 22 runtime exports
+  (`index.ts` is byte-identical);
+- the manifests, lockfile and dependencies;
+- every frozen scope and acceptance reports 1–7.
+
+### 22.1 Corrections to section 21
+
+Section 21 is kept as written. ACCEPTANCE_7 disproved three of its claims:
+
+- §21.3: "Getters are never executed."
+- §21.4: "A forged revision can therefore never be published, including on
+  the earliest `NOT_MATCHED` exit."
+- §21.2: the trusted handles are "authenticated with private brand checks"
+  (offered as if authentication were enough).
+
+**Why they were incomplete.** The claims held for caller _data_, which is
+snapshotted. They did not hold for the four trusted _handles_ taken by
+reference: a genuine `CuratedAssetRegistry`, a genuine `MappingLedger`, an
+admitted history and the cancellation signal. A private brand check proves
+that an object is a genuine instance. It says nothing about that object's
+public fields. The registry's `revision` and the ledger's `versions` and
+`transitions` were ordinary writable, configurable own properties. Operations
+read them again after the brand check: three times in `evaluateMatch`, twice
+in `generateCandidates`, and repeatedly in `MappingLedger#apply`. So a getter
+installed on a genuine registry did execute, and an assigned 100,000-character
+revision was published, including on the earliest `NOT_MATCHED` exit.
+
+§21.5 is also corrected. "Snapshot work is charged" did not hold for decimals:
+`ExactDecimal.fromParts` ran its normalization before any bound and was
+charged a flat 8 units (N-03).
+
+### 22.2 N-02 root cause
+
+Authority lived in mutable public state that operations read after the
+boundary. Three things were missing:
+
+1. immutability of the handle after construction;
+2. one read of authoritative metadata per operation;
+3. ownership of returned records. An idempotent re-apply returned whatever
+   object it found in the public `versions` array, which could be a caller
+   object.
+
+### 22.3 Registry authority redesign (`registry.ts`)
+
+- **Private state.** All authoritative state is private:
+  - `#revisionId`, the validated revision string;
+  - `#bindingsByKey`, `#aliasesByAsset` and `#assetsById`.
+
+  Nothing outside the class can reach it.
+
+- **Public view.** `revision` is a `declare`d field. The constructor defines it
+  once with `Object.defineProperty`: enumerable, **non-writable,
+  non-configurable**. Its value is the deeply frozen, null-prototype revision
+  snapshot. No TypeScript-only `readonly` is relied on.
+- **Freezing.**
+  - A direct instance is frozen (`Object.freeze(this)`).
+  - `CuratedAssetRegistry.prototype` and the class are frozen at module load,
+    so no prototype getter or method replacement can be installed.
+  - A subclass instance cannot be frozen by the base constructor, because its
+    own fields are defined later. Its `revision` is still non-redefinable, and
+    no operation reads it.
+- **No operation reads the public field.** `trustedRegistryRevision(registry,
+work)`:
+  1. brand-checks the handle;
+  2. reads `#revisionId` once;
+  3. re-validates and bounds it as an atomic identifier, charged to the
+     operation budget;
+  4. returns the string.
+- **Resolution results** from `#resolve` are frozen null-prototype records.
+
+### 22.4 Ledger authority redesign (`commands.ts`)
+
+- **Private state.** `#versions`, `#transitions` and `#commandDigests` are
+  `readonly` private fields set once in the constructor.
+- **Command-digest state.** The command-digest map of a derived ledger is
+  handed to the constructor through the same internal hand-off as the budget
+  (`ledgerWithBudget(…, commands)`). It is no longer assigned after
+  construction.
+- **Public views.** `versions` and `transitions` are `declare`d fields, defined
+  once as non-writable, non-configurable own data properties over the same
+  deeply frozen arrays.
+- **Freezing.** A direct instance is frozen, and `MappingLedger.prototype` and
+  the class are frozen.
+- **No operation reads the public views.** `#apply` reads the three private
+  fields once into locals and uses only those. `#approve` and `#invalidate`
+  read only the private, immutable fields.
+
+### 22.5 One-read authority snapshot
+
+At the start of each operation:
+
+```
+trusted authority
+→ brand check
+→ read private authoritative metadata once
+→ validate and bound (charged)
+→ operation-local immutable value
+→ used for every later comparison, hash and publication
+```
+
+- **`evaluateMatch` / `evaluateBatch`:** `snapshotEvaluationInput` returns a
+  frozen `{ input, registryRevision }`. It does so before any exit can be
+  formed. `result()` takes the revision string, not the registry. The mapping
+  binding check compares against the same local.
+- **`generateCandidates`:** `generateCandidatesWithBudget` reads the revision
+  once and passes it to every candidate (`makeCandidateWithRevision`). The
+  internal `makeCandidate(…, registry, …)` helper does its own single trusted
+  read.
+- **Ledger:** private state is read once per `#apply`.
+
+So a getter, an assignment, a mid-operation mutation from inside the signal
+poll, or a subclass prototype getter can neither change nor be published as
+the registry revision.
+
+### 22.6 Returned-mapping ownership
+
+- **Idempotent re-apply.** It returns the ledger's own frozen, null-prototype
+  record from `#versions`. That record was built by the ledger from its own
+  snapshot. It is never the caller command or mapping object.
+- **First approval.** It now returns the new ledger's own record:
+  `result.mapping === result.ledger.versions.at(-1)`.
+- **Invalidation.** It returns the ledger's internal approved record.
+- **Caller mutation.** Mutating the caller's command, inputs or construction
+  arrays after the call changes nothing.
+
+### 22.7 N-03 decimal prevalidation (`snapshot.ts`)
+
+`snapshotDecimal` runs these checks in order, and all of them happen before
+`ExactDecimal.fromParts` or any other reconstruction:
+
+1. **Authenticity.** The exact `ExactDecimal.prototype` is required (checked
+   by `copy`/`trustedDecimal`). Exactly the two own keys are required, each
+   read once through its descriptor as enumerable data.
+2. **Types.** `coefficient` must be a bigint and `scale` a safe integer.
+3. **Scale domain.** `0 ≤ scale ≤ 78`.
+4. **Coefficient domain.** `-10^78 < coefficient < 10^78`, checked by bigint
+   comparison with a precomputed bound. A comparison with a different-length
+   operand is decided by its length, so a 100,000-digit coefficient is
+   rejected without a digit pass, division or `toString`.
+5. **Normal form.** `0` must have scale `0`. With `scale > 0`, the coefficient
+   must not end in `0`. This is one remainder of an at most 78-digit value.
+   `fromParts` therefore never runs its normalization loop.
+
+Every rejection is the existing typed `INPUT_INVALID`. No new reason code is
+added. The budget-free helpers (`normalizeBaseExposure`,
+`normalizeQuoteNotional`, via `trustedDecimal`) use the same gates.
+
+### 22.8 Decimal work accounting
+
+- 8 units for the authenticity checks, as before but now inside
+  `snapshotDecimal`.
+- `DECIMAL_REBUILD_UNITS` = 4 × (78 + 78) = **624 units**, charged **before**
+  the rebuild. This is the bounded maximum for 78 digits and scale 78: one
+  remainder test, the digit-count pass, construction, the parts comparison
+  and the freeze. Reconstruction cost scales with digits, and digits are
+  bounded at 78 by step 4, so the charge is the maximum-digit charge. A huge
+  digit count can never meet a small fixed charge, because it is rejected
+  before reconstruction.
+- **Cancellation and budget exhaustion come first.** With 127 steps spent and
+  the signal aborted, the rebuild charge crosses the 128-step check and
+  `EVALUATION_CANCELLED` is thrown. With 99,998 steps spent,
+  `MATCHING_BOUND_EXCEEDED` is thrown. `fromParts` is not called in either
+  case (regression).
+
+| Probe (`evaluateMatch`, spoofed multiplier) | `8d17682`                            | This hardening              |
+| ------------------------------------------- | ------------------------------------ | --------------------------- |
+| 10^100,000 / scale 100,000                  | 3,649 ms, 1 poll, `INPUT_INVALID`    | **0.5 ms**, `INPUT_INVALID` |
+| `fromParts` on the rejected parts           | yes (normalizes ~100,000 iterations) | **never**                   |
+
+### 22.9 L-05 null-prototype policy
+
+**Rule.** Every trusted plain-data record is a frozen own-property copy with a
+**null prototype**, and every presence check uses own-property semantics.
+
+- **Snapshots** (`snapshot.ts`). `copy` and `snapshotRecord` build
+  `Object.create(null)` records, so an absent optional input field (`mapping`,
+  `candidate`, `signal`, …) reads as `undefined`. It is never an inherited
+  `Object.prototype` value.
+- **Descriptors.** A property descriptor is an ordinary object. `descriptor()`
+  and `readOwnData()` now require `Object.hasOwn(found, "value")`, so a
+  polluted `Object.prototype.value` cannot disguise an accessor as data.
+- **Internal and published records.** A new helper, `frozenRecord`
+  (`immutable.ts`), copies into a frozen null-prototype object. It is used by:
+  - every immutable copy (mapping, approval, review, candidate, provisional
+    identity, registry assets, bindings, aliases and revision);
+  - every transition record;
+  - admitted histories;
+  - command, admission, evaluation, replay and registry results;
+  - candidate-resolution records (`role`, the resolved instrument, the
+    exposure identity);
+  - evidence records.
+
+  `chargeCopy` now charges 4 units per key instead of 3, for the extra copy
+  pass.
+
+- **`createTransitionRecord`** copies its input into a null-prototype record
+  first. Before this change, an internal literal without `successorVersion`
+  let a polluted `Object.prototype.successorVersion` reject a valid
+  invalidation. The new pollution sweep found this.
+- **Shape checks.** `assertClosedKeys` (`validation.ts`) and `assertShape`
+  (`admission.ts`) use `Object.hasOwn`, so an inherited key never satisfies a
+  required field.
+
+**Audited names.** These are polluted together in the regression: `mapping`,
+`revision`, `reasonCode`, `status`, `candidate`, `approval`, `approvals`,
+`transition`, `transitions`, `identity`, `provenance`, `provisionalIdentity`,
+`priorVersion`, `supersededBy`, `invalidationReference`, `exposureKey`,
+`successorVersion`, `reference`, `reasonText`, `reason`, `asset`,
+`confidence`, `productClass`, `contractType`, `valueConvention`,
+`exposureUnit`, `description`, the three optional timestamps, `history`,
+`registry`, `signal`, `state`, `value`, `kind`, `mode`, `commandDigest`,
+`registryRevision` and `mappingVersion` (40 names).
+
+Under that pollution, the full workflow is byte-identical to the clean run.
+It covers matching, approval, replay, serialization and publication. All
+polluted names are deleted in `finally`.
+
+### 22.10 L-06 frozen catalogue
+
+`MATCH_REASON_CODES` is `Object.freeze([...] as const)`. Its 44 codes keep the
+same order and contents, and the `MatchReasonCode` type is unchanged.
+
+- `Object.isFrozen` is `true`.
+- `push`, `splice`, `pop`, `sort`, index replacement, `length = 0` and
+  `defineProperty` each throw `TypeError`, and leave the list unchanged.
+- A candidate carrying `BOGUS_CODE` stays `INPUT_INVALID`.
+- `MATCHING_LIMITS` and the special-family list were already frozen. No other
+  array is exported.
+
+### 22.11 N-01 / L-03 final closure (implementer's assessment)
+
+The whole class was rechecked:
+
+| Vector                                                       | Result                                                                     |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Caller getter changes the candidate / mapping                | refused `INPUT_INVALID`, 0 getter reads                                    |
+| Registry getter changes the revision                         | getter cannot be installed (`TypeError`); 0 reads; honest result ID        |
+| Subclass prototype getter on `revision`                      | shadowed by the own non-configurable field; 0 reads                        |
+| 100,000-character revision assignment                        | `TypeError`; published revision `registry-v1` on every exit                |
+| Mutation from inside the cancellation poll                   | refused on every poll; result ID identical to the honest run               |
+| Ledger `versions` replaced / pushed / getter / element write | `TypeError`; idempotent re-apply returns the internal record               |
+| Custom own iterator on the instrument list                   | refused, 0 iterations                                                      |
+| Fake / oversized / non-normalized decimal                    | refused before any rebuild (N-03)                                          |
+| Prototype pollution (40 names)                               | byte-identical workflow                                                    |
+| Repeated command                                             | returns `ledger.versions[0]`, frozen, null prototype                       |
+| Post-return caller mutation                                  | published candidate, mapping and ledger state unchanged                    |
+| Fake registries (plain, prototype spoof, Proxy)              | refused `INPUT_INVALID` on the earliest exit                               |
+| `MATCHED` publication                                        | `registryRevision === mappingVersion.registryRevision` in every regression |
+
+No authoritative output derives from caller-owned mutable state after the
+boundary snapshot. No result returns an authoritative caller object by
+reference. N-01 and L-03 are therefore offered for closure. The verdict
+belongs to ACCEPTANCE_8.
+
+### 22.12 Exact adversarial regressions
+
+New `seventh-acceptance-hardening.test.ts` (**19 tests**):
+
+- **N-02 registry (6).**
+  1. A getter cannot be installed on the instance or on the frozen prototype;
+     0 reads, `MATCHED`, honest result ID.
+  2. A subclass prototype getter that returns different revisions is never
+     read, on `MATCHED`, early `NOT_MATCHED` and `generateCandidates`.
+  3. A 100,000-character assignment is refused on direct and subclass
+     instances, and every published revision is `registry-v1` and at most 160
+     characters.
+  4. The earliest `NOT_MATCHED` exit is honest, and fake registries carrying
+     the oversized revision are refused.
+  5. On `MATCHED`, a mid-operation mutation from the signal poll is refused,
+     and the published revision equals the mapping's.
+  6. Redefinition after construction is refused: `setPrototypeOf`, a new
+     property, a method on the instance, a prototype method, and a static.
+- **N-02 ledger (2).**
+  - 6/10: ten mutation and redefinition attempts each throw `TypeError`. The
+    idempotent re-apply returns the internal record, and the getter is read 0
+    times.
+  - 7/8: repeated commands (three paths) return `ledger.versions[0]`, frozen
+    with a null prototype. Post-return mutation of the caller command, inputs
+    and construction arrays has no effect. The invalidation returns the
+    internal record.
+- **N-03 (3).** Each of these is refused: 100,000-digit coefficient (scale
+  100,000 and scale 0), mutated genuine 100,000 digits, ±10^78 (one over),
+  scale 10^9, `MAX_SAFE_INTEGER`, 79, −1, 1.5, `NaN`, `"0"`, a number
+  coefficient, an extra key, three non-normalized forms, and a duck-typed
+  fake.
+  - For each one, an isolated `snapshotInput` **never calls `fromParts`**
+    (spy). The public `evaluateMatch` is refused in under 250 ms, and only
+    in-domain normalized parts ever reach `fromParts`. The budget-free helper
+    gives the same result.
+  - The largest in-domain values (10^78 − 1 at scale 78, −(10^78 − 1), 1 at
+    scale 78, and 0) are accepted. `fromParts` sees the 624-unit charge
+    already applied.
+  - Cancellation and budget exhaustion are thrown before reconstruction.
+- **L-05 (5).**
+  - `Object.prototype.mapping` cannot approve: the result is honest
+    `UNAVAILABLE/MAPPING_UNAPPROVED`.
+  - Polluted `candidate`, `revision`, `reasonCode` and `status` are inert.
+  - An inherited key never satisfies a required field (admission and
+    registry).
+  - A polluted `value` cannot disguise an accessor.
+  - The 40-name sweep leaves the workflow byte-identical.
+- **L-06 (2).** The catalogue is frozen with 44 unique codes in order, and
+  nine mutation attempts each throw. A bogus reason is refused, and there are
+  exactly 22 exports.
+- **N-01/L-03 class sweep (1).** It covers the getter, the iterator,
+  post-return mutation, frozen null-prototype results and revision equality.
+
+**Non-vacuity.** The same file was run against the unfixed baseline `8d17682`
+in a disposable worktree. **18 of 19 tests fail there.** The one that passes
+is the fake-registry guard, which was already closed at `18e2772`.
+
+### 22.13 Results, digests and capacity
+
+- **spread-analytics:** **21 files, 300/300 tests** (281 earlier plus 19 new).
+  No earlier test was changed.
+- **D-055:** 40/40 authored cases and 29/29 groups. **Reason codes:** 44.
+  **Exports:** 22.
+- **Material digest.** An identical cross-version probe was run on `8d17682`
+  and on this tree. It renders own properties only. It covers:
+  - candidates, and `MATCHED`, unmapped, same-venue and echoed evaluations;
+  - batch, admission and both replays;
+  - approve and invalidate commands, `APPLIED`, idempotent and `REJECTED`;
+  - registry admission, exposure key, provenance digest, evidence and
+    decimal normalization.
+
+  Both give
+  `0446650e7542ab427800c35d6bdb6a1d2b0464c5ce3612cf9761e9ccd11cddeb`. The
+  golden vector and the serialization and determinism suites are unchanged.
+
+- **Real venues.** The probe is identical to `8d17682`:
+  - OKX↔Binance: `UNAVAILABLE` [`MULTIPLIER_UNKNOWN`,
+    `VALUE_CONVENTION_UNVERIFIED`];
+  - OKX↔Bybit: `UNAVAILABLE` [`MULTIPLIER_UNKNOWN`];
+  - Binance↔Bybit: `UNAVAILABLE` [`MULTIPLIER_UNKNOWN`,
+    `VALUE_CONVENTION_UNVERIFIED`].
+
+  This holds with and without a fixture mapping. There are zero approved real
+  pairs.
+
+- **Work accounting (polls, `8d17682` → now).**
+  - `MATCHED` evaluation: 14 → 14.
+  - Early `NOT_MATCHED`: 3 → 3.
+  - 20-instrument generation: 124 → 126.
+  - Admission: 11 → 11.
+  - 1,024 instruments: 782 → 782, then typed `MATCHING_BOUND_EXCEEDED`.
+
+  Charges only increased: the trusted revision validation, 4 units per copied
+  key, and 624 units per decimal. Every new pass is charged to the same
+  operation budget, with no nested budget and no reset. The constructor
+  `defineProperty` and freeze calls, and the fixed-shape `frozenRecord`
+  copies, are O(1). Nothing new follows the final `beforePublication()`. The
+  source audit, oracle, publication-tail and cancellation-interval suites
+  pass unchanged. Under Option A, no minimum capacity is claimed.
+
+### 22.14 Changed files
+
+- **Runtime:** `packages/spread-analytics/src/{admission,candidates,commands,evaluator,evidence,immutable,reasons,registry,replay,snapshot,transitions,validation}.ts`.
+- **Tests:** new `seventh-acceptance-hardening.test.ts`.
+- **Documentation:** this section.
+
+### 22.15 Remaining limitations
+
+- A-01: cooperative cancellation.
+- A-02: own-key enumeration is charged immediately after its single native
+  pass.
+- A-03: zero approved real pairs.
+- A-04: Proxies are not detected; they are neutralized by single reads.
+  Globally patched built-ins are out of scope. This includes `WeakSet`,
+  `Array.prototype` methods, `Object.freeze`, and pollution of
+  descriptor-control names (`get`/`set`) that breaks JavaScript property
+  definition itself.
+- A-05: `TypeError`/`RangeError` → `INPUT_INVALID` normalization.
+- **Subclasses.** A subclass instance of `CuratedAssetRegistry` or
+  `MappingLedger` is not frozen as a whole. Its authoritative views are
+  non-redefinable and no operation reads them, but it may carry its own
+  mutable, non-authoritative fields.
+- **Numeric-index pollution.** Pollution of numeric index names on
+  `Object.prototype` (for example `"3"`) is not separately defended. Array
+  reads are length-gated first.
+- **The cancellation signal** remains the caller's live source by design, and
+  is read once per poll.
+
+### 22.16 Verification record
+
+The verification ran in a fresh copy of the exact working tree, without
+`node_modules` or `dist`. The runtime was Node **v24.18.1** and npm
+**11.16.0**: the official build, checked against `SHASUMS256.txt`.
+
+**Install:**
+
+- `npm ci` exit 0: 450 added / 459 audited.
+- `npm audit` reports 14 advisories (2 moderate, 11 high, 1 critical). The
+  lockfile is byte-identical (`810aaa67…`), so this is audit-database drift,
+  not a dependency change.
+
+**Quality and tests:**
+
+- `format:check`, `lint`, `typecheck`, `npm test` and `npm run build`: all
+  exit 0.
+- Full default suite: **56 test files** (53 passed, 3 opt-in live-canary files
+  skipped); **560 passed, 0 failed, 3 skipped**.
+  - contracts 4;
+  - market-data 57;
+  - spread-analytics **300**;
+  - OKX 52 (+1 skipped);
+  - Binance 72 (+1 skipped);
+  - Bybit 69 (+1 skipped);
+  - web 6.
+- Build: six static routes.
+- TZ matrix as separate processes (`UTC`, `America/New_York`, `Asia/Tokyo`):
+  300/300 each.
+- Focused runs:
+  - the seventh hardening suite: 19/19;
+  - the ACCEPTANCE_1–7 regression set: **17 files, 280/280**. It covers all
+    remediation and hardening suites, the source audit, the oracle, D-055
+    scenarios, reasons, serialization, determinism, governance, bounds,
+    candidate bounds and the package boundary;
+  - D-055: 40/40.
+
+**Public surface (fresh `dist/index.js`):**
+
+- 22 runtime exports;
+- 44 unique, frozen reason codes;
+- frozen class prototypes;
+- deep imports (`dist/snapshot.js`, `dist/registry.js`, `dist/commands.js`,
+  `dist/work-oracle.js`) return `ERR_PACKAGE_PATH_NOT_EXPORTED`;
+- no oracle or fixture in `dist`.
+
+**Repository checks:**
+
+- `git diff --check` and `git fsck --full` pass. Local Markdown links have 0
+  broken.
+- These are unchanged:
+  - `package.json` (`6282c135…`) and `package-lock.json` (`810aaa67…`);
+  - D-055 (`60d00b8e…`), D-064 (`85fb7792…`), the capacity decision
+    (`98552f5d…`) and the D-055 acceptance (`18d1cbb3…`);
+  - acceptance reports 1–7 (ACCEPTANCE_6 `7d4d8773…`, ACCEPTANCE_7
+    `175573a3…`);
+  - the frozen Phase 2A packages, `apps`, `infra`, `docs/brand` and the brand
+    hashes.
+- The diff from `8d17682` touches only `packages/spread-analytics/src/**` and
+  this document.

@@ -1,4 +1,4 @@
-import { ExactDecimal } from "@arbitrage/market-data";
+import { DOMAIN_DECIMAL_LIMITS, ExactDecimal } from "@arbitrage/market-data";
 import { type WorkBudget, assertCount } from "./bounds.js";
 import { MATCHING_LIMITS } from "./policy.js";
 import { MatchingFailure } from "./reasons.js";
@@ -16,9 +16,14 @@ import { MatchingFailure } from "./reasons.js";
 //   symbols, bigints, Map/Set/Date and every other active object are rejected;
 // - arrays are copied by index, never through a caller iterator;
 // - an ExactDecimal must have the exact ExactDecimal prototype and exactly its
-//   two data fields; it is rebuilt with ExactDecimal.fromParts (which
-//   re-validates the frozen domain bounds) and frozen, so a duck-typed or
-//   mutated decimal cannot cross the boundary;
+//   two data fields; its scale, coefficient magnitude and normal form are
+//   checked in O(1) before anything is rebuilt (seventh-acceptance N-03), the
+//   bounded rebuild is charged before it runs, and it is rebuilt with
+//   ExactDecimal.fromParts and frozen, so a duck-typed, oversized or mutated
+//   decimal cannot cross the boundary;
+// - every snapshot object has a null prototype and only own properties
+//   (seventh-acceptance L-05), so a polluted Object.prototype can never supply
+//   an absent field;
 // - the copy is deep and frozen; it shares no mutable reference with the
 //   caller input.
 //
@@ -30,14 +35,30 @@ const invalid = (message: string): never => {
   throw new MatchingFailure("INPUT_INVALID", message);
 };
 
+// Descriptors are ordinary objects: "value" must be an own field, otherwise a
+// polluted Object.prototype.value could disguise an accessor (L-05).
 function descriptor(value: object, key: PropertyKey): PropertyDescriptor {
   const found = Object.getOwnPropertyDescriptor(value, key);
-  if (found === undefined || !("value" in found) || found.enumerable !== true)
+  if (
+    found === undefined ||
+    !Object.hasOwn(found, "value") ||
+    found.enumerable !== true
+  )
     invalid("Input must be passive enumerable data.");
   return found!;
 }
 
-function snapshotDecimal(value: object): ExactDecimal {
+// Exclusive coefficient magnitude bound: at most 78 decimal digits.
+const DECIMAL_COEFFICIENT_LIMIT =
+  10n ** BigInt(DOMAIN_DECIMAL_LIMITS.maxPrecision);
+// A gated decimal has at most 78 digits and scale 78. Its rebuild (one
+// remainder test, the digit-count pass, construction, the parts comparison
+// and the freeze) is charged at the maximum digit count before it runs.
+export const DECIMAL_REBUILD_UNITS =
+  4 * (DOMAIN_DECIMAL_LIMITS.maxPrecision + DOMAIN_DECIMAL_LIMITS.maxScale);
+
+function snapshotDecimal(value: object, work?: WorkBudget): ExactDecimal {
+  work?.units(8);
   const keys = Reflect.ownKeys(value);
   if (
     keys.length !== 2 ||
@@ -49,14 +70,29 @@ function snapshotDecimal(value: object): ExactDecimal {
   const scale = descriptor(value, "scale").value as unknown;
   if (typeof coefficient !== "bigint" || !Number.isSafeInteger(scale))
     invalid("Decimal is not authentic.");
+  const parts = coefficient as bigint,
+    places = scale as number;
+  // N-03: O(1) domain gates before any reconstruction. A bigint comparison
+  // with a different-length operand is decided by its length, so an oversized
+  // coefficient is rejected without a digit pass, division or toString.
+  if (places < 0 || places > DOMAIN_DECIMAL_LIMITS.maxScale)
+    invalid("Decimal is not authentic.");
+  if (parts >= DECIMAL_COEFFICIENT_LIMIT || parts <= -DECIMAL_COEFFICIENT_LIMIT)
+    invalid("Decimal is not authentic.");
+  // Genuine decimals are always normalized; a non-normalized pair is forged.
+  // Checked directly (one remainder of an at most 78-digit value) so that
+  // fromParts never runs its normalization loop.
+  if (parts === 0n ? places !== 0 : places > 0 && parts % 10n === 0n)
+    invalid("Decimal is not authentic.");
+  // Charge the bounded rebuild before it runs (charge before work).
+  work?.units(DECIMAL_REBUILD_UNITS);
   let rebuilt: ExactDecimal;
   try {
-    rebuilt = ExactDecimal.fromParts(coefficient as bigint, scale as number);
+    rebuilt = ExactDecimal.fromParts(parts, places);
   } catch {
     throw new MatchingFailure("INPUT_INVALID", "Decimal is not authentic.");
   }
-  // Genuine decimals are always normalized; a non-normalized pair is forged.
-  if (rebuilt.coefficient !== coefficient || rebuilt.scale !== scale)
+  if (rebuilt.coefficient !== parts || rebuilt.scale !== places)
     invalid("Decimal is not authentic.");
   return Object.freeze(rebuilt);
 }
@@ -83,10 +119,8 @@ function copy(value: unknown, depth: number, work: WorkBudget): unknown {
   }
   const object = value as object;
   const prototype = Object.getPrototypeOf(object) as unknown;
-  if (prototype === ExactDecimal.prototype) {
-    work.units(8);
-    return snapshotDecimal(object);
-  }
+  if (prototype === ExactDecimal.prototype)
+    return snapshotDecimal(object, work);
   if (Array.isArray(object)) {
     if (prototype !== Array.prototype) invalid("Input array is not plain.");
     // A genuine array's "length" is an own, non-enumerable data property.
@@ -113,7 +147,7 @@ function copy(value: unknown, depth: number, work: WorkBudget): unknown {
   const keys = Reflect.ownKeys(object);
   work.units(keys.length + 1);
   assertCount(keys.length, MATCHING_LIMITS.objectKeys, "Object key");
-  const result: Record<string, unknown> = {};
+  const result = Object.create(null) as Record<string, unknown>;
   for (const key of keys) {
     work.units(3);
     if (typeof key !== "string") invalid("Input object has a symbol key.");
@@ -157,7 +191,9 @@ export function snapshotRecord(
   const keys = Reflect.ownKeys(object);
   work.units(keys.length + 1);
   assertCount(keys.length, MATCHING_LIMITS.objectKeys, "Object key");
-  const result: Record<string, unknown> = {};
+  // Null prototype (L-05): an absent optional field (for example `mapping` or
+  // `candidate`) reads as undefined, never as a polluted inherited value.
+  const result = Object.create(null) as Record<string, unknown>;
   for (const key of keys) {
     work.units(3);
     if (typeof key !== "string" || !allowed.includes(key))
@@ -209,7 +245,7 @@ export function readOwnData(value: unknown, key: string): unknown {
     invalid("Input must be an object.");
   const found = Object.getOwnPropertyDescriptor(value as object, key);
   if (found === undefined) return undefined;
-  if (!("value" in found)) invalid("Input must be passive data.");
+  if (!Object.hasOwn(found, "value")) invalid("Input must be passive data.");
   return found.value as unknown;
 }
 

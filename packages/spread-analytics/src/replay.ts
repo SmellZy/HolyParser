@@ -16,6 +16,7 @@ import type { MappingVersion, ReplayMode, ReplayResult } from "./model.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { isEffective } from "./registry.js";
 import { epoch } from "./time.js";
+import { frozenRecord } from "./immutable.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 import { inputBoundary, readOwnData, snapshotRecord } from "./snapshot.js";
@@ -159,7 +160,7 @@ function replayWithBudget(input: ReplayInput, work: WorkBudget): ReplayResult {
         version: String(version.version),
       };
     });
-  const result = Object.freeze({
+  const result = frozenRecord<ReplayResult>({
     mode: input.mode,
     replayRevision: deterministicId(
       "mapping-replay/v1",

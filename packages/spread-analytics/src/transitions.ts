@@ -16,7 +16,7 @@ import type {
 import { MATCHING_POLICY_VERSION } from "./policy.js";
 import { epoch, isEffective } from "./registry.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
-import { chargeCopy } from "./immutable.js";
+import { chargeCopy, frozenRecord } from "./immutable.js";
 import { deterministicId } from "./serialization.js";
 
 export interface TransitionApprovalInput {
@@ -201,40 +201,47 @@ export function createTransitionRecord(
   operationBudget?: WorkBudget,
 ): MappingTransitionRecord {
   const work = operationBudget ?? new WorkBudget();
-  if (!Array.isArray(input.approvals))
+  if (input === null || typeof input !== "object")
+    throw new MatchingFailure("INPUT_INVALID", "Transition is invalid.");
+  // L-05: one own-property, null-prototype copy; an absent optional field
+  // (reasonText, reference, successorVersion) reads as undefined, never as an
+  // inherited polluted value.
+  chargeCopy(input, work);
+  const source = frozenRecord({ ...input });
+  if (!Array.isArray(source.approvals))
     throw new MatchingFailure("INPUT_INVALID", "Approvals are invalid.");
-  assertCount(input.approvals.length, 3, "Approval");
+  assertCount(source.approvals.length, 3, "Approval");
   const unsigned = {
-    transitionId: input.transitionId,
-    mappingId: input.mappingId,
-    affectedVersion: input.affectedVersion,
-    transitionType: input.transitionType,
-    effectiveAt: input.effectiveAt,
-    reasonCode: input.reasonCode,
-    reasonText: input.reasonText,
-    reference: input.reference,
-    successorVersion: input.successorVersion,
-    policyRevision: input.policyRevision,
-    expectedRevision: input.expectedRevision,
-    expectedState: input.expectedState,
-    proposerId: input.proposerId,
-    registryRevision: input.registryRevision,
-    evidenceRevision: input.evidenceRevision,
-    provenanceDigest: input.provenanceDigest,
-    recordedKnowledgeAt: input.recordedKnowledgeAt,
+    transitionId: source.transitionId,
+    mappingId: source.mappingId,
+    affectedVersion: source.affectedVersion,
+    transitionType: source.transitionType,
+    effectiveAt: source.effectiveAt,
+    reasonCode: source.reasonCode,
+    reasonText: source.reasonText,
+    reference: source.reference,
+    successorVersion: source.successorVersion,
+    policyRevision: source.policyRevision,
+    expectedRevision: source.expectedRevision,
+    expectedState: source.expectedState,
+    proposerId: source.proposerId,
+    registryRevision: source.registryRevision,
+    evidenceRevision: source.evidenceRevision,
+    provenanceDigest: source.provenanceDigest,
+    recordedKnowledgeAt: source.recordedKnowledgeAt,
   } as const;
   validateSemanticFields(unsigned, work);
   const commandDigest = payload(unsigned, work);
   const approvals = Object.freeze(
-    input.approvals.map((approval) => {
+    source.approvals.map((approval) => {
       work.step();
       chargeCopy(approval, work);
-      return Object.freeze({ ...approval, approvedDigest: commandDigest });
+      return frozenRecord({ ...approval, approvedDigest: commandDigest });
     }),
   );
-  validateApprovalActors(input.proposerId, approvals, commandDigest, work);
+  validateApprovalActors(source.proposerId, approvals, commandDigest, work);
   chargeCopy(unsigned, work);
-  const result = Object.freeze({ ...unsigned, approvals, commandDigest });
+  const result = frozenRecord({ ...unsigned, approvals, commandDigest });
   if (operationBudget === undefined) work.beforePublication();
   return result;
 }
@@ -287,13 +294,13 @@ export function validateTransitionRecord(
     work,
   );
   chargeCopy(input, work);
-  return Object.freeze({
+  return frozenRecord({
     ...input,
     approvals: Object.freeze(
       input.approvals.map((approval) => {
         work.step();
         chargeCopy(approval, work);
-        return Object.freeze({ ...approval });
+        return frozenRecord({ ...approval });
       }),
     ),
   });

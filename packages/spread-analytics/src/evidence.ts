@@ -9,7 +9,7 @@ import {
   type CancellationSignal,
 } from "./bounds.js";
 import type { EvidenceRecord } from "./model.js";
-import { chargeCopy } from "./immutable.js";
+import { chargeCopy, frozenRecord } from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { epoch, isEffective } from "./registry.js";
 import { MatchingFailure } from "./reasons.js";
@@ -175,7 +175,7 @@ function validateBundleWithBudget(
         (record) => (
           work.step(),
           chargeCopy(record, work),
-          Object.freeze({ ...record })
+          frozenRecord({ ...record })
         ),
       )
       .sort((a, b) => {

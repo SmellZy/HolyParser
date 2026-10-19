@@ -47,7 +47,8 @@ export function assertClosedKeys(
   for (let index = 0; index < allowed.length; index += 1) {
     if (index % 16 === 0) work?.step();
     const key = allowed[index]!;
-    if (!(key in input))
+    // L-05: own fields only; an inherited (polluted) key never satisfies it.
+    if (!Object.hasOwn(input, key))
       throw new MatchingFailure(
         "INPUT_INVALID",
         `${label} is missing a field.`,

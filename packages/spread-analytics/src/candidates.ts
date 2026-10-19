@@ -13,16 +13,17 @@ import type {
   VenueInstrumentEvidence,
   BindingRole,
 } from "./model.js";
-import { immutableCandidate } from "./immutable.js";
+import { frozenRecord, immutableCandidate } from "./immutable.js";
 import {
   MATCHING_LIMITS,
   MATCHING_POLICY_VERSION,
   isSpecialNativeFamily,
 } from "./policy.js";
 import {
-  CuratedAssetRegistry,
+  type CuratedAssetRegistry,
   isCuratedAssetRegistry,
   resolveWithBudget,
+  trustedRegistryRevision,
 } from "./registry.js";
 import { inputBoundary, snapshotInput } from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
@@ -77,14 +78,16 @@ function role(
     cutoff,
     work,
   );
+  // L-05: fixed-shape null-prototype records; an absent `reason` (or
+  // `asset`) can never be inherited from a polluted Object.prototype.
   return value.state === "KNOWN"
-    ? { asset: value.assetId, confidence: value.confidence }
-    : {
+    ? frozenRecord({ asset: value.assetId, confidence: value.confidence })
+    : frozenRecord({
         reason:
           value.state === "CONFLICT"
-            ? "ASSET_BINDING_CONFLICT"
-            : "ASSET_IDENTITY_UNKNOWN",
-      };
+            ? ("ASSET_BINDING_CONFLICT" as const)
+            : ("ASSET_IDENTITY_UNKNOWN" as const),
+      });
 }
 export function resolveExposureIdentity(
   instrument: VenueInstrumentEvidence,
@@ -124,9 +127,10 @@ export function resolveExposureIdentity(
   const reasons = [base.reason, settle.reason, quote.reason].filter(
     (v): v is MatchReasonCode => v !== undefined,
   );
-  if (reasons.length) return { instrument, reasons: Object.freeze(reasons) };
+  if (reasons.length)
+    return frozenRecord({ instrument, reasons: Object.freeze(reasons) });
   const scopeReason = classifyProductScope(instrument);
-  const provisionalIdentity = Object.freeze({
+  const provisionalIdentity = frozenRecord({
     baseAssetId: base.asset!,
     quoteAssetId: quote.asset!,
     settlementAssetId: settle.asset!,
@@ -166,7 +170,7 @@ export function resolveExposureIdentity(
     payoff.value === "LINEAR" &&
     instrument.economics.nativeQuantityUnit.state === "KNOWN" &&
     instrument.economics.canonicalBaseUnit.state === "KNOWN";
-  const provenIdentity = Object.freeze({
+  const provenIdentity = frozenRecord({
     // work: fixed-shape internal identity (at most five keys).
     ...provisionalIdentity,
     ...(economicsProven
@@ -176,7 +180,7 @@ export function resolveExposureIdentity(
         }
       : {}),
   });
-  return {
+  return frozenRecord({
     instrument,
     provisionalIdentity: provenIdentity,
     reasons: Object.freeze(
@@ -188,17 +192,17 @@ export function resolveExposureIdentity(
       ? "REVIEWED_MANUAL"
       : "EXACT_METADATA",
     identity: complete
-      ? {
-          productClass: "DERIVATIVE",
+      ? frozenRecord({
+          productClass: "DERIVATIVE" as const,
           baseAssetId: base.asset!,
           quoteAssetId: quote.asset!,
           settlementAssetId: settle.asset!,
-          contractType: "PERPETUAL",
-          valueConvention: "LINEAR",
-          exposureUnit: "BASE_UNIT",
-        }
+          contractType: "PERPETUAL" as const,
+          valueConvention: "LINEAR" as const,
+          exposureUnit: "BASE_UNIT" as const,
+        })
       : undefined,
-  };
+  });
 }
 const provisionalValue = (
   value: ProvisionalExposureIdentity,
@@ -215,10 +219,32 @@ const provisionalValue = (
     exposureUnit: value.exposureUnit ?? null,
   };
 };
+/** Internal single-candidate helper: its own trusted revision read. */
 export function makeCandidate(
   left: ResolvedInstrument,
   right: ResolvedInstrument,
   registry: CuratedAssetRegistry,
+  at: Timestamp,
+  cutoff: Timestamp,
+  work: WorkBudget,
+): InstrumentMatchCandidate {
+  return makeCandidateWithRevision(
+    left,
+    right,
+    trustedRegistryRevision(registry, work),
+    at,
+    cutoff,
+    work,
+  );
+}
+/**
+ * N-02: `registryRevision` is the operation-local snapshot read once from the
+ * registry's private state; no public registry field is read here.
+ */
+function makeCandidateWithRevision(
+  left: ResolvedInstrument,
+  right: ResolvedInstrument,
+  registryRevision: string,
   at: Timestamp,
   cutoff: Timestamp,
   work: WorkBudget,
@@ -274,7 +300,7 @@ export function makeCandidate(
     economicsRevisions,
     metadataDigests,
     metadataRevisions: revisions,
-    registryRevision: registry.revision.revision,
+    registryRevision,
   };
   return immutableCandidate(
     {
@@ -296,7 +322,7 @@ export function makeCandidate(
       rightMetadataDigest: metadataDigests[1]!,
       leftEconomicsRevision: economicsRevisions[0]!,
       rightEconomicsRevision: economicsRevisions[1]!,
-      registryRevision: registry.revision.revision,
+      registryRevision,
       provisionalIdentity,
       exposureKey: key,
       evidenceSetDigest: sha256(canonicalSerialize(evidence, work), work),
@@ -357,6 +383,8 @@ export function generateCandidatesWithBudget(
   work: WorkBudget,
 ): readonly InstrumentMatchCandidate[] {
   assertCount(instruments.length, MATCHING_LIMITS.instruments, "Instrument");
+  // N-02: one trusted registry revision read for the whole operation.
+  const registryRevision = trustedRegistryRevision(registry, work);
   // H-04: strict canonical UTC evaluation/knowledge times before any work.
   epoch(at, work);
   epoch(cutoff, work);
@@ -439,7 +467,7 @@ export function generateCandidatesWithBudget(
   }
   const result = pairs.map(([a, b]) => {
     work.step();
-    return makeCandidate(a, b, registry, at, cutoff, work);
+    return makeCandidateWithRevision(a, b, registryRevision, at, cutoff, work);
   });
   // The final freeze is charged before it runs; nothing but the final
   // cancellation check separates it from publication.
