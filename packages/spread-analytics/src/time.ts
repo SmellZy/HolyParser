@@ -59,6 +59,9 @@ export function epoch(value: unknown, work?: WorkBudget): bigint {
   const second = digits(text, 17, 2);
   const millisecond = digits(text, 20, 3);
   const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  // L-07: the month is range-checked before the table is indexed, so month
+  // 00 or 13-99 can never read an inherited (polluted) numeric property.
+  if (month < 1 || month > 12) invalid();
   const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][
     month - 1
   ];

@@ -19,6 +19,7 @@ import {
   immutableCandidate,
   immutableMapping,
   immutableReview,
+  ownElement,
 } from "./immutable.js";
 import type {
   InstrumentMatchCandidate,
@@ -41,6 +42,7 @@ import {
   sha256,
 } from "./serialization.js";
 import { transitionDigest, validateTransitionRecord } from "./transitions.js";
+import { publicView } from "./publication.js";
 import { inputBoundary, snapshotInput } from "./snapshot.js";
 
 export interface MappingAdmissionRecord {
@@ -95,28 +97,41 @@ export type MappingAdmissionResult =
     });
 
 const admittedHistories = new WeakSet<object>();
+// The published handle of an admitted history is its public copy; it maps
+// to the internal history, which is what every operation reads.
+const publicHistories = new WeakMap<object, MaterializedHistory>();
+function internalHistory(value: unknown): MaterializedHistory | undefined {
+  if (value === null || typeof value !== "object") return undefined;
+  if (admittedHistories.has(value)) return value as MaterializedHistory;
+  return publicHistories.get(value);
+}
 export function isAdmittedMappingHistory(
   value: unknown,
 ): value is AdmittedMappingHistory {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    admittedHistories.has(value as object)
-  );
+  return internalHistory(value) !== undefined;
+}
+/** The internal admitted history behind a published (or internal) handle. */
+export function trustedAdmittedHistory(value: unknown): AdmittedMappingHistory {
+  const history = internalHistory(value);
+  if (history === undefined)
+    throw new MatchingFailure("INPUT_INVALID", "History is not admitted.");
+  return history;
 }
 export function materializedHistoryRecords(
   history: AdmittedMappingHistory,
 ): readonly MappingAdmissionRecord[] {
-  if (!isAdmittedMappingHistory(history))
+  const internal = internalHistory(history);
+  if (internal === undefined)
     throw new MatchingFailure("INPUT_INVALID", "History is not admitted.");
-  return (history as MaterializedHistory).records;
+  return internal.records;
 }
 export function materializedHistoryTransitions(
   history: AdmittedMappingHistory,
 ): readonly MappingTransitionRecord[] {
-  if (!isAdmittedMappingHistory(history))
+  const internal = internalHistory(history);
+  if (internal === undefined)
     throw new MatchingFailure("INPUT_INVALID", "History is not admitted.");
-  return history.transitions;
+  return internal.transitions;
 }
 const failure = (
   state: Exclude<MappingAdmissionState, "VALID">,
@@ -743,12 +758,17 @@ function validateBaseHistory(
   records: readonly MappingAdmissionRecord[],
   work: WorkBudget,
 ): void {
-  const first = records[0]!.mapping;
+  // L-07: own-index reads; index 0 has no predecessor (never index -1).
+  const head = ownElement(records, 0);
+  if (head === undefined)
+    throw new MatchingFailure("INPUT_INVALID", "History is empty.");
+  const first = head.mapping;
   const same = (left: unknown, right: unknown) => sameText(left, right, work);
   for (let index = 0; index < records.length; index += 1) {
     work.step();
     const current = records[index]!.mapping,
-      previous = records[index - 1]?.mapping;
+      previous =
+        index > 0 ? ownElement(records, index - 1)?.mapping : undefined;
     if (
       !same(current.mappingId, first.mappingId) ||
       current.version !== index + 1
@@ -958,8 +978,11 @@ function materializeHistory(
       });
     }),
   );
+  const head = ownElement(versions, 0);
+  if (head === undefined)
+    throw new MatchingFailure("INPUT_INVALID", "History is empty.");
   const result = frozenRecord({
-    mappingId: versions[0]!.mappingId,
+    mappingId: head.mappingId,
     digest: deterministicId(
       "admitted-mapping-history/v1",
       { transitions: transitionDigests, versions: digests },
@@ -985,8 +1008,16 @@ export function admitMaterializedMapping(
 ): MappingAdmissionResult {
   const work = new WorkBudget(signal);
   const result = admitWithBudget(input, evaluationAt, work);
+  // Public copy (charged) after every decision and before the final check;
+  // the published history copy becomes the replay handle.
+  const published = publicView(result, work);
+  if (result.history !== undefined && published.history !== undefined)
+    publicHistories.set(
+      published.history,
+      result.history as MaterializedHistory,
+    );
   work.beforePublication();
-  return result;
+  return published;
 }
 /** Internal: admission on a parent operation's budget (it checks later). */
 export function admitMaterializedMappingWithBudget(

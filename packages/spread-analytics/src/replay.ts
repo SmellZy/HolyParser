@@ -10,6 +10,7 @@ import {
   isAdmittedMappingHistory,
   materializedHistoryRecords,
   materializedHistoryTransitions,
+  trustedAdmittedHistory,
   type AdmittedMappingHistory,
 } from "./admission.js";
 import type { MappingVersion, ReplayMode, ReplayResult } from "./model.js";
@@ -17,6 +18,7 @@ import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { isEffective } from "./registry.js";
 import { epoch } from "./time.js";
 import { frozenRecord } from "./immutable.js";
+import { publicView } from "./publication.js";
 import { MatchingFailure } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
 import { inputBoundary, readOwnData, snapshotRecord } from "./snapshot.js";
@@ -59,8 +61,9 @@ export function replayMapping(callerInput: ReplayInput): ReplayResult {
       work,
     ),
   );
+  const published = publicView(result, work);
   work.beforePublication();
-  return result;
+  return published;
 }
 function replayWithBudget(input: ReplayInput, work: WorkBudget): ReplayResult {
   work.step();
@@ -74,7 +77,10 @@ function replayWithBudget(input: ReplayInput, work: WorkBudget): ReplayResult {
     );
   assertAtomicId(input.mappingId, "Mapping ID", work);
   assertAtomicId(input.replayRevision, "Replay revision", work);
-  if (!sameText(input.mappingId, input.history.mappingId, work))
+  // The internal history behind the authenticated handle; the public copy
+  // is never read.
+  const admitted = trustedAdmittedHistory(input.history);
+  if (!sameText(input.mappingId, admitted.mappingId, work))
     throw new MatchingFailure(
       "MAPPING_REVISION_CONFLICT",
       "Replay mapping ID mismatch.",
@@ -167,7 +173,7 @@ function replayWithBudget(input: ReplayInput, work: WorkBudget): ReplayResult {
       {
         evaluationAt: input.evaluationAt,
         history,
-        historyDigest: input.history.digest,
+        historyDigest: admitted.digest,
         knowledgeCutoff: input.knowledgeCutoff,
         mode: input.mode,
         revision: input.replayRevision,

@@ -10,6 +10,7 @@ import {
 } from "./bounds.js";
 import type { EvidenceRecord } from "./model.js";
 import { chargeCopy, frozenRecord } from "./immutable.js";
+import { publicView } from "./publication.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { epoch, isEffective } from "./registry.js";
 import { MatchingFailure } from "./reasons.js";
@@ -182,6 +183,7 @@ function validateBundleWithBudget(
         return compareUtf8WithBudget(work)(a.evidenceId, b.evidenceId);
       }),
   );
+  const published = publicView(result, work);
   work.beforePublication();
-  return result;
+  return published;
 }

@@ -14,10 +14,16 @@ import type {
   MappingVersion,
   ReviewApproval,
 } from "./model.js";
-import { chargeCopy, frozenRecord, immutableMapping } from "./immutable.js";
+import {
+  chargeCopy,
+  frozenRecord,
+  immutableMapping,
+  ownElement,
+} from "./immutable.js";
 import { MATCHING_LIMITS, MATCHING_POLICY_VERSION } from "./policy.js";
 import { isEffective } from "./registry.js";
 import { epoch } from "./time.js";
+import { publicView } from "./publication.js";
 import { inputBoundary, snapshotInput } from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import { compareUtf8WithBudget, deterministicId } from "./serialization.js";
@@ -191,8 +197,9 @@ export function approveCommand(
 ): ApproveMappingCommand {
   const work = new WorkBudget();
   const result = inputBoundary(() => approveCommandWithBudget(input, work));
+  const published = publicView(result, work);
   work.beforePublication();
-  return result;
+  return published;
 }
 export function invalidateCommand(
   callerInput: InvalidateCommandInput,
@@ -201,8 +208,9 @@ export function invalidateCommand(
   const result = inputBoundary(() =>
     invalidateWithBudget(snapshotInput(callerInput, work), work),
   );
+  const published = publicView(result, work);
   work.beforePublication();
-  return result;
+  return published;
 }
 function invalidateWithBudget(
   input: InvalidateCommandInput,
@@ -377,7 +385,9 @@ export class MappingLedger {
       ["transitions", state.transitions],
     ] as const)
       Object.defineProperty(this, key, {
-        value,
+        // Ordinary frozen public copies (charged); operations read only the
+        // private state. Returned mappings share these copies.
+        value: publicView(value, work),
         enumerable: true,
         writable: false,
         configurable: false,
@@ -464,15 +474,17 @@ export class MappingLedger {
           return frozenRecord({ commandId, digest });
         }),
     );
+    const published = publicView(result, work);
     work.beforePublication();
-    return result;
+    return published;
   }
   /** Public application: its own operation budget and final check. */
   apply(command: MappingCommand): LedgerApplication {
     const work = new WorkBudget();
     const result = inputBoundary(() => this.#apply(command, work));
+    const published = publicView(result, work);
     work.beforePublication();
-    return result;
+    return published;
   }
   #apply(callerCommand: MappingCommand, work: WorkBudget): LedgerApplication {
     // N-01: one passive frozen snapshot; nothing below rereads the caller.
@@ -671,7 +683,8 @@ export class MappingLedger {
     return validateTransitionRecord(
       command.transition,
       target,
-      target.approvals[0]?.approvedDigest ?? "missing-provenance",
+      // L-07: own-index read; an empty approval list never inherits index 0.
+      ownElement(target.approvals, 0)?.approvedDigest ?? "missing-provenance",
       work,
     );
   }
@@ -769,8 +782,9 @@ export function admitMappingCommand(
   }
   // Every typed outcome (APPLIED, REJECTED, QUARANTINED) passes the final
   // cancellation/budget check before it is returned.
+  const published = publicView(result, work);
   work.beforePublication();
-  return result;
+  return published;
 }
 
 // N-02: the trusted class surface is immutable too.

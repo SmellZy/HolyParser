@@ -14,6 +14,7 @@ import {
 } from "./admission.js";
 import { classifyProductScope, resolveExposureIdentity } from "./candidates.js";
 import { frozenRecord } from "./immutable.js";
+import { publicView } from "./publication.js";
 import { compareEconomics, economicsAvailability } from "./economics.js";
 import type {
   InstrumentMatchCandidate,
@@ -405,8 +406,9 @@ export function evaluateMatch(input: MatchEvaluationInput): MatchEvaluation {
   const value = inputBoundary(() =>
     evaluateMatchWithBudget(snapshotEvaluationInput(input, work), work),
   );
+  const published = publicView(value, work);
   work.beforePublication();
-  return value;
+  return published;
 }
 export function evaluateBatch(
   inputs: readonly MatchEvaluationInput[],
@@ -437,9 +439,8 @@ export function evaluateBatch(
     work,
   );
   assertOutputBound(serialized, work);
-  // Freeze (and charge) the staged batch before the final cancellation check.
-  work.units(staged.length + 1);
-  const published = Object.freeze(staged);
+  // Publish (and charge) the staged batch before the final cancellation check.
+  const published = publicView(staged, work);
   work.beforePublication();
   return published;
 }

@@ -26,6 +26,21 @@ export function chargeCopy(value: object, work?: WorkBudget): void {
 // every other use is a fixed internal shape.
 export const frozenRecord = <T extends object>(value: T): T =>
   Object.freeze(Object.assign(Object.create(null) as T, value));
+
+// L-07: own-index read. An index outside the length, or a hole, reads as
+// undefined; it can never resolve through a polluted numeric property of
+// Array.prototype or Object.prototype. Constant work.
+export function ownElement<T>(
+  list: readonly T[],
+  index: number,
+): T | undefined {
+  return Number.isSafeInteger(index) &&
+    index >= 0 &&
+    index < list.length &&
+    Object.hasOwn(list, index)
+    ? list[index]
+    : undefined;
+}
 const freezeApproval = (
   value: ReviewApproval,
   work?: WorkBudget,

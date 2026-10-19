@@ -2610,3 +2610,379 @@ The verification ran in a fresh copy of the exact working tree, without
     hashes.
 - The diff from `8d17682` touches only `packages/spread-analytics/src/**` and
   this document.
+
+## 23. Numeric-index hardening evidence — L-07 and the closure of L-05
+
+Hardening date: 2026-10-19. Governing review:
+[eighth independent acceptance](PHASE_2B_1_CANONICAL_INSTRUMENT_MATCHING_ACCEPTANCE_8.md)
+(review of `5aa2fdf`, recorded at `b9176d1`) gave **FAIL**, BLOCKER 0 and
+unresolved HIGH 0. It confirmed N-01, L-03, N-02, N-03 and L-06 as resolved.
+L-05 stayed open because of new finding L-07 (LOW): numeric index reads could
+inherit polluted numeric properties.
+
+This section is implementation evidence only. It is not acceptance and not a
+freeze. Its claims are to be tested by a fresh independent ACCEPTANCE_9. The
+following are unchanged:
+
+- D-055, D-064 and the capacity-semantics decision (Option A);
+- the 100,000-step budget and the ≤128-step cancellation interval
+  (`policy.ts` and `bounds.ts` are byte-identical);
+- the 44 reason codes and the 22 runtime exports (`index.ts` and `reasons.ts`
+  are byte-identical);
+- the manifests, lockfile and dependencies;
+- every frozen scope and acceptance reports 1–8.
+
+### 23.1 Corrections to section 22
+
+Section 22 is kept as written. ACCEPTANCE_8 disproved one of its claims:
+
+- **§22.15:** "Pollution of numeric index names on `Object.prototype` (for
+  example `"3"`) is not separately defended. Array reads are length-gated
+  first."
+
+**Why it was incomplete.**
+
+- **The claim was not true of every site.** These internal reads were not
+  length-gated, and each could read past the end of an array:
+  - `CuratedAssetRegistry#resolve` read `found[0]?.canonicalAssetId` and
+    `aliases[0]` on possibly empty arrays;
+  - `MappingLedger#invalidate` read `target.approvals[0]?.approvedDigest`;
+  - `validateBaseHistory` read `records[0]` and, at index 0,
+    `records[index - 1]`, which is the property `"-1"`;
+  - `materializeHistory` read `versions[0]`;
+  - `epoch` (`time.ts`) indexed its month table with `month - 1` before
+    range-checking the month. A month of `00` or `13`–`99` read property
+    `"-1"` or `"12"`–`"98"`.
+- **What `Object.prototype["0"]` could do.** Under that pollution, `found[0]`
+  on an empty array could answer as an asset binding and `aliases[0]` as a
+  reviewed alias. That turned `AMBIGUOUS/ASSET_IDENTITY_UNKNOWN` into
+  `MATCHED/COMPATIBLE_APPROVED`, and collapsed USDT and USDC legs at the
+  identity gate (ACCEPTANCE_8 section 5).
+- **Why the §22 null-prototype policy did not help.** A null prototype
+  protects named fields of snapshot _records_. A native array always inherits
+  from `Array.prototype`, and that inherits from `Object.prototype`. An
+  array element read whose index is out of range, negative or a hole
+  therefore falls through to both prototypes. §22 never covered array index
+  reads at all.
+- **The §22 name sweep missed it** because it polluted only named fields,
+  never numeric names.
+
+### 23.2 L-07 root cause
+
+An authoritative index read was treated as safe without an own-element
+proof. JavaScript resolves `array[i]` through the prototype chain whenever
+`i` is not an own property of the array. That happens:
+
+- when `i ≥ length`, as for an empty result;
+- when `i` is negative or not an integer;
+- at a hole.
+
+`?.` and `!== undefined` do not help, because an inherited value is neither
+`undefined` nor nullish.
+
+### 23.3 Array-index own-property policy
+
+Every authoritative index read in runtime code is backed by one of these:
+
+| Class                              | Proof                                                                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SAFE_BY_LENGTH`                   | A length or range check that dominates the read, such as a loop bound, `length === 1 ? x[0]`, or a short-circuit after a length check. Native `.at()` is length-bounded. |
+| `SAFE_BY_OWN_PROPERTY`             | `Object.hasOwn`, or a key that comes from `Object.keys`.                                                                                                                 |
+| `SAFE_BY_DENSE_INTERNAL_INVARIANT` | A local array whose length is fixed by construction, such as the two sorted legs of a pair.                                                                              |
+| `FIXED`                            | Rewritten to the new `ownElement(list, index)` helper, or range-checked before the read.                                                                                 |
+
+`ownElement` lives in `immutable.ts`. It returns the element only when the
+index is a safe integer within `0 ≤ index < length` **and** an own property
+of the array. Otherwise it returns `undefined`, so it never answers from a
+prototype. It is constant work.
+
+**Fixed sites (7).**
+
+- `registry.ts`: `found[0]` → `ownElement(found, 0)` and `aliases[0]` →
+  `ownElement(aliases, 0)` (the ACCEPTANCE_8 sites).
+- `commands.ts`: `target.approvals[0]` → `ownElement(target.approvals, 0)`.
+- `admission.ts`:
+  - `records[0]` → `ownElement(records, 0)`, with an explicit
+    empty-history `INPUT_INVALID`;
+  - `records[index - 1]` → `index > 0 ? ownElement(records, index - 1) :
+undefined`;
+  - `versions[0]` → `ownElement(versions, 0)`.
+- `time.ts`: the month is range-checked (1–12) before the table is indexed.
+  This keeps the existing typed `EVIDENCE_TIME_INVALID`.
+
+### 23.4 Dense-array invariant
+
+Every array used by authoritative logic has these properties:
+
+- it is a genuine `Array`;
+- it is dense, with no holes;
+- it has no accessor indexes;
+- it has no custom iterator semantics and no extra properties.
+
+It gets them from one of two sources:
+
+- **Caller arrays** are admitted only through `snapshot.ts`. The array must
+  have prototype `Array.prototype`. Its own keys must be exactly its indices
+  plus `length`, which rejects holes, extra keys and own iterators. Each
+  element is read once through an own data descriptor and copied into a new
+  frozen dense array.
+- **Internal arrays** are built only with literals, `push`, `map`, `filter`,
+  `sort` copies and `Object.freeze`. All of these produce dense arrays.
+
+Implicit iteration (`for…of`, spread, `map`, `filter`, `some`, `find`,
+`includes`) visits only `0…length − 1`. On a dense array every visited index
+is an own element, so the invariant covers implicit reads too. Explicit reads
+that can step outside the length are the audited sites in 23.5.
+
+The regressions cover:
+
+- sparse arrays and arrays missing an index inside their length, which are
+  refused by the boundary;
+- dense arrays with zero, one and two elements, which are admitted, with
+  their own indices;
+- `ownElement` on a zero-length array, a dense array, a hole, a missing index
+  inside the length, a valid local element under pollution, and a negative or
+  fractional index.
+
+All of these run under `Object.prototype` and `Array.prototype` pollution of
+`"0"` and `"1"`.
+
+### 23.5 Static numeric-index audit
+
+`eighth-acceptance-hardening.test.ts` uses the TypeScript AST to list every
+`ElementAccessExpression`, every `.at()` call and every `ownElement(...)` call
+in all runtime modules. It requires the found set, keyed by file and
+normalized expression text with counts, to equal a committed classification
+table exactly. A new unclassified read therefore fails the test, and a
+control proves the check is non-vacuous.
+
+| Result                                  |                                        Count |
+| --------------------------------------- | -------------------------------------------: |
+| Total numeric-index read sites          | **56** (49 element/`.at()` + 7 `ownElement`) |
+| `SAFE_BY_LENGTH`                        |                                           24 |
+| `SAFE_BY_DENSE_INTERNAL_INVARIANT`      |                                           20 |
+| `SAFE_BY_OWN_PROPERTY`                  |                                            5 |
+| `FIXED` (changed sites)                 |                                            7 |
+| `NON_AUTHORITATIVE_CONSTANT`            |                                            0 |
+| **Uncovered authoritative index reads** |                                        **0** |
+
+The site counts break down as follows:
+
+- Before this change, the same AST scan found 53 element/`.at()` sites. Six
+  were rewritten to `ownElement`; the `time.ts` table read remains, now
+  range-checked.
+- The 7th `ownElement` call is the new public-copy loop in `publication.ts`.
+  It is classified `SAFE_BY_OWN_PROPERTY`.
+- `bounds.ts`, `serialization.ts` and `publication.ts` read named keys
+  obtained from `Object.keys`. They are listed as `SAFE_BY_OWN_PROPERTY`.
+
+### 23.6 Public-output prototype decision
+
+**Review.** The question was whether public results may have a null
+prototype.
+
+- No normative contract (D-055, D-064, `API_CONTRACTS_PLAN`, `DOMAIN_MODEL`)
+  permits null-prototype public results.
+- Every accepted state up to ACCEPTANCE_7 published ordinary frozen plain
+  objects.
+- §22 changed that as a side effect. `String(result)` and
+  `result.hasOwnProperty` stopped working (ACCEPTANCE_8, informational).
+
+That was an unintended breaking change, so it is reverted.
+
+**Design.** The new module `publication.ts` provides `publicView(value,
+work)`. Each public operation calls it **after every authoritative decision
+and before its final cancellation check**. Its work is charged to the same
+operation budget: `2n + 1` units per array and `4k + 1` per record.
+
+- **Records.** A frozen null-prototype or plain record becomes a frozen
+  ordinary object with the same own enumerable data properties. They are
+  defined, never assigned, so a `"__proto__"` key stays an own field.
+- **Arrays.** An array becomes a frozen dense array, read by `ownElement`.
+- **Other values** are returned as is. These are primitives, `ExactDecimal`,
+  and the trusted class instances.
+- **Caching.** The copy of each internal record is cached in a `WeakMap`.
+  Internal records are immutable, so this is sound. Shared identities
+  therefore hold across outputs. For example, a command's returned mapping is
+  `ledger.versions.at(-1)`, and a replay's `mapping` is
+  `history.versions.at(-1)`.
+
+**Applied at.**
+
+- `evaluateMatch` and `evaluateBatch`;
+- `generateCandidates`;
+- `admitMaterializedMapping`;
+- `replayMapping`;
+- `approveCommand`, `invalidateCommand`, `admitMappingCommand`,
+  `MappingLedger#apply` and `#commandDigestSnapshot`;
+- the `versions` and `transitions` views of `MappingLedger`;
+- the `revision` view of `CuratedAssetRegistry`, and its `resolve` and
+  `describe`;
+- `admitRegistryRevision`;
+- `validateEvidenceBundle`.
+
+**Authority stays internal.**
+
+- No operation reads a public copy. Values a caller passes back go through
+  the input snapshot again and become null-prototype records.
+- The admitted-history handle is now the published copy. A private `WeakMap`
+  maps it to the internal history, and `replayMapping` reads only the
+  internal one (`trustedAdmittedHistory`).
+- A spread or deep clone of a published history is refused with
+  `INPUT_INVALID`.
+
+**Consumer-side note.** A public result omits optional keys exactly as
+before. A consumer that reads an absent key in its own polluted environment
+sees that environment. Nothing the package decides or publishes depends on
+it.
+
+**Contract tests.** They check every output of every public operation,
+recursively:
+
+- ordinary prototype, frozen;
+- `String(result) === "[object Object]"`;
+- `Object.keys`, `Object.hasOwn` and `result.hasOwnProperty` agree;
+- `JSON.stringify` works.
+
+They also check shared identity, and that a published handle authenticates
+while copies of it are refused.
+
+### 23.7 Adversarial prototype-pollution tests
+
+New `eighth-acceptance-hardening.test.ts` (**12 tests**):
+
+- **Exact ACCEPTANCE_8 exploits (5).**
+  1. An unbound base leg with a structurally valid approved mapping stays
+     `AMBIGUOUS/ASSET_IDENTITY_UNKNOWN` with an identical result ID, under
+     `Object.prototype` and `Array.prototype` `"0"` = `{ canonicalAssetId:
+A }` or `{ targetAssetId: A }`.
+  2. USDT↔USDC (with and without a mapping) and A↔B stay `NOT_MATCHED` with
+     identical result IDs, under `"0"` and `"1"`.
+  3. Candidate generation for mismatched pairs stays at 0.
+  4. An empty approval list cannot inherit invalidation provenance.
+  5. Months `00`, `13` and `99` stay `EVIDENCE_TIME_INVALID` under polluted
+     `"-1"`, `"12"` and `"98"`. History continuity is unchanged under a
+     polluted `"-1"`.
+- **Full sweep (1).** It runs 2 prototypes × 2 indices × 9 values (canonical
+  asset, alias target, mapping, admission record, candidate, approval,
+  transition, string, number), which is **36 runs**. Each run covers 27
+  operations and outcome classes: evaluations including `AMBIGUOUS`,
+  `NOT_MATCHED`, `UNAVAILABLE` and same venue; candidates; batch; admission;
+  both replays; `APPLIED`, idempotent, invalidation and empty-approval
+  commands; registry admission and `resolve`; evidence; timestamps; and
+  decimals. Every run is byte-identical to the clean run, and no polluted key
+  remains afterwards.
+- **Array shapes (2).** `ownElement` semantics, and the snapshot dense-array
+  invariant under pollution.
+- **Static audit (2).** The classification table, and the non-vacuous
+  control.
+- **Public-output contract (2).** These are listed in 23.6.
+
+**Non-vacuity.** The same file was run against the unfixed baseline
+`b9176d1` in a disposable worktree, with `ownElement` defined locally. **9 of
+12 tests fail there.** The three that pass are guards that already held:
+helper semantics, the dense snapshot, and the audit control.
+
+The two `seventh-acceptance-hardening.test.ts` assertions that pinned the
+§22 null-prototype output now pin the ordinary prototype. No other earlier
+test was changed.
+
+### 23.8 Preserved invariants and results
+
+- **spread-analytics:** **22 files, 312/312 tests** (300 earlier plus 12
+  new).
+- **D-055:** 40/40 authored cases and 29/29 groups. **Reason codes:** 44.
+  **Exports:** 22.
+- **Material digest.** The own-property cross-version probe from §22.13 gives
+  `0446650e7542ab427800c35d6bdb6a1d2b0464c5ce3612cf9761e9ccd11cddeb` on
+  `8d17682`, `b9176d1` and this tree.
+- **Real venues.** The probe is identical to `b9176d1`:
+  - OKX↔Binance: `UNAVAILABLE` [`MULTIPLIER_UNKNOWN`,
+    `VALUE_CONVENTION_UNVERIFIED`];
+  - OKX↔Bybit: `UNAVAILABLE` [`MULTIPLIER_UNKNOWN`];
+  - Binance↔Bybit: `UNAVAILABLE` [`MULTIPLIER_UNKNOWN`,
+    `VALUE_CONVENTION_UNVERIFIED`].
+
+  This holds with and without a fixture mapping. There are zero approved real
+  pairs.
+
+- **Work accounting (polls, `b9176d1` → now).**
+  - `MATCHED` evaluation: 14 → 14.
+  - Early `NOT_MATCHED`: 3 → 3.
+  - 20-instrument generation: 126 → 127.
+  - Admission: 11 → 11.
+  - 1,024 instruments: 782 → 782, then typed `MATCHING_BOUND_EXCEEDED`.
+
+  The new work is all charged to the same budget, with no new budget and no
+  reset: `ownElement` is constant work, the month gate is constant, and the
+  public copy is charged per node before the final check. Nothing follows
+  the final check except `return`. The source audit, oracle,
+  publication-tail and cancellation suites pass unchanged.
+
+- **Preserved findings.** The regression suites for B-01, B-02, H-01–H-04,
+  M-01, M-02, N-01, N-02, N-03, L-02, L-03, L-04 and L-06 pass unchanged.
+- **Test stability.** `fifth-acceptance-remediation` test 1 allocates about
+  56 MB of strings. It timed out once (vitest's 5 s default) on the first
+  parallel run after these edits, and also once on the untouched `8d17682`
+  baseline at the start of the §22 session. It passed in every other run:
+  4 isolated runs, 3 consecutive full runs and the fresh-copy runs. This is
+  load sensitivity in an unchanged test, not a behaviour change.
+
+### 23.9 Changed files
+
+- **Runtime:** `packages/spread-analytics/src/{admission,candidates,commands,evaluator,evidence,immutable,registry,replay,time}.ts`
+  and the new `publication.ts`.
+- **Tests:** the new `eighth-acceptance-hardening.test.ts`, and two
+  prototype assertions in `seventh-acceptance-hardening.test.ts`.
+- **Documentation:** this section.
+
+### 23.10 Remaining limitations
+
+- A-01 to A-05 are carried. A-04 covers globally patched built-ins, including
+  replacing `Array.prototype` or `Object.prototype` _methods_, `WeakMap`,
+  `WeakSet` and `Object.hasOwn` itself, and pollution of the descriptor names
+  `get` and `set`. Under that last one every operation fails closed;
+  ACCEPTANCE_8 notes that `new MappingLedger()` throws a raw `TypeError`
+  there.
+- Numeric index pollution is now defended on every authoritative read by
+  the policy in 23.3. The audit enforces this for new code.
+- Unfrozen subclass instances and the live cancellation signal are as in
+  §22.15.
+- **Consumer polluted environments.** A consumer that reads an absent
+  optional key from a public result in its own polluted environment sees
+  that environment (23.6).
+
+### 23.11 Verification record
+
+The verification ran in a fresh copy of the exact working tree, without
+`node_modules` or `dist`, on Node **v24.18.1** and npm **11.16.0**: the
+official build, checked against `SHASUMS256.txt`. The exact results are
+recorded in the hardening commit report and re-measured by ACCEPTANCE_9.
+They are:
+
+- **Install:** `npm ci` added 450 and audited 459. The lockfile is
+  byte-identical (`810aaa67…`).
+- **Checks:** `format:check`, `lint`, `typecheck`, `npm test` and
+  `npm run build` all exit 0.
+- **Full default suite:** **57 test files** (54 passed, 3 opt-in live-canary
+  files skipped); **572 passed, 0 failed, 3 skipped**.
+  - contracts 4;
+  - market-data 57;
+  - spread-analytics **312**;
+  - OKX 52 (+1 skipped);
+  - Binance 72 (+1 skipped);
+  - Bybit 69 (+1 skipped);
+  - web 6.
+- **Build:** six static routes.
+- **TZ matrix** as separate processes (`UTC`, `America/New_York`,
+  `Asia/Tokyo`): 312/312 each.
+- **Public surface:** 22 runtime exports and 44 frozen codes. Deep imports
+  return `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+- **Repository checks:**
+  - `git diff --check` and `git fsck --full` pass, and local Markdown links
+    have 0 broken.
+  - These are unchanged: `package.json` (`6282c135…`), `package-lock.json`
+    (`810aaa67…`), D-055, D-064, the capacity decision, ACCEPTANCE_1–8, the
+    frozen Phase 2A packages, `apps`, `infra` and `docs/brand`.
+- **Diff scope:** the diff from `b9176d1` touches only
+  `packages/spread-analytics/**` and this document.

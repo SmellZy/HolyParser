@@ -409,7 +409,7 @@ describe("N-02 ledger authority is immutable after construction", () => {
       expect(mapping).not.toBe(callerCommand);
       expect(mapping).not.toBe(command);
       expect(Object.isFrozen(mapping)).toBe(true);
-      expect(Object.getPrototypeOf(mapping)).toBeNull();
+      expect(Object.getPrototypeOf(mapping)).toBe(Object.prototype);
       expect(Object.isFrozen(result)).toBe(true);
     }
     const before = JSON.stringify(render(first.ledger.versions));
@@ -1000,7 +1000,7 @@ describe("N-01 / L-03 closing class sweep", () => {
     expect(result.resultId).toBe(honest.resultId);
     for (const value of [result, result.mappingVersion, result.reasons])
       expect(Object.isFrozen(value)).toBe(true);
-    expect(Object.getPrototypeOf(result)).toBeNull();
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
     // The registry revision of a MATCHED result always equals the mapping's.
     expect(result.registryRevision).toBe(
       result.mappingVersion?.registryRevision,

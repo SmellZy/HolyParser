@@ -7,7 +7,11 @@ import {
   sameText,
   type CancellationSignal,
 } from "./bounds.js";
-import { frozenRecord, immutableRegistryRevision } from "./immutable.js";
+import {
+  frozenRecord,
+  immutableRegistryRevision,
+  ownElement,
+} from "./immutable.js";
 import { MatchingFailure } from "./reasons.js";
 import type {
   AssetAlias,
@@ -19,6 +23,7 @@ import type {
 import { MATCHING_LIMITS } from "./policy.js";
 import { assertClosedKeys } from "./validation.js";
 import { epoch } from "./time.js";
+import { publicView } from "./publication.js";
 import { inputBoundary, snapshotInput } from "./snapshot.js";
 
 // Strict canonical RFC 3339 UTC timestamps (see time.ts); no Date.parse.
@@ -135,7 +140,9 @@ export class CuratedAssetRegistry {
     this.#assetsById = state.assetsById;
     // work: fixed-shape definition and freeze of the instance (O(1)).
     Object.defineProperty(this, "revision", {
-      value: state.revision,
+      // The public view is an ordinary frozen copy (charged); operations
+      // read only the private state.
+      value: publicView(state.revision, work),
       enumerable: true,
       writable: false,
       configurable: false,
@@ -370,8 +377,9 @@ export class CuratedAssetRegistry {
       cutoff,
       work,
     );
+    const published = publicView(result, work);
     work.beforePublication();
-    return result;
+    return published;
   }
   #resolve(
     venue: string,
@@ -415,7 +423,8 @@ export class CuratedAssetRegistry {
       ),
     );
     if (ids.size > 1) return frozenRecord({ state: "CONFLICT" as const });
-    let asset = found[0]?.canonicalAssetId;
+    // L-07: own-index reads; an empty result never inherits index 0.
+    let asset = ownElement(found, 0)?.canonicalAssetId;
     if (asset === undefined) return frozenRecord({ state: "UNKNOWN" as const });
     const aliases = (
       this.#aliasesByAsset.get(chargeKey(asset, work)) ?? []
@@ -428,7 +437,7 @@ export class CuratedAssetRegistry {
       );
     });
     if (aliases.length > 1) return frozenRecord({ state: "CONFLICT" as const });
-    const reviewedAlias = aliases[0];
+    const reviewedAlias = ownElement(aliases, 0);
     asset = reviewedAlias?.targetAssetId ?? asset;
     const resolved = asset;
     const definitions = (
@@ -468,8 +477,9 @@ export class CuratedAssetRegistry {
       );
     });
     const result = records.length === 1 ? records[0] : undefined;
+    const published = publicView(result, work);
     work.beforePublication();
-    return result;
+    return published;
   }
 }
 
@@ -504,8 +514,9 @@ export function admitRegistryRevision(
   }
   // Every typed outcome, READY or QUARANTINED, passes the final check; no
   // work follows it.
+  const published = publicView(result, work);
   work.beforePublication();
-  return result;
+  return published;
 }
 
 // N-02: the class surface is immutable too; replacing a prototype method or

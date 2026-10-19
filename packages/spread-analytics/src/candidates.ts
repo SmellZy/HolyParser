@@ -25,6 +25,7 @@ import {
   resolveWithBudget,
   trustedRegistryRevision,
 } from "./registry.js";
+import { publicView } from "./publication.js";
 import { inputBoundary, snapshotInput } from "./snapshot.js";
 import { MatchingFailure, type MatchReasonCode } from "./reasons.js";
 import {
@@ -469,10 +470,10 @@ export function generateCandidatesWithBudget(
     work.step();
     return makeCandidateWithRevision(a, b, registryRevision, at, cutoff, work);
   });
-  // The final freeze is charged before it runs; nothing but the final
-  // cancellation check separates it from publication.
+  // The final freeze and public copy are charged before they run; nothing
+  // but the final cancellation check separates them from publication.
   work.step(result.length);
-  const published = Object.freeze(result);
+  const published = publicView(result, work);
   work.beforePublication();
   return published;
 }
